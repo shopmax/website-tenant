@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<forms xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+        xsi:noNamespaceSchemaLocation="http://ofbiz.apache.org/dtds/widget-form.xsd">
+    <form name="FindTenant" target="FindTenant" title="" type="single" default-map-name="parameters"
+        header-row-style="header-row" default-table-style="basic-table">
+        <field name="noConditionFind"><hidden value="Y"/><!-- if this isn't there then with all fields empty no query will be done --></field>
+        <field name="tenantId"><text-find/></field>
+        <field name="tenantName"><text-find/></field>
+        <field name="domainName"><text-find/></field>
+        <field name="initialPath"><text-find/></field>
+        <field name="disabled">
+            <drop-down allow-empty="true"><option key="Y" description="${uiLabelMap.CommonY}"/><option key="N" description="${uiLabelMap.CommonN}"/></drop-down>
+        </field>
+        <field name="submitButton" title="${uiLabelMap.CommonFind}" widget-style="smallSubmit">
+            <submit button-type="button"/>
+        </field>
+    </form>
+    <form name="ListTenants" paginate-target="FindTenant" type="list" list-name="listIt"
+        odd-row-style="alternate-row" header-row-style="header-row-2" default-table-style="basic-table hover-bar" separate-columns="true">
+        <actions>
+            <service service-name="performFind" result-map="result" result-map-list="listIt">
+                <field-map field-name="inputFields" from-field="parameters"/>
+                <field-map field-name="entityName" value="Tenant"/>
+                <field-map field-name="orderBy" value="tenantName"/>
+                <field-map field-name="viewIndex" from-field="viewIndex"/>
+                <field-map field-name="viewSize" from-field="viewSize"/>
+            </service>
+        </actions>
+        <field name="tenantId">
+            <hyperlink description="${tenantId}" target="EditTenant">
+                <parameter param-name="tenantId"/>
+            </hyperlink>
+        </field>
+        <field name="tenantName"><display/></field>
+        <field name="domainName"><display/></field>
+        <field name="initialPath"><display/></field>
+        <field name="disabled"><display/></field>
+    </form>
+</forms>
