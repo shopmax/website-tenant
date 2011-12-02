@@ -30,11 +30,17 @@ import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.GenericDataSourceException;
 import org.ofbiz.entity.GenericEntityException;
 import org.ofbiz.entity.GenericValue;
+import org.ofbiz.entity.config.DatasourceInfo;
+import org.ofbiz.entity.config.DelegatorInfo;
+import org.ofbiz.entity.config.EntityConfigUtil;
+import org.ofbiz.entity.datasource.GenericHelper;
+import org.ofbiz.entity.datasource.GenericHelperFactory;
 import org.ofbiz.entity.datasource.GenericHelperInfo;
 import org.ofbiz.entity.jdbc.ConnectionFactory;
 import org.ofbiz.entity.jdbc.SQLProcessor;
 import org.ofbiz.service.DispatchContext;
 import org.ofbiz.service.ServiceUtil;
+import org.w3c.dom.Element;
 
 /**
  * Tenant Services
@@ -55,20 +61,28 @@ public class TenantServices {
         Delegator delegator = ctx.getDelegator();
         String tenantId = (String) context.get("tenantId");
         String entityGroupName = (String) context.get("entityGroupName");
-        String databaseName = (String) context.get("databaseName");
         
         try {
             GenericValue tenantDataSource = delegator.findOne("TenantDataSource", UtilMisc.toMap("tenantId", tenantId, "entityGroupName", entityGroupName), false);
             if (UtilValidate.isNotEmpty(tenantDataSource)) {
-                String driverName = tenantDataSource.getString("driverName");
-                String connectionUrl = tenantDataSource.getString("connectionUrl");
-                String userName = tenantDataSource.getString("userName");
-                String password = tenantDataSource.getString("password");
+               DelegatorInfo delegatorInfo = EntityConfigUtil.getDelegatorInfo(delegator.getDelegatorBaseName());
+               String dataResourceName =  delegatorInfo.groupMap.get(entityGroupName);
+               DatasourceInfo dataSourceInfo = EntityConfigUtil.getDatasourceInfo(dataResourceName);
+               Element inlineJdbcElement = dataSourceInfo.inlineJdbcElement;
+                String connectionUrl = tenantDataSource.getString("jdbcUri");
+                String userName = tenantDataSource.getString("jdbcUsername");
+                String password = tenantDataSource.getString("jdbcPassword");
+                String driverName = inlineJdbcElement.getAttribute("jdbc-driver");
+                String databaseName = tenantId;
+                String databaseOlapName = databaseName + "Olap";
                 Properties props = null;
                 GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(entityGroupName);
-                Connection connection = ConnectionFactory.getConnection(driverName, connectionUrl, props, userName, password);
+                GenericHelper helper = GenericHelperFactory.getHelper(helperInfo);
+                //Connection connection = ConnectionFactory.getConnection(driverName, connectionUrl, props, userName, password);
+                Connection connection = ConnectionFactory.getConnection(helperInfo);
                 SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, connection);
-                sqlProcessor.executeUpdate("CREATE DATABASE " + databaseName);
+                sqlProcessor.executeUpdate("CREATE DATABASE \"" + databaseName + "\"");
+                sqlProcessor.executeUpdate("CREATE DATABASE \"" + databaseOlapName + "\"");
             }
         } catch (SQLException e) {
             String errMsg = "Could not create a database for tenant " + tenantId + " with entity group name " + entityGroupName + " : " + e.getMessage();
