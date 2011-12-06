@@ -18,8 +18,10 @@
  *******************************************************************************/
 package org.ofbiz.tenant.jdbc;
 
-import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Map;
+
+import javolution.util.FastMap;
 
 import org.ofbiz.base.util.Debug;
 import org.ofbiz.base.util.UtilMisc;
@@ -27,9 +29,6 @@ import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.GenericEntityException;
 import org.ofbiz.entity.GenericValue;
-import org.ofbiz.entity.datasource.GenericHelperInfo;
-import org.ofbiz.entity.jdbc.ConnectionFactory;
-import org.ofbiz.entity.jdbc.SQLProcessor;
 
 /**
  * Tenant Connection Factory
@@ -39,6 +38,8 @@ import org.ofbiz.entity.jdbc.SQLProcessor;
 public class TenantConnectionFactory {
 
     public final static String module = TenantConnectionFactory.class.getName();
+    
+    protected static Map<String, TenantJdbcConnectionHandler> connectionHandlers = FastMap.newInstance();
     
     /**
      * get tenant JDBC connection handler
@@ -53,27 +54,28 @@ public class TenantConnectionFactory {
         TenantJdbcConnectionHandler connectionHandler = null;
         GenericValue tenantDataSource = delegator.findOne("TenantDataSource", UtilMisc.toMap("tenantId", tenantId, "entityGroupName", entityGroupName), false);
         if (UtilValidate.isNotEmpty(tenantDataSource)) {
+            Debug.logInfo("Create JDBC connection handler for tenant: " + tenantId + " with entity group: " + entityGroupName, module);
             String jdbcUri = tenantDataSource.getString("jdbcUri");
-            String jdbcUsername = tenantDataSource.getString("jdbcUsername");
-            String jdbcPassword = tenantDataSource.getString("jdbcPassword");
-
-            // create SQL processor
-            GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(entityGroupName);
-            Connection connection = ConnectionFactory.getConnection(jdbcUri, jdbcUsername, jdbcPassword);
-            SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, connection);
             
-            try {
-                if (jdbcUri.startsWith(TenantDerbyConnectionHandler.URI_PREFIX)) { // Derby
-                    connectionHandler = new TenantDerbyConnectionHandler(jdbcUri, sqlProcessor);
-                } else if (jdbcUri.startsWith(TenantPostgreSqlConnectionHandler.URI_PREFIX)) { // PostgreSQL
-                    connectionHandler = new TenantPostgreSqlConnectionHandler(jdbcUri, sqlProcessor);
-                } else {
-                    throw new GenericEntityException("Could not find a JDBC connection handler for: " + jdbcUri);
+            connectionHandler = connectionHandlers.get(jdbcUri);
+            if (UtilValidate.isEmpty(connectionHandler)) {
+                try {
+                    if (jdbcUri.startsWith(TenantDerbyConnectionHandler.URI_PREFIX)) { // Derby
+                        Debug.logInfo("Create Derby connection handler", module);
+                        connectionHandler = new TenantDerbyConnectionHandler(tenantDataSource);
+                    } else if (jdbcUri.startsWith(TenantPostgreSqlConnectionHandler.URI_PREFIX)) { // PostgreSQL
+                        Debug.logInfo("Create PostgreSQL connection handler", module);
+                        connectionHandler = new TenantPostgreSqlConnectionHandler(tenantDataSource);
+                    } else {
+                        throw new GenericEntityException("Could not find a JDBC connection handler for: " + jdbcUri);
+                    }
+                } catch (Exception e) {
+                    String errMsg = "Could not create a tenant connection handler for " + tenantId + " with entity group name " + entityGroupName + " : " + e.getMessage();
+                    Debug.logError(e, errMsg, module);
+                    throw new GenericEntityException(errMsg);
                 }
-            } catch (Exception e) {
-                String errMsg = "Could not create a tenant connection handler for " + tenantId + " with entity group name " + entityGroupName + " : " + e.getMessage();
-                Debug.logError(e, errMsg, module);
-                throw new GenericEntityException(errMsg);
+            } else {
+                return connectionHandler;
             }
         }
         return connectionHandler;

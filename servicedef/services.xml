@@ -23,12 +23,6 @@
     <vendor></vendor>
     <version>1.0</version>
 
-    <service name="createTenantDatabase" default-entity-name="Tenant" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
-        invoke="createTenantDatabase" auth="false" use-transaction="false">
-        <description>Create a tenant database</description>
-        <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
-        <attribute name="entityGroupName" mode="IN" type="String" optional="false"></attribute>
-    </service>
     <service name="installTenantDatabase" default-entity-name="Tenant" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
         invoke="installTenantDatabase" auth="false" use-transaction="false">
         <description>Install a tenant database</description>

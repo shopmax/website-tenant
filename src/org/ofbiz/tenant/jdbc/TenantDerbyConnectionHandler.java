@@ -18,10 +18,17 @@
  *******************************************************************************/
 package org.ofbiz.tenant.jdbc;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.GenericDataSourceException;
+import org.ofbiz.entity.GenericEntityException;
+import org.ofbiz.entity.GenericValue;
+import org.ofbiz.entity.datasource.GenericHelperInfo;
+import org.ofbiz.entity.jdbc.ConnectionFactory;
 import org.ofbiz.entity.jdbc.SQLProcessor;
 
 /**
@@ -40,31 +47,23 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
      * @param jdbcUri
      * @param sqlProcessor
      */
-    public TenantDerbyConnectionHandler(String jdbcUri, SQLProcessor sqlProcessor) {
-        super(jdbcUri, sqlProcessor);
+    public TenantDerbyConnectionHandler(GenericValue tenantDataSource) {
+        super(tenantDataSource);
     }
     
     /**
      * get database name
      */
     @Override
-    public String getDatabaseName(String jdbcUri) {
+    public String getDatabaseName() {
         String databaseName = null;
+        String jdbcUri = getJdbcUri();
         Pattern pattern = Pattern.compile(URI_PREFIX + "(.*?);");
         Matcher matcher = pattern.matcher(jdbcUri);
         if (matcher.find()) {
             databaseName = matcher.group(1);
         }
         return databaseName;
-    }
-
-    /**
-     * create database
-     */
-    @Override
-    public int createDatabase(String databaseName) throws GenericDataSourceException {
-        // Do nothing because the database has already been created after creating the connection
-        return 0;
     }
 
     /**
@@ -75,4 +74,15 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
         return 0;
     }
 
+    /**
+     * get SQL processor
+     */
+    @Override
+    protected SQLProcessor getSQLProcessor() throws GenericEntityException, SQLException {
+        Delegator delegator = tenantDataSource.getDelegator();
+        GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
+        Connection connection = ConnectionFactory.getConnection(this.getJdbcUri(), this.getJdbcUsername(), this.getJdbcPassword());
+        SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, connection);
+        return sqlProcessor;
+    }
 }

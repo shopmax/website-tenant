@@ -18,7 +18,13 @@
  *******************************************************************************/
 package org.ofbiz.tenant.jdbc;
 
+import java.sql.SQLException;
+
+import org.ofbiz.base.util.Debug;
+import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.entity.GenericDataSourceException;
+import org.ofbiz.entity.GenericEntityException;
+import org.ofbiz.entity.GenericValue;
 import org.ofbiz.entity.jdbc.SQLProcessor;
 
 /**
@@ -27,8 +33,10 @@ import org.ofbiz.entity.jdbc.SQLProcessor;
  *
  */
 public abstract class TenantJdbcConnectionHandler {
+
+    public final static String module = TenantJdbcConnectionHandler.class.getName();
     
-    protected String jdbcUri = null;
+    protected GenericValue tenantDataSource = null;
     protected SQLProcessor sqlProcessor = null;
     
     /**
@@ -36,9 +44,16 @@ public abstract class TenantJdbcConnectionHandler {
      * @param jdbcUri
      * @param sqlProcessor
      */
-    public TenantJdbcConnectionHandler(String jdbcUri, SQLProcessor sqlProcessor) {
-        this.jdbcUri = jdbcUri;
-        this.sqlProcessor = sqlProcessor;
+    public TenantJdbcConnectionHandler(GenericValue tenantDataSource) {
+        this.tenantDataSource = tenantDataSource;
+        try {
+            this.sqlProcessor = getSQLProcessor();
+            if (UtilValidate.isEmpty(this.sqlProcessor)) {
+                throw new GenericDataSourceException("SQL srocessor is not defined.");
+            }
+        } catch (Exception e) {
+            Debug.logError(e, module);
+        }
     }
     
     /**
@@ -46,7 +61,31 @@ public abstract class TenantJdbcConnectionHandler {
      * @return
      */
     public String getJdbcUri() {
-        return jdbcUri;
+        return tenantDataSource.getString("jdbcUri");
+    }
+    
+    /**
+     * get entity group name
+     * @return
+     */
+    public String getEntityGroupName() {
+        return tenantDataSource.getString("entityGroupName");
+    }
+    
+    /**
+     * get JDBC username
+     * @return
+     */
+    public String getJdbcUsername() {
+        return tenantDataSource.getString("jdbcUsername");
+    }
+    
+    /**
+     * get JDBC password
+     * @return
+     */
+    public String getJdbcPassword() {
+        return tenantDataSource.getString("jdbcPassword");
     }
     
     /**
@@ -54,17 +93,17 @@ public abstract class TenantJdbcConnectionHandler {
      * @param jdbcUri
      * @return
      */
-    public abstract String getDatabaseName(String jdbcUri);
-
-    /**
-     * create database
-     * @return
-     */
-    public abstract int createDatabase(String databaseName) throws GenericDataSourceException;
+    public abstract String getDatabaseName();
     
     /**
      * delete database
      * @return
      */
     public abstract int deleteDatabase(String databaseName) throws GenericDataSourceException;
+    
+    /**
+     * get SQL processor
+     * @return
+     */
+    protected abstract SQLProcessor getSQLProcessor() throws GenericEntityException, SQLException;
 }
