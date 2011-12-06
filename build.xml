@@ -25,6 +25,7 @@
         <fileset dir="../../framework/entity/lib" includes="*.jar"/>
         <fileset dir="../../framework/entity/build/lib" includes="*.jar"/>
         <fileset dir="../../framework/security/build/lib" includes="*.jar"/>
+        <fileset dir="../../framework/entityext/build/lib" includes="*.jar"/>
         <fileset dir="../../framework/service/lib" includes="*.jar"/>
         <fileset dir="../../framework/service/build/lib" includes="*.jar"/>
         <fileset dir="../../framework/minilang/build/lib" includes="*.jar"/>
