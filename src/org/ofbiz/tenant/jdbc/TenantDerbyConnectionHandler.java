@@ -18,11 +18,14 @@
  *******************************************************************************/
 package org.ofbiz.tenant.jdbc;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.ofbiz.base.util.Debug;
+import org.ofbiz.base.util.FileUtil;
 import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.GenericDataSourceException;
 import org.ofbiz.entity.GenericEntityException;
@@ -30,6 +33,7 @@ import org.ofbiz.entity.GenericValue;
 import org.ofbiz.entity.datasource.GenericHelperInfo;
 import org.ofbiz.entity.jdbc.ConnectionFactory;
 import org.ofbiz.entity.jdbc.SQLProcessor;
+import org.ofbiz.tenant.util.TenantUtil;
 
 /**
  * Tenant Derby connection handler
@@ -70,7 +74,12 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
      * delete database
      */
     @Override
-    public int deleteDatabase(String databaseName) throws GenericDataSourceException {
+    public int deleteDatabase(String databaseName) throws GenericEntityException, SQLException {
+        File databaseDir = new File(System.getProperty("ofbiz.home") + File.separator + "runtime" + File.separator + "data"
+            + File.separator + "derby" + File.separator + this.getDatabaseName());
+        if (databaseDir.exists()) {
+            return TenantUtil.deleteDirectory(databaseDir) ? 1 : 0;
+        }
         return 0;
     }
 

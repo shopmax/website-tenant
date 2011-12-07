@@ -99,7 +99,7 @@ public abstract class TenantJdbcConnectionHandler {
      * delete database
      * @return
      */
-    public abstract int deleteDatabase(String databaseName) throws GenericDataSourceException;
+    public abstract int deleteDatabase(String databaseName) throws GenericEntityException, SQLException;
     
     /**
      * get SQL processor
