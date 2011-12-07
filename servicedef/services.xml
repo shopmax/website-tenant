@@ -27,13 +27,11 @@
         invoke="installTenantDatabase" auth="false" use-transaction="false">
         <description>Install a tenant database</description>
         <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
-        <attribute name="entityGroupName" mode="IN" type="String" optional="false"></attribute>
         <attribute name="reader" mode="IN" type="String" optional="false"></attribute>
     </service>
     <service name="deleteTenantDatabase" default-entity-name="Tenant" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
         invoke="deleteTenantDatabase" auth="false" use-transaction="false">
         <description>Delete a tenant database</description>
         <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
-        <attribute name="entityGroupName" mode="IN" type="String" optional="false"></attribute>
     </service>
 </services>

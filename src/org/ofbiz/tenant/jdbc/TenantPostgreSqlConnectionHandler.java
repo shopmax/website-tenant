@@ -18,9 +18,6 @@
  *******************************************************************************/
 package org.ofbiz.tenant.jdbc;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.regex.Matcher;
@@ -52,6 +49,25 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
      */
     public TenantPostgreSqlConnectionHandler(GenericValue tenantDataSource) {
         super(tenantDataSource);
+        try {
+            Delegator delegator = tenantDataSource.getDelegator();
+            GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
+            try {
+                Connection connection = ConnectionFactory.getConnection(this.getJdbcUri(), this.getJdbcUsername(), this.getJdbcPassword());
+                SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, connection);
+                sqlProcessor.close();
+                connection.close();
+            } catch (Exception e) {
+                // create a new database
+                Connection connection = ConnectionFactory.getConnection(this.getPostgresJdbcUri(), this.getJdbcUsername(), this.getJdbcPassword());
+                SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, connection);
+                sqlProcessor.executeUpdate("CREATE DATABASE \"" + this.getDatabaseName() + "\"");
+                sqlProcessor.close();
+                connection.close();
+            }
+        } catch (Exception e) {
+            Debug.logError(e, module);
+        }
     }
     
     /**
@@ -74,51 +90,17 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
      */
     @Override
     public int deleteDatabase(String databaseName) throws GenericEntityException, SQLException {
-        /*
         Delegator delegator = tenantDataSource.getDelegator();
+        GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
+        Connection connection = ConnectionFactory.getConnection(this.getPostgresJdbcUri(), this.getJdbcUsername(), this.getJdbcPassword());
+        SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, connection);
+        int result = sqlProcessor.executeUpdate("DROP DATABASE \"" + this.getDatabaseName() + "\"");
         sqlProcessor.close();
-        GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
-        Connection connection = ConnectionFactory.getConnection(helperInfo);
-        sqlProcessor = new SQLProcessor(helperInfo, connection);
-        return sqlProcessor.executeUpdate("DROP DATABASE \"" + this.getDatabaseName() + "\"");
-        */
-        
-        try {
-            sqlProcessor.close();
-            Runtime runtime = Runtime.getRuntime();
-            Process process = runtime.exec("dropdb \"" + this.getDatabaseName() + "\"");
-            BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
-             
-            String line=null;
-            while((line=input.readLine()) != null) {
-                Debug.logInfo(line, module);
-            }
-        } catch (IOException e) {
-            throw new GenericEntityException(e);
-        }
-        return 0;
+        connection.close();
+        return result;
     }
-
-    /**
-     * get SQL processor
-     */
-    @Override
-    protected SQLProcessor getSQLProcessor() throws GenericEntityException, SQLException {
-        SQLProcessor sqlProcessor = null;
-        Delegator delegator = tenantDataSource.getDelegator();
-        GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
-        try {
-            Connection connection = ConnectionFactory.getConnection(this.getJdbcUri(), this.getJdbcUsername(), this.getJdbcPassword());
-            sqlProcessor = new SQLProcessor(helperInfo, connection);
-        } catch (Exception e) {
-            // create new database
-            Connection connection = ConnectionFactory.getConnection(helperInfo);
-            sqlProcessor = new SQLProcessor(helperInfo, connection);
-            sqlProcessor.executeUpdate("CREATE DATABASE \"" + this.getDatabaseName() + "\"");
-            connection.close();
-            connection = ConnectionFactory.getConnection(this.getJdbcUri(), this.getJdbcUsername(), this.getJdbcPassword());
-            sqlProcessor = new SQLProcessor(helperInfo, connection);
-        }
-        return sqlProcessor;
+    
+    protected String getPostgresJdbcUri() {
+        return "jdbc:postgresql://127.0.0.1/postgres";
     }
 }

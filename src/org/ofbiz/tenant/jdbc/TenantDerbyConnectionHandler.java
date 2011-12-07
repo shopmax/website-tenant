@@ -25,9 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.ofbiz.base.util.Debug;
-import org.ofbiz.base.util.FileUtil;
 import org.ofbiz.entity.Delegator;
-import org.ofbiz.entity.GenericDataSourceException;
 import org.ofbiz.entity.GenericEntityException;
 import org.ofbiz.entity.GenericValue;
 import org.ofbiz.entity.datasource.GenericHelperInfo;
@@ -53,6 +51,15 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
      */
     public TenantDerbyConnectionHandler(GenericValue tenantDataSource) {
         super(tenantDataSource);
+        try {
+            Delegator delegator = tenantDataSource.getDelegator();
+            GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
+            Connection connection = ConnectionFactory.getConnection(this.getJdbcUri(), this.getJdbcUsername(), this.getJdbcPassword());
+            SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, connection);
+            sqlProcessor.close();
+        } catch (Exception e) {
+            Debug.logError(e, module);
+        }
     }
     
     /**
@@ -81,17 +88,5 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
             return TenantUtil.deleteDirectory(databaseDir) ? 1 : 0;
         }
         return 0;
-    }
-
-    /**
-     * get SQL processor
-     */
-    @Override
-    protected SQLProcessor getSQLProcessor() throws GenericEntityException, SQLException {
-        Delegator delegator = tenantDataSource.getDelegator();
-        GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
-        Connection connection = ConnectionFactory.getConnection(this.getJdbcUri(), this.getJdbcUsername(), this.getJdbcPassword());
-        SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, connection);
-        return sqlProcessor;
     }
 }

@@ -20,12 +20,8 @@ package org.ofbiz.tenant.jdbc;
 
 import java.sql.SQLException;
 
-import org.ofbiz.base.util.Debug;
-import org.ofbiz.base.util.UtilValidate;
-import org.ofbiz.entity.GenericDataSourceException;
 import org.ofbiz.entity.GenericEntityException;
 import org.ofbiz.entity.GenericValue;
-import org.ofbiz.entity.jdbc.SQLProcessor;
 
 /**
  * Tenant JDBC connection handler
@@ -37,7 +33,6 @@ public abstract class TenantJdbcConnectionHandler {
     public final static String module = TenantJdbcConnectionHandler.class.getName();
     
     protected GenericValue tenantDataSource = null;
-    protected SQLProcessor sqlProcessor = null;
     
     /**
      * Constructor
@@ -46,14 +41,6 @@ public abstract class TenantJdbcConnectionHandler {
      */
     public TenantJdbcConnectionHandler(GenericValue tenantDataSource) {
         this.tenantDataSource = tenantDataSource;
-        try {
-            this.sqlProcessor = getSQLProcessor();
-            if (UtilValidate.isEmpty(this.sqlProcessor)) {
-                throw new GenericDataSourceException("SQL srocessor is not defined.");
-            }
-        } catch (Exception e) {
-            Debug.logError(e, module);
-        }
     }
     
     /**
@@ -100,10 +87,4 @@ public abstract class TenantJdbcConnectionHandler {
      * @return
      */
     public abstract int deleteDatabase(String databaseName) throws GenericEntityException, SQLException;
-    
-    /**
-     * get SQL processor
-     * @return
-     */
-    protected abstract SQLProcessor getSQLProcessor() throws GenericEntityException, SQLException;
 }

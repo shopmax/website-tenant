@@ -18,14 +18,21 @@
  *******************************************************************************/
 package org.ofbiz.tenant.tenant;
 
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
 import org.ofbiz.base.util.Debug;
 import org.ofbiz.base.util.FileUtil;
+import org.ofbiz.base.util.UtilMisc;
 import org.ofbiz.entity.Delegator;
+import org.ofbiz.entity.DelegatorFactory;
 import org.ofbiz.entity.GenericDataSourceException;
 import org.ofbiz.entity.GenericEntityException;
+import org.ofbiz.entity.GenericValue;
+import org.ofbiz.entity.datasource.GenericHelperInfo;
+import org.ofbiz.entity.jdbc.ConnectionFactory;
 import org.ofbiz.entityext.data.EntityDataLoadContainer;
 import org.ofbiz.service.DispatchContext;
 import org.ofbiz.service.ServiceUtil;
@@ -50,22 +57,36 @@ public class TenantServices {
     public static Map<String, Object> installTenantDatabase(DispatchContext ctx, Map<String, Object> context) {
         Delegator delegator = ctx.getDelegator();
         String tenantId = (String) context.get("tenantId");
-        String entityGroupName = (String) context.get("entityGroupName");
         String reader = (String) context.get("reader");
         try {
-            String[] args = new String[3];
+            // fist make sure if connection handlers are exist
+            List<GenericValue> tenantDataSources = delegator.findByAnd("TenantDataSource", UtilMisc.toMap("tenantId", tenantId));
+            for (GenericValue tenantDataSource : tenantDataSources) {
+                String entityGroupName = tenantDataSource.getString("entityGroupName");
+                TenantJdbcConnectionHandler connectionHandler = TenantConnectionFactory.getTenantJdbcConnectionHandler(tenantId, entityGroupName, delegator);
+            }
+            
+            String delegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
+            String[] args = new String[2];
             args[0] = "-reader=" + reader;
-            args[1] = "-delegator=" + delegator.getDelegatorBaseName() + "#" + tenantId;
-            args[2] = "-group=" + entityGroupName;
+            args[1] = "-delegator=" + delegatorName;
             String configFile = FileUtil.getFile("component://base/config/install-containers.xml").getAbsolutePath();
             
-            // fist make sure if a connection handler is exist
-            TenantJdbcConnectionHandler connectionHandler = TenantConnectionFactory.getTenantJdbcConnectionHandler(tenantId, entityGroupName, delegator);
+            // load data
             EntityDataLoadContainer entityDataLoadContainer = new EntityDataLoadContainer();
             entityDataLoadContainer.init(args, configFile);
             entityDataLoadContainer.start();
+            
+            // close connections
+            Delegator tenantDelegator = DelegatorFactory.getDelegator(delegatorName);
+            for (GenericValue tenantDataSource : tenantDataSources) {
+                String entityGroupName = tenantDataSource.getString("entityGroupName");
+                GenericHelperInfo helperInfo = tenantDelegator.getGroupHelperInfo(entityGroupName);
+                Connection connection = ConnectionFactory.getConnection(helperInfo);
+                connection.close();
+            }
         } catch (Exception e) {
-            String errMsg = "Could not install a database for tenant " + tenantId + " with entity group name " + entityGroupName + " : " + e.getMessage();
+            String errMsg = "Could not install a database for tenant " + tenantId + " with entity group name : " + e.getMessage();
             Debug.logError(e, errMsg, module);
             return ServiceUtil.returnError(errMsg);
         }
@@ -81,22 +102,25 @@ public class TenantServices {
     public static Map<String, Object> deleteTenantDatabase(DispatchContext ctx, Map<String, Object> context) {
         Delegator delegator = ctx.getDelegator();
         String tenantId = (String) context.get("tenantId");
-        String entityGroupName = (String) context.get("entityGroupName");
         
         try {
-            TenantJdbcConnectionHandler connectionHandler = TenantConnectionFactory.getTenantJdbcConnectionHandler(tenantId, entityGroupName, delegator);
-            String databaseName = connectionHandler.getDatabaseName();
-            connectionHandler.deleteDatabase(databaseName);
+            List<GenericValue> tenantDataSources = delegator.findByAnd("TenantDataSource", UtilMisc.toMap("tenantId", tenantId));
+            for (GenericValue tenantDataSource : tenantDataSources) {
+                String entityGroupName = tenantDataSource.getString("entityGroupName");
+                TenantJdbcConnectionHandler connectionHandler = TenantConnectionFactory.getTenantJdbcConnectionHandler(tenantId, entityGroupName, delegator);
+                String databaseName = connectionHandler.getDatabaseName();
+                connectionHandler.deleteDatabase(databaseName);
+            }
         } catch (SQLException e) {
-            String errMsg = "Could not delete a database for tenant " + tenantId + " with entity group name " + entityGroupName + " : " + e.getMessage();
+            String errMsg = "Could not delete a database for tenant " + tenantId + " with entity group name : " + e.getMessage();
             Debug.logError(e, errMsg, module);
             return ServiceUtil.returnError(errMsg);
         } catch (GenericDataSourceException e) {
-            String errMsg = "Could not delete a database for tenant " + tenantId + " with entity group name " + entityGroupName + " : " + e.getMessage();
+            String errMsg = "Could not delete a database for tenant " + tenantId + " with entity group name : " + e.getMessage();
             Debug.logError(e, errMsg, module);
             return ServiceUtil.returnError(errMsg);
         } catch (GenericEntityException e) {
-            String errMsg = "Could not delete a database for tenant " + tenantId + " with entity group name " + entityGroupName + " : " + e.getMessage();
+            String errMsg = "Could not delete a database for tenant " + tenantId + " with entity group name : " + e.getMessage();
             Debug.logError(e, errMsg, module);
             return ServiceUtil.returnError(errMsg);
         }
