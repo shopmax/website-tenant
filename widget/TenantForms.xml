@@ -27,7 +27,7 @@
             </service>
         </actions>
         <field name="tenantId">
-            <hyperlink description="${tenantId}" target="EditTenant">
+            <hyperlink description="${tenantId}" target="TenantOverview">
                 <parameter param-name="tenantId"/>
             </hyperlink>
         </field>
@@ -35,5 +35,80 @@
         <field name="domainName"><display/></field>
         <field name="initialPath"><display/></field>
         <field name="disabled"><display/></field>
+    </form>
+    <form name="tenantHeader" type="single" title="" default-map-name="tenant"
+        header-row-style="header-row" default-table-style="basic-table">
+        <field name="tenantId"><display/></field>
+        <field name="tenantName"><display/></field>
+        <field name="domainName"><display/></field>
+        <field name="initialPath"><display/></field>
+        <field name="disabled"><display/></field>
+    </form>
+    <form name="tenantDataSources" type="list" list-name="listIt"
+        odd-row-style="alternate-row" header-row-style="header-row-2" default-table-style="basic-table hover-bar" separate-columns="true">
+        <actions>
+            <service service-name="performFind" result-map="result" result-map-list="listIt">
+                <field-map field-name="inputFields" from-field="parameters"/>
+                <field-map field-name="entityName" value="TenantDataSource"/>
+                <field-map field-name="orderBy" value="entityGroupName"/>
+                <field-map field-name="viewIndex" from-field="viewIndex"/>
+                <field-map field-name="viewSize" from-field="viewSize"/>
+            </service>
+        </actions>
+        <field name="entityGroupName"><display/></field>
+        <field name="jdbcUri"><display/></field>
+        <field name="jdbcUsername"><display/></field>
+        <field name="jdbcPassword"><display/></field>
+    </form>
+    <form name="EditTenant" type="single" target="updateTenant" title="" default-map-name="tenant"
+        header-row-style="header-row" default-table-style="basic-table">
+        <alt-target use-when="tenant==null" target="createTenant"/>
+        <field use-when="tenant!=null" name="tenantId" title="${uiLabelMap.TenantTenantId}"><display/></field>
+        <field use-when="tenant==null&amp;&amp;tenantId==null" name="tenantId" title="${uiLabelMap.TenantTenantId}"><text size="20" maxlength="20"/></field>
+        <field name="tenantName" title="${uiLabelMap.TenantTenantName}" required-field="true"><text size="30" maxlength="255"/></field>
+        <field name="domainName" title="${uiLabelMap.TenantDomainName}"><text size="30" maxlength="255"/></field>
+        <field name="initialPath" title="${uiLabelMap.TenantInitialPath}"><text size="30" maxlength="255"/></field>
+        <field name="disabled" title="${uiLabelMap.CommonDisabled}">
+            <drop-down allow-empty="true"><option key="Y" description="${uiLabelMap.CommonY}"/><option key="N" description="${uiLabelMap.CommonN}"/></drop-down>
+        </field>
+        <field name="submitButton" title="${uiLabelMap.CommonUpdate}" use-when="tenant!=null" widget-style="smallSubmit"><submit button-type="button"/></field>
+        <field name="submitButton" title="${uiLabelMap.CommonCreate}" use-when="tenant==null" widget-style="smallSubmit"><submit button-type="button"/></field>
+    </form>
+    <form name="EditTenantDataSource" type="single" target="createTenantDataSource" title="" default-map-name="tenant"
+        header-row-style="header-row" default-table-style="basic-table">
+        <field use-when="tenantDataSource!=null" name="tenantId" title="${uiLabelMap.TenantTenantId}"><display/></field>
+        <field use-when="tenantDataSource==null&amp;&amp;tenantId==null" name="tenantId" title="${uiLabelMap.TenantTenantId}"><text size="20" maxlength="20"/></field>
+        <field name="tenantId"><hidden/></field>
+        <field name="entityGroupName" title="${uiLabelMap.TenantEntityGroupName}" required-field="true"><text size="30" maxlength="255"/></field>
+        <field name="jdbcUri" title="${uiLabelMap.TenantJdbcUri}"><text size="30" maxlength="255"/></field>
+        <field name="jdbcUsername" title="${uiLabelMap.CommonUsername}"><text size="30" maxlength="255"/></field>
+        <field name="jdbcPassword" title="${uiLabelMap.CommonPassword}"><text size="30" maxlength="255"/></field>
+        <field name="submitButton" title="${uiLabelMap.CommonCreate}" widget-style="smallSubmit"><submit button-type="button"/></field>
+    </form>
+    <form name="ListTenantDataSources" type="multi" list-name="listIt" use-row-submit="true"
+        odd-row-style="alternate-row" header-row-style="header-row-2" default-table-style="basic-table hover-bar" separate-columns="true">
+        <actions>
+            <service service-name="performFind" result-map="result" result-map-list="listIt">
+                <field-map field-name="inputFields" from-field="parameters"/>
+                <field-map field-name="entityName" value="TenantDataSource"/>
+                <field-map field-name="orderBy" value="entityGroupName"/>
+                <field-map field-name="viewIndex" from-field="viewIndex"/>
+                <field-map field-name="viewSize" from-field="viewSize"/>
+            </service>
+        </actions>
+        <field name="tenantId"><hidden/></field>
+        <field name="_rowSubmit" title="${uiLabelMap.CommonSelect}"><check/></field>
+        <field name="entityGroupName"><display/></field>
+        <field name="jdbcUri"><text size="50"/></field>
+        <field name="jdbcUsername"><text/></field>
+        <field name="jdbcPassword"><text/></field>
+        <field name="updateButton" title="${uiLabelMap.CommonUpdate}" use-when="tenant!=null" widget-style="smallSubmit" event="onclick" action="javascript:document.ListTenantDataSources.action='updateTenantDataSources';"><submit button-type="button"/></field>
+        <field name="deleteButton" title="${uiLabelMap.CommonDelete}" use-when="tenant!=null" widget-style="smallSubmit" event="onclick" action="javascript:document.ListTenantDataSources.action='deleteTenantDataSources';"><submit button-type="button"/></field>
+    </form>
+    <form name="EditTenantInstallation" type="single" target="installTenantDatabases" title="" default-map-name="tenant"
+        header-row-style="header-row" default-table-style="basic-table">
+        <field name="tenantId"><hidden/></field>
+        <field name="reader" title="${uiLabelMap.TenantReader}" required-field="true" tooltip="For example: seed,demo,ext"><text size="30" maxlength="255"/></field>
+        <field name="submitButton" title="${uiLabelMap.CommonSubmit}" widget-style="smallSubmit"><submit button-type="button"/></field>
     </form>
 </forms>

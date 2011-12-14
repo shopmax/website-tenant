@@ -22,12 +22,22 @@
         </section>
     </screen>
 
-    <screen name="TenantCommonDecorator">
+    <screen name="CommonTenantDecorator">
         <section>
             <actions>
+                <set field="tenantId" from-field="parameters.tenantId" global="true"/>
+                <entity-one value-field="tenant" entity-name="Tenant"/>
+                <set field="tenant" from-field="tenant" global="true"/>
             </actions>
             <widgets>
                 <decorator-screen name="main-decorator" location="${parameters.mainDecoratorLocation}">
+                    <decorator-section name="pre-body">
+                        <section>
+                            <widgets>
+                                <include-menu name="TenantTabBar" location="component://tenant/widget/TenantMenus.xml"/>
+                            </widgets>
+                        </section>
+                    </decorator-section>
                     <decorator-section name="body">
                         <section>
                             <!--
@@ -36,6 +46,7 @@
                             </condition>
                             -->
                             <widgets>
+                                <include-menu name="TenantSubTabBar" location="component://tenant/widget/TenantMenus.xml"/>
                                 <decorator-section-include name="body"/>
                             </widgets>
                             <fail-widgets>

@@ -8,7 +8,7 @@
                 <set field="headerItem" value="main"/><!-- this highlights the selected menu-item with name "main" -->
             </actions>
             <widgets>
-                <decorator-screen name="TenantCommonDecorator" location="${parameters.mainDecoratorLocation}">
+                <decorator-screen name="main-decorator" location="${parameters.mainDecoratorLocation}">
                     <decorator-section name="body">
                     </decorator-section>
                 </decorator-screen>
@@ -21,10 +21,12 @@
                 <set field="headerItem" value="tenant"/><!-- this highlights the selected menu-item with name "main" -->
                 <set field="viewIndex" from-field="parameters.VIEW_INDEX" type="Integer" default-value="0"/>
                 <set field="viewSize" from-field="parameters.VIEW_SIZE" type="Integer" default-value="20"/>
+                <set field="parameters.noConditionFind" value="Y"/>
             </actions>
             <widgets>
-                <decorator-screen name="TenantCommonDecorator" location="${parameters.mainDecoratorLocation}">
+                <decorator-screen name="main-decorator" location="${parameters.mainDecoratorLocation}">
                     <decorator-section name="body">
+                        <include-menu name="TenantSubTabBar" location="component://tenant/widget/TenantMenus.xml"/>
                         <decorator-screen name="FindScreenDecorator" location="component://common/widget/CommonScreens.xml">
                             <decorator-section name="search-options">
                                 <include-form name="FindTenant" location="component://tenant/widget/TenantForms.xml"/>
@@ -38,5 +40,87 @@
             </widgets>
         </section>
     </screen>
-
+    <screen name="TenantOverview">
+        <section>
+            <actions>
+                <set field="headerItem" value="tenant"/><!-- this highlights the selected menu-item with name "main" -->
+                <set field="tabButtonItem" value="overview"/>
+                <set field="viewIndex" from-field="parameters.VIEW_INDEX" type="Integer" default-value="0"/>
+                <set field="viewSize" from-field="parameters.VIEW_SIZE" type="Integer" default-value="20"/>
+            </actions>
+            <widgets>
+                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                    <decorator-section name="body">
+                        <screenlet title="${uiLabelMap.TenantTenant}">
+                            <include-form name="tenantHeader" location="component://tenant/widget/TenantForms.xml"/>
+                        </screenlet>
+                        <screenlet title="${uiLabelMap.TenantDataSources}">
+                            <include-form name="tenantDataSources" location="component://tenant/widget/TenantForms.xml"/>
+                        </screenlet>
+                    </decorator-section>
+                </decorator-screen>
+            </widgets>
+        </section>
+    </screen>
+    <screen name="EditTenant">
+        <section>
+            <actions>
+                <set field="headerItem" value="tenant"/><!-- this highlights the selected menu-item with name "main" -->
+                <set field="tabButtonItem" value="tenant"/>
+                <set field="viewIndex" from-field="parameters.VIEW_INDEX" type="Integer" default-value="0"/>
+                <set field="viewSize" from-field="parameters.VIEW_SIZE" type="Integer" default-value="20"/>
+            </actions>
+            <widgets>
+                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                    <decorator-section name="body">
+                        <screenlet title="${uiLabelMap.TenantTenant}">
+                            <include-form name="EditTenant" location="component://tenant/widget/TenantForms.xml"/>
+                        </screenlet>
+                    </decorator-section>
+                </decorator-screen>
+            </widgets>
+        </section>
+    </screen>
+    <screen name="ListTenantDataSources">
+        <section>
+            <actions>
+                <set field="headerItem" value="tenant"/><!-- this highlights the selected menu-item with name "main" -->
+                <set field="tabButtonItem" value="dataSources"/>
+                <set field="viewIndex" from-field="parameters.VIEW_INDEX" type="Integer" default-value="0"/>
+                <set field="viewSize" from-field="parameters.VIEW_SIZE" type="Integer" default-value="20"/>
+            </actions>
+            <widgets>
+                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                    <decorator-section name="body">
+                        <screenlet title="${uiLabelMap.TenantDataSources}">
+                            <include-form name="ListTenantDataSources" location="component://tenant/widget/TenantForms.xml"/>
+                        </screenlet>
+                        <screenlet title="${uiLabelMap.TenantCreateDataSource}">
+                            <include-form name="EditTenantDataSource" location="component://tenant/widget/TenantForms.xml"/>
+                        </screenlet>
+                    </decorator-section>
+                </decorator-screen>
+            </widgets>
+        </section>
+    </screen>
+    <screen name="EditTenantInstallation">
+        <section>
+            <actions>
+                <set field="headerItem" value="install"/><!-- this highlights the selected menu-item with name "main" -->
+                <set field="tabButtonItem" value="installation"/>
+                <set field="viewIndex" from-field="parameters.VIEW_INDEX" type="Integer" default-value="0"/>
+                <set field="viewSize" from-field="parameters.VIEW_SIZE" type="Integer" default-value="20"/>
+                <set field="reader" from-field="parameters.reader"/>
+            </actions>
+            <widgets>
+                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                    <decorator-section name="body">
+                        <screenlet title="${uiLabelMap.TenantInstallation}">
+                            <include-form name="EditTenantInstallation" location="component://tenant/widget/TenantForms.xml"/>
+                        </screenlet>
+                    </decorator-section>
+                </decorator-screen>
+            </widgets>
+        </section>
+    </screen>
 </screens>

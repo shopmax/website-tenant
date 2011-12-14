@@ -19,13 +19,15 @@
 package org.ofbiz.tenant.tenant;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+
+import javolution.util.FastList;
 
 import org.ofbiz.base.util.Debug;
 import org.ofbiz.base.util.FileUtil;
 import org.ofbiz.base.util.UtilMisc;
+import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.DelegatorFactory;
 import org.ofbiz.entity.GenericDataSourceException;
@@ -49,15 +51,17 @@ public class TenantServices {
     public final static String module = TenantServices.class.getName();
     
     /**
-     * install tenant database
+     * install tenant databases
      * @param ctx
      * @param context
      * @return
      */
-    public static Map<String, Object> installTenantDatabase(DispatchContext ctx, Map<String, Object> context) {
+    public static Map<String, Object> installTenantDatabases(DispatchContext ctx, Map<String, Object> context) {
         Delegator delegator = ctx.getDelegator();
         String tenantId = (String) context.get("tenantId");
         String reader = (String) context.get("reader");
+        
+        List<String> errMsgs = FastList.newInstance();
         try {
             // fist make sure if connection handlers are exist
             List<GenericValue> tenantDataSources = delegator.findByAnd("TenantDataSource", UtilMisc.toMap("tenantId", tenantId));
@@ -81,12 +85,22 @@ public class TenantServices {
             Delegator tenantDelegator = DelegatorFactory.getDelegator(delegatorName);
             for (GenericValue tenantDataSource : tenantDataSources) {
                 String entityGroupName = tenantDataSource.getString("entityGroupName");
-                GenericHelperInfo helperInfo = tenantDelegator.getGroupHelperInfo(entityGroupName);
-                Connection connection = ConnectionFactory.getConnection(helperInfo);
-                connection.close();
+                try {
+                    GenericHelperInfo helperInfo = tenantDelegator.getGroupHelperInfo(entityGroupName);
+                    Connection connection = ConnectionFactory.getConnection(helperInfo);
+                    connection.close();
+                } catch (Exception e) {
+                    String errMsg = "Could not install a database for tenant " + tenantId + " with entity group name : " + entityGroupName + " : " + e.getMessage();
+                    Debug.logError(e, errMsg, module);
+                    errMsgs.add(errMsg);
+                }
+            }
+            
+            if (UtilValidate.isNotEmpty(errMsgs)) {
+                return ServiceUtil.returnError(errMsgs);
             }
         } catch (Exception e) {
-            String errMsg = "Could not install a database for tenant " + tenantId + " with entity group name : " + e.getMessage();
+            String errMsg = "Could not install databases for tenant " + tenantId + " : " + e.getMessage();
             Debug.logError(e, errMsg, module);
             return ServiceUtil.returnError(errMsg);
         }
@@ -94,12 +108,12 @@ public class TenantServices {
     }
     
     /**
-     * delete tenant database
+     * delete tenant databases
      * @param ctx
      * @param context
      * @return
      */
-    public static Map<String, Object> deleteTenantDatabase(DispatchContext ctx, Map<String, Object> context) {
+    public static Map<String, Object> deleteTenantDatabases(DispatchContext ctx, Map<String, Object> context) {
         Delegator delegator = ctx.getDelegator();
         String tenantId = (String) context.get("tenantId");
         
@@ -107,20 +121,26 @@ public class TenantServices {
             List<GenericValue> tenantDataSources = delegator.findByAnd("TenantDataSource", UtilMisc.toMap("tenantId", tenantId));
             for (GenericValue tenantDataSource : tenantDataSources) {
                 String entityGroupName = tenantDataSource.getString("entityGroupName");
-                TenantJdbcConnectionHandler connectionHandler = TenantConnectionFactory.getTenantJdbcConnectionHandler(tenantId, entityGroupName, delegator);
-                String databaseName = connectionHandler.getDatabaseName();
-                connectionHandler.deleteDatabase(databaseName);
+                try {
+                    TenantJdbcConnectionHandler connectionHandler = TenantConnectionFactory.getTenantJdbcConnectionHandler(tenantId, entityGroupName, delegator);
+                    String databaseName = connectionHandler.getDatabaseName();
+                    connectionHandler.deleteDatabase(databaseName);
+                } catch (Exception e) {
+                    String errMsg = "Could not delete a database for tenant " + tenantId + " with entity group name : " + entityGroupName + " : " + e.getMessage();
+                    Debug.logError(e, errMsg, module);
+                }
             }
-        } catch (SQLException e) {
-            String errMsg = "Could not delete a database for tenant " + tenantId + " with entity group name : " + e.getMessage();
-            Debug.logError(e, errMsg, module);
-            return ServiceUtil.returnError(errMsg);
+            
+            List<String> errMsgs = FastList.newInstance();
+            if (UtilValidate.isNotEmpty(errMsgs)) {
+                return ServiceUtil.returnError(errMsgs);
+            }
         } catch (GenericDataSourceException e) {
-            String errMsg = "Could not delete a database for tenant " + tenantId + " with entity group name : " + e.getMessage();
+            String errMsg = "Could not delete databases for tenant " + tenantId + " : " + e.getMessage();
             Debug.logError(e, errMsg, module);
             return ServiceUtil.returnError(errMsg);
         } catch (GenericEntityException e) {
-            String errMsg = "Could not delete a database for tenant " + tenantId + " with entity group name : " + e.getMessage();
+            String errMsg = "Could not delete databases for tenant " + tenantId + " : " + e.getMessage();
             Debug.logError(e, errMsg, module);
             return ServiceUtil.returnError(errMsg);
         }

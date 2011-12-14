@@ -19,4 +19,40 @@
     <property key="TenantTenant">
         <value xml:lang="en">Tenant</value>
     </property>
+    <property key="TenantTenantId">
+        <value xml:lang="en">Tenant Id</value>
+    </property>
+    <property key="TenantTenantName">
+        <value xml:lang="en">Tenant Name</value>
+    </property>
+    <property key="TenantOverview">
+        <value xml:lang="en">Overview</value>
+    </property>
+    <property key="TenantDataSources">
+        <value xml:lang="en">Data Sources</value>
+    </property>
+    <property key="TenantCreateDataSource">
+        <value xml:lang="en">Create Data Source</value>
+    </property>
+    <property key="TenantInstallation">
+        <value xml:lang="en">Installation</value>
+    </property>
+    <property key="TenantCreateNew">
+        <value xml:lang="en">Create New</value>
+    </property>
+    <property key="TenantEntityGroupName">
+        <value xml:lang="en">Entity Group Name</value>
+    </property>
+    <property key="TenantDomainName">
+        <value xml:lang="en">Domain Name</value>
+    </property>
+    <property key="TenantReader">
+        <value xml:lang="en">Reader</value>
+    </property>
+    <property key="TenantJdbcUri">
+        <value xml:lang="en">Jdbc Uri</value>
+    </property>
+    <property key="TenantInitialPath">
+        <value xml:lang="en">Initial Path</value>
+    </property>
 </resource>

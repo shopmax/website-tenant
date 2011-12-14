@@ -4,4 +4,44 @@
         <menu-item name="main" title="${uiLabelMap.CommonMain}"><link target="main"/></menu-item>
         <menu-item name="tenant" title="${uiLabelMap.TenantTenant}"><link target="FindTenant"/></menu-item>
     </menu>
+    <menu name="TenantTabBar" extends="CommonTabBarMenu" extends-resource="component://common/widget/CommonMenus.xml">
+        <menu-item name="find" title="${uiLabelMap.CommonFind}"><link target="FindTenant"/></menu-item>
+        <menu-item name="overview" title="${uiLabelMap.TenantOverview}">
+            <condition>
+                <not><if-empty field="tenant.tenantId"/></not>
+            </condition>
+            <link target="TenantOverview">
+                <parameter param-name="tenantId" from-field="tenant.tenantId"/>
+            </link>
+        </menu-item>
+        <menu-item name="tenant" title="${uiLabelMap.TenantTenant}">
+            <condition>
+                <not><if-empty field="tenant.tenantId"/></not>
+            </condition>
+            <link target="EditTenant">
+                <parameter param-name="tenantId" from-field="tenant.tenantId"/>
+            </link>
+        </menu-item>
+        <menu-item name="dataSources" title="${uiLabelMap.TenantDataSources}">
+            <condition>
+                <not><if-empty field="tenant.tenantId"/></not>
+            </condition>
+            <link target="ListTenantDataSources">
+                <parameter param-name="tenantId" from-field="tenant.tenantId"/>
+            </link>
+        </menu-item>
+        <menu-item name="installation" title="${uiLabelMap.TenantInstallation}">
+            <condition>
+                <not><if-empty field="tenant.tenantId"/></not>
+            </condition>
+            <link target="EditTenantInstallation">
+                <parameter param-name="tenantId" from-field="tenant.tenantId"/>
+            </link>
+        </menu-item>
+    </menu>
+    <menu name="TenantSubTabBar" menu-container-style="button-bar button-style-2" default-selected-style="selected">
+        <menu-item name="createNew" title="${uiLabelMap.TenantCreateNew}" widget-style="buttontext create">
+            <link target="EditTenant"/>
+        </menu-item>
+    </menu>
 </menus>
