@@ -65,15 +65,28 @@
         <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
         <attribute name="entityGroupName" mode="IN" type="String" optional="false"></attribute>
     </service>
-    <service name="installTenantDatabases" default-entity-name="Tenant" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
-        invoke="installTenantDatabases" auth="false" use-transaction="false">
-        <description>Install a tenant databases</description>
+    <service name="installTenantDataSource" default-entity-name="Tenant" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
+        invoke="installTenantDataSource" auth="false" use-transaction="false">
+        <description>Install a tenant data source</description>
+        <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
+        <attribute name="entityGroupName" mode="IN" type="String" optional="false"></attribute>
+        <attribute name="reader" mode="IN" type="String" optional="false"></attribute>
+    </service>
+    <service name="installTenantDataSources" default-entity-name="Tenant" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
+        invoke="installTenantDataSources" auth="false" use-transaction="false">
+        <description>Install a tenant data sources</description>
         <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
         <attribute name="reader" mode="IN" type="String" optional="false"></attribute>
     </service>
-    <service name="deleteTenantDatabases" default-entity-name="Tenant" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
-        invoke="deleteTenantDatabases" auth="false" use-transaction="false">
-        <description>Delete a tenant databases</description>
+    <service name="deleteTenantDataSourceDb" default-entity-name="Tenant" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
+        invoke="deleteTenantDataSourceDb" auth="false" use-transaction="false">
+        <description>Delete a tenant data source</description>
+        <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
+        <attribute name="entityGroupName" mode="IN" type="String" optional="false"></attribute>
+    </service>
+    <service name="deleteTenantDataSourceDbs" default-entity-name="Tenant" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
+        invoke="deleteTenantDataSourcesDb" auth="false" use-transaction="false">
+        <description>Delete a tenant data sources</description>
         <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
     </service>
 </services>

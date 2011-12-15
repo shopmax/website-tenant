@@ -64,9 +64,9 @@
         <response name="success" type="view-last" value="ListTenantDataSources"/>
         <response name="error" type="view-last" value="ListTenantDataSources"/>
     </request-map>
-    <request-map uri="installTenantDatabases">
+    <request-map uri="installTenantDataSources">
         <security https="true" auth="true"/>
-        <event type="service" invoke="installTenantDatabases"/>
+        <event type="service" invoke="installTenantDataSources"/>
         <response name="success" type="view-last" value="EditTenant"/>
         <response name="error" type="view-last" value="EditTenant"/>
     </request-map>
