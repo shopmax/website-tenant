@@ -30,6 +30,14 @@
                 <parameter param-name="tenantId" from-field="tenant.tenantId"/>
             </link>
         </menu-item>
+        <menu-item name="components" title="${uiLabelMap.TenantComponents}">
+            <condition>
+                <not><if-empty field="tenant.tenantId"/></not>
+            </condition>
+            <link target="ListTenantComponents">
+                <parameter param-name="tenantId" from-field="tenant.tenantId"/>
+            </link>
+        </menu-item>
         <menu-item name="installation" title="${uiLabelMap.TenantInstallation}">
             <condition>
                 <not><if-empty field="tenant.tenantId"/></not>

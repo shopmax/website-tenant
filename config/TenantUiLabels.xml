@@ -34,6 +34,15 @@
     <property key="TenantCreateDataSource">
         <value xml:lang="en">Create Data Source</value>
     </property>
+    <property key="TenantComponents">
+        <value xml:lang="en">Components</value>
+    </property>
+    <property key="TenantCreateComponent">
+        <value xml:lang="en">Create Component</value>
+    </property>
+    <property key="TenantComponentName">
+        <value xml:lang="en">Component Name</value>
+    </property>
     <property key="TenantInstallation">
         <value xml:lang="en">Installation</value>
     </property>

@@ -102,6 +102,7 @@ public class TenantServices {
     public static Map<String, Object> installTenantDataSources(DispatchContext ctx, Map<String, Object> context) {
         Delegator delegator = ctx.getDelegator();
         LocalDispatcher dispatcher = ctx.getDispatcher();
+        GenericValue userLogin = (GenericValue) context.get("userLogin");
         String tenantId = (String) context.get("tenantId");
         String reader = (String) context.get("reader");
         
@@ -115,6 +116,7 @@ public class TenantServices {
                 installTenantDataSourceInMap.put("tenantId", tenantId);
                 installTenantDataSourceInMap.put("entityGroupName", entityGroupName);
                 installTenantDataSourceInMap.put("reader", reader);
+                installTenantDataSourceInMap.put("userLogin", userLogin);
                 Map<String, Object> results = dispatcher.runSync("installTenantDataSource", installTenantDataSourceInMap);
                 if (ServiceUtil.isError(results)) {
                     List<String> errorMessageList = UtilGenerics.cast(results.get("errorMessageList"));
@@ -161,6 +163,7 @@ public class TenantServices {
     public static Map<String, Object> deleteTenantDataSourceDbs(DispatchContext ctx, Map<String, Object> context) {
         Delegator delegator = ctx.getDelegator();
         LocalDispatcher dispatcher = ctx.getDispatcher();
+        GenericValue userLogin = (GenericValue) context.get("userLogin");
         String tenantId = (String) context.get("tenantId");
         
         try {
@@ -172,6 +175,7 @@ public class TenantServices {
                 Map<String, Object> installTenantDataSourceInMap = FastMap.newInstance();
                 installTenantDataSourceInMap.put("tenantId", tenantId);
                 installTenantDataSourceInMap.put("entityGroupName", entityGroupName);
+                installTenantDataSourceInMap.put("userLogin", userLogin);
                 Map<String, Object> results = dispatcher.runSync("deleteTenantDataSource", installTenantDataSourceInMap);
                 if (ServiceUtil.isError(results)) {
                     List<String> errorMessageList = UtilGenerics.cast(results.get("errorMessageList"));

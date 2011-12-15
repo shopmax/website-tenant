@@ -57,4 +57,50 @@ under the License.
         <entity-one value-field="tenantDataSource" entity-name="TenantDataSource"/>
         <remove-value value-field="tenantDataSource"/>
     </simple-method>
+    
+    <simple-method method-name="createTenantComponent" short-description="Create a Tenant Component">
+        <!-- trim parameters before creating-->
+        <call-object-method obj-field="parameters.tenantComponentName" method-name="trim" ret-field="parameters.tenantComponentName"/>
+        
+        <!-- check if component is exist -->
+        <set field="parameters.componentName" from-field="parameters.tenantComponentName"/>
+        <entity-one value-field="component" entity-name="Component"/>
+        <if-not-empty field="component">
+            <make-value value-field="tenantComponent" entity-name="TenantComponent"/>
+            <set-pk-fields value-field="tenantComponent" map="parameters"/>
+            <set-nonpk-fields value-field="tenantComponent" map="parameters"/>
+            <create-value value-field="tenantComponent"/>
+            <else>
+                <add-error><fail-message message="Could not find a component: ${parameters.componentName}"/></add-error>
+                <check-errors/>
+            </else>
+        </if-not-empty>
+    </simple-method>
+    <simple-method method-name="updateTenantComponent" short-description="Update a Tenant Component">
+        <!-- check if component is exist -->
+        <set field="parameters.componentName" from-field="parameters.tenantComponentName"/>
+        <entity-one value-field="component" entity-name="Component"/>
+        <if-not-empty field="component">
+            <entity-one value-field="tenantComponent" entity-name="TenantComponent"/>
+            <set-nonpk-fields value-field="tenantComponent" map="parameters"/>
+            <store-value value-field="tenantComponent"/>
+            <else>
+                <add-error><fail-message message="Could not find a component: ${parameters.componentName}"/></add-error>
+                <check-errors/>
+            </else>
+        </if-not-empty>
+    </simple-method>
+    <simple-method method-name="deleteTenantComponent" short-description="Delete a Tenant Component">
+        <!-- check if component is exist -->
+        <set field="parameters.componentName" from-field="parameters.tenantComponentName"/>
+        <entity-one value-field="component" entity-name="Component"/>
+        <if-not-empty field="component">
+            <entity-one value-field="tenantComponent" entity-name="TenantComponent"/>
+            <remove-value value-field="tenantComponent"/>
+            <else>
+                <add-error><fail-message message="Could not find a component: ${parameters.componentName}"/></add-error>
+                <check-errors/>
+            </else>
+        </if-not-empty>
+    </simple-method>
 </simple-methods>

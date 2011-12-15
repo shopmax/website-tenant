@@ -26,6 +26,7 @@
     <request-map uri="TenantOverview"><security https="true" auth="true"/><response name="success" type="view" value="TenantOverview"/></request-map>
     <request-map uri="EditTenant"><security https="true" auth="true"/><response name="success" type="view" value="EditTenant"/></request-map>
     <request-map uri="ListTenantDataSources"><security https="true" auth="true"/><response name="success" type="view" value="ListTenantDataSources"/></request-map>
+    <request-map uri="ListTenantComponents"><security https="true" auth="true"/><response name="success" type="view" value="ListTenantComponents"/></request-map>
     <request-map uri="EditTenantInstallation"><security https="true" auth="true"/><response name="success" type="view" value="EditTenantInstallation"/></request-map>
     
     <request-map uri="createTenant">
@@ -64,6 +65,24 @@
         <response name="success" type="view-last" value="ListTenantDataSources"/>
         <response name="error" type="view-last" value="ListTenantDataSources"/>
     </request-map>
+    <request-map uri="createTenantComponent">
+        <security https="true" auth="true"/>
+        <event type="service" invoke="createTenantComponent"/>
+        <response name="success" type="view-last" value="ListTenantDataSources"/>
+        <response name="error" type="view-last" value="ListTenantDataSources"/>
+    </request-map>
+    <request-map uri="updateTenantComponents">
+        <security https="true" auth="true"/>
+        <event type="service-multi" invoke="updateTenantComponent"/>
+        <response name="success" type="view-last" value="ListTenantDataSources"/>
+        <response name="error" type="view-last" value="ListTenantDataSources"/>
+    </request-map>
+    <request-map uri="deleteTenantComponents">
+        <security https="true" auth="true"/>
+        <event type="service-multi" invoke="deleteTenantComponent"/>
+        <response name="success" type="view-last" value="ListTenantDataSources"/>
+        <response name="error" type="view-last" value="ListTenantDataSources"/>
+    </request-map>
     <request-map uri="installTenantDataSources">
         <security https="true" auth="true"/>
         <event type="service" invoke="installTenantDataSources"/>
@@ -77,5 +96,6 @@
     <view-map name="TenantOverview" type="screen" page="component://tenant/widget/TenantScreens.xml#TenantOverview"/>
     <view-map name="EditTenant" type="screen" page="component://tenant/widget/TenantScreens.xml#EditTenant"/>
     <view-map name="ListTenantDataSources" type="screen" page="component://tenant/widget/TenantScreens.xml#ListTenantDataSources"/>
+    <view-map name="ListTenantComponents" type="screen" page="component://tenant/widget/TenantScreens.xml#ListTenantComponents"/>
     <view-map name="EditTenantInstallation" type="screen" page="component://tenant/widget/TenantScreens.xml#EditTenantInstallation"/>
 </site-conf>

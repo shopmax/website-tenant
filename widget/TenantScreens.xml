@@ -57,6 +57,9 @@
                         <screenlet title="${uiLabelMap.TenantDataSources}">
                             <include-form name="tenantDataSources" location="component://tenant/widget/TenantForms.xml"/>
                         </screenlet>
+                        <screenlet title="${uiLabelMap.TenantComponents}">
+                            <include-form name="tenantComponents" location="component://tenant/widget/TenantForms.xml"/>
+                        </screenlet>
                     </decorator-section>
                 </decorator-screen>
             </widgets>
@@ -97,6 +100,28 @@
                         </screenlet>
                         <screenlet title="${uiLabelMap.TenantCreateDataSource}">
                             <include-form name="EditTenantDataSource" location="component://tenant/widget/TenantForms.xml"/>
+                        </screenlet>
+                    </decorator-section>
+                </decorator-screen>
+            </widgets>
+        </section>
+    </screen>
+    <screen name="ListTenantComponents">
+        <section>
+            <actions>
+                <set field="headerItem" value="tenant"/><!-- this highlights the selected menu-item with name "main" -->
+                <set field="tabButtonItem" value="components"/>
+                <set field="viewIndex" from-field="parameters.VIEW_INDEX" type="Integer" default-value="0"/>
+                <set field="viewSize" from-field="parameters.VIEW_SIZE" type="Integer" default-value="20"/>
+            </actions>
+            <widgets>
+                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                    <decorator-section name="body">
+                        <screenlet title="${uiLabelMap.TenantComponents}">
+                            <include-form name="ListTenantComponents" location="component://tenant/widget/TenantForms.xml"/>
+                        </screenlet>
+                        <screenlet title="${uiLabelMap.TenantCreateComponent}">
+                            <include-form name="EditTenantComponent" location="component://tenant/widget/TenantForms.xml"/>
                         </screenlet>
                     </decorator-section>
                 </decorator-screen>
