@@ -67,7 +67,7 @@
             <service service-name="performFind" result-map="result" result-map-list="listIt">
                 <field-map field-name="inputFields" from-field="parameters"/>
                 <field-map field-name="entityName" value="TenantComponent"/>
-                <field-map field-name="orderBy" value="componentName"/>
+                <field-map field-name="orderBy" value="sequenceNum"/>
                 <field-map field-name="viewIndex" from-field="viewIndex"/>
                 <field-map field-name="viewSize" from-field="viewSize"/>
             </service>
@@ -136,7 +136,7 @@
             <service service-name="performFind" result-map="result" result-map-list="listIt">
                 <field-map field-name="inputFields" from-field="parameters"/>
                 <field-map field-name="entityName" value="TenantComponent"/>
-                <field-map field-name="orderBy" value="componentName"/>
+                <field-map field-name="orderBy" value="sequenceNum"/>
                 <field-map field-name="viewIndex" from-field="viewIndex"/>
                 <field-map field-name="viewSize" from-field="viewSize"/>
             </service>
