@@ -21,7 +21,7 @@
     -->
 
     <!-- Request Mappings -->
-    <request-map uri="main"><security https="true" auth="true"/><response name="success" type="view" value="main"/></request-map>
+    <request-map uri="main"><security https="true" auth="true"/><response name="success" type="view" value="FindTenant"/></request-map>
     <request-map uri="FindTenant"><security https="true" auth="true"/><response name="success" type="view" value="FindTenant"/></request-map>
     <request-map uri="TenantOverview"><security https="true" auth="true"/><response name="success" type="view" value="TenantOverview"/></request-map>
     <request-map uri="EditTenant"><security https="true" auth="true"/><response name="success" type="view" value="EditTenant"/></request-map>
