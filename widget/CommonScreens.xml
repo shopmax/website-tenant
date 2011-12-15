@@ -47,6 +47,7 @@
                             -->
                             <widgets>
                                 <include-menu name="TenantSubTabBar" location="component://tenant/widget/TenantMenus.xml"/>
+                                <label style="h1" text="${tenant.tenantName} [${tenantId}]"/>
                                 <decorator-section-include name="body"/>
                             </widgets>
                             <fail-widgets>

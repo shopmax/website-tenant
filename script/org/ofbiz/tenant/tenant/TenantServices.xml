@@ -32,12 +32,23 @@ under the License.
         <store-value value-field="tenant"/>
     </simple-method>
     <simple-method method-name="createTenantDataSource" short-description="Create a Tenant Data Source">
+        <!-- trim parameters before creating-->
+        <call-object-method obj-field="parameters.entityGroupName" method-name="trim" ret-field="parameters.entityGroupName"/>
+        <call-object-method obj-field="parameters.jdbcUri" method-name="trim" ret-field="parameters.jdbcUri"/>
+        <call-object-method obj-field="parameters.jdbcUsername" method-name="trim" ret-field="parameters.jdbcUsername"/>
+        <call-object-method obj-field="parameters.jdbcPassword" method-name="trim" ret-field="parameters.jdbcPassword"/>
+        
         <make-value value-field="tenantDataSource" entity-name="TenantDataSource"/>
         <set-pk-fields value-field="tenantDataSource" map="parameters"/>
         <set-nonpk-fields value-field="tenantDataSource" map="parameters"/>
         <create-value value-field="tenantDataSource"/>
     </simple-method>
     <simple-method method-name="updateTenantDataSource" short-description="Update a Tenant Data Source">
+        <!-- trim parameters before creating-->
+        <call-object-method obj-field="parameters.jdbcUri" method-name="trim" ret-field="parameters.jdbcUri"/>
+        <call-object-method obj-field="parameters.jdbcUsername" method-name="trim" ret-field="parameters.jdbcUsername"/>
+        <call-object-method obj-field="parameters.jdbcPassword" method-name="trim" ret-field="parameters.jdbcPassword"/>
+        
         <entity-one value-field="tenantDataSource" entity-name="TenantDataSource"/>
         <set-nonpk-fields value-field="tenantDataSource" map="parameters"/>
         <store-value value-field="tenantDataSource"/>
