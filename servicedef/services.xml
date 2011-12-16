@@ -41,6 +41,11 @@
         <attribute name="initialPath" mode="IN" type="String" optional="true"></attribute>
         <attribute name="disabled" mode="IN" type="String" optional="true"></attribute>
     </service>
+    <service name="deleteTenant" default-entity-name="Tenant" engine="simple" location="component://tenant/script/org/ofbiz/tenant/tenant/TenantServices.xml"
+        invoke="deleteTenant" auth="true">
+        <description>Delete a Tenant</description>
+        <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
+    </service>
     <!-- Data Source -->
     <service name="createTenantDataSource" default-entity-name="TenantDataSource" engine="simple" location="component://tenant/script/org/ofbiz/tenant/tenant/TenantServices.xml"
         invoke="createTenantDataSource" auth="true">

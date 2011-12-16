@@ -35,6 +35,11 @@
         <field name="domainName"><display/></field>
         <field name="initialPath"><display/></field>
         <field name="disabled"><display/></field>
+        <field name="deleteButton" title="${uiLabelMap.CommonDelete}" use-when="tenant!=null" widget-style="smallSubmit">
+            <hyperlink target="deleteTenant" description="${uiLabelMap.CommonDelete}" confirmation-message="${uiLabelMap.TenantDeleteTenantConfirmationMessage}">
+                <parameter param-name="tenantId" from-field="tenantId"/>
+            </hyperlink>
+        </field>
     </form>
     <form name="tenantHeader" type="single" title="" default-map-name="tenant"
         header-row-style="header-row" default-table-style="basic-table">

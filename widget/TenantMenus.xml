@@ -51,5 +51,11 @@
         <menu-item name="createNew" title="${uiLabelMap.TenantCreateNew}" widget-style="buttontext create">
             <link target="EditTenant"/>
         </menu-item>
+        <menu-item name="delete" title="${uiLabelMap.CommonDelete}">
+            <condition><not><if-empty field="tenant"/></not></condition>
+            <link target="deleteTenant" confirmation-message="${uiLabelMap.TenantDeleteTenantConfirmationMessage}">
+                <parameter param-name="tenantId" from-field="tenant.tenantId"/>
+            </link>
+        </menu-item>
     </menu>
 </menus>

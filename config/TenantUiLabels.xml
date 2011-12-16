@@ -64,4 +64,7 @@
     <property key="TenantInitialPath">
         <value xml:lang="en">Initial Path</value>
     </property>
+    <property key="TenantDeleteTenantConfirmationMessage">
+        <value xml:lang="en">Are you sure to delete the tenant?</value>
+    </property>
 </resource>

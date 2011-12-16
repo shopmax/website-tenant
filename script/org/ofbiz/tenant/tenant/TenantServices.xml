@@ -31,6 +31,21 @@ under the License.
         <set-nonpk-fields value-field="tenant" map="parameters"/>
         <store-value value-field="tenant"/>
     </simple-method>
+    <simple-method method-name="deleteTenant" short-description="Delete a Tenant">
+        <entity-one value-field="tenant" entity-name="Tenant"/>
+        <!-- Delete tenant dataSources -->
+        <entity-and list="tenantDataSources" entity-name="TenantDataSource">
+            <field-map field-name="tenantId" from-field="tenant.tenantId"/>
+        </entity-and>
+        <remove-list list="tenantDataSources"/>
+        <!-- Delete tenant components -->
+        <entity-and list="tenantComponents" entity-name="TenantComponent">
+            <field-map field-name="tenantId" from-field="tenant.tenantId"/>
+        </entity-and>
+        <remove-list list="tenantComponents"/>
+        <!-- Delete a tenant -->
+        <remove-value value-field="tenant"/>
+    </simple-method>
     <simple-method method-name="createTenantDataSource" short-description="Create a Tenant Data Source">
         <!-- trim parameters before creating-->
         <call-object-method obj-field="parameters.entityGroupName" method-name="trim" ret-field="parameters.entityGroupName"/>
