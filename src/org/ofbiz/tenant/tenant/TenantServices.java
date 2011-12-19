@@ -18,7 +18,6 @@
  *******************************************************************************/
 package org.ofbiz.tenant.tenant;
 
-import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
@@ -31,10 +30,8 @@ import org.ofbiz.base.util.UtilGenerics;
 import org.ofbiz.base.util.UtilMisc;
 import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.entity.Delegator;
-import org.ofbiz.entity.DelegatorFactory;
 import org.ofbiz.entity.GenericValue;
-import org.ofbiz.entity.datasource.GenericHelperInfo;
-import org.ofbiz.entity.jdbc.ConnectionFactory;
+import org.ofbiz.entity.transaction.TransactionUtil;
 import org.ofbiz.entityext.data.EntityDataLoadContainer;
 import org.ofbiz.service.DispatchContext;
 import org.ofbiz.service.LocalDispatcher;
@@ -52,48 +49,6 @@ public class TenantServices {
     public final static String module = TenantServices.class.getName();
     
     /**
-     * install tenant data source
-     * @param ctx
-     * @param context
-     * @return
-     */
-    public static Map<String, Object> installTenantDataSource(DispatchContext ctx, Map<String, Object> context) {
-        Delegator delegator = ctx.getDelegator();
-        String tenantId = (String) context.get("tenantId");
-        String reader = (String) context.get("reader");
-        String entityGroupName = (String) context.get("entityGroupName");
-
-        try {
-            // fist make sure if connection handlers are exist
-            TenantJdbcConnectionHandler connectionHandler = TenantConnectionFactory.getTenantJdbcConnectionHandler(tenantId, entityGroupName, delegator);
-        
-            String delegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
-            String[] args = new String[3];
-            args[0] = "-reader=" + reader;
-            args[1] = "-delegator=" + delegatorName;
-            args[2] = "-group=" + entityGroupName;
-            String configFile = FileUtil.getFile("component://base/config/install-containers.xml").getAbsolutePath();
-            
-            // load data
-            EntityDataLoadContainer entityDataLoadContainer = new EntityDataLoadContainer();
-            entityDataLoadContainer.init(args, configFile);
-            entityDataLoadContainer.start();
-            
-            // close connections
-            Delegator tenantDelegator = DelegatorFactory.getDelegator(delegatorName);
-            GenericHelperInfo helperInfo = tenantDelegator.getGroupHelperInfo(entityGroupName);
-            Connection connection = ConnectionFactory.getConnection(helperInfo);
-            connection.close();
-        } catch (Exception e) {
-            String errMsg = "Could not install a database for tenant " + tenantId + " with entity group name : " + entityGroupName + " : " + e.getMessage();
-            Debug.logError(e, errMsg, module);
-            return ServiceUtil.returnError(errMsg);
-        }
-        
-        return ServiceUtil.returnSuccess();
-    }
-    
-    /**
      * install tenant data sources
      * @param ctx
      * @param context
@@ -101,29 +56,41 @@ public class TenantServices {
      */
     public static Map<String, Object> installTenantDataSources(DispatchContext ctx, Map<String, Object> context) {
         Delegator delegator = ctx.getDelegator();
-        LocalDispatcher dispatcher = ctx.getDispatcher();
-        GenericValue userLogin = (GenericValue) context.get("userLogin");
         String tenantId = (String) context.get("tenantId");
         String reader = (String) context.get("reader");
         
+        boolean beganTransaction = false;
         try {
+            if (TransactionUtil.getStatus() == TransactionUtil.STATUS_ACTIVE) {
+                TransactionUtil.commit();
+            }
+
+            // fist make sure if connection handlers are exist
             List<GenericValue> tenantDataSources = delegator.findByAnd("TenantDataSource", UtilMisc.toMap("tenantId", tenantId));
             for (GenericValue tenantDataSource : tenantDataSources) {
                 String entityGroupName = tenantDataSource.getString("entityGroupName");
-                
-                // install tenant data source
-                Map<String, Object> installTenantDataSourceInMap = FastMap.newInstance();
-                installTenantDataSourceInMap.put("tenantId", tenantId);
-                installTenantDataSourceInMap.put("entityGroupName", entityGroupName);
-                installTenantDataSourceInMap.put("reader", reader);
-                installTenantDataSourceInMap.put("userLogin", userLogin);
-                Map<String, Object> results = dispatcher.runSync("installTenantDataSource", installTenantDataSourceInMap);
-                if (ServiceUtil.isError(results)) {
-                    List<String> errorMessageList = UtilGenerics.cast(results.get("errorMessageList"));
-                    return ServiceUtil.returnError(errorMessageList);
-                }
+                TenantJdbcConnectionHandler connectionHandler = TenantConnectionFactory.getTenantJdbcConnectionHandler(tenantId, entityGroupName, delegator);
             }
+            
+            // load data
+            beganTransaction = TransactionUtil.begin(300000);
+            String configFile = FileUtil.getFile("component://base/config/install-containers.xml").getAbsolutePath();
+            String delegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
+            String[] args = new String[2];
+            args[0] = "-reader=" + reader;
+            args[1] = "-delegator=" + delegatorName;
+            EntityDataLoadContainer entityDataLoadContainer = new EntityDataLoadContainer();
+            entityDataLoadContainer.init(args, configFile);
+            entityDataLoadContainer.start();
+            TransactionUtil.commit(beganTransaction);
         } catch (Exception e) {
+            try {
+                if (TransactionUtil.getStatus() != TransactionUtil.STATUS_COMMITTED) {
+                    TransactionUtil.commit(beganTransaction);
+                }
+            } catch (Exception te) {
+                Debug.logError(te, module);
+            }
             String errMsg = "Could not install databases for tenant " + tenantId + " : " + e.getMessage();
             Debug.logError(e, errMsg, module);
             return ServiceUtil.returnError(errMsg);

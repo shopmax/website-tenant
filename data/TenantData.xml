@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-engine-xml>
+    <UserLoginSecurityGroup userLoginId="system" groupId="FULLADMIN" fromDate="2001-01-01 12:00:00.000"/>
+    <UserLoginSecurityGroup userLoginId="system" groupId="FLEXADMIN" fromDate="2001-01-01 12:00:00.000"/>
+    <UserLoginSecurityGroup userLoginId="system" groupId="VIEWADMIN" fromDate="2001-01-01 12:00:00.000"/>
+    <UserLoginSecurityGroup userLoginId="system" groupId="BIZADMIN" fromDate="2001-01-01 12:00:00.000"/>
+    <UserLoginSecurityGroup userLoginId="system" groupId="PARTYADMIN" fromDate="2001-01-01 12:00:00.000"/>
+    <UserLoginSecurityGroup userLoginId="system" groupId="SECURITYADMIN" fromDate="2001-01-01 12:00:00.000"/>
+    <UserLoginSecurityGroup userLoginId="system" groupId="WORKEFFORTADMIN" fromDate="2001-01-01 12:00:00.000"/>
+    <UserLoginSecurityGroup userLoginId="system" groupId="CATALOGADMIN" fromDate="2001-01-01 12:00:00.000"/>
+    <UserLoginSecurityGroup userLoginId="system" groupId="CATALOGADMIN_LTD" fromDate="2001-01-01 12:00:00.000"/>
+    <UserLoginSecurityGroup userLoginId="system" groupId="IMAGEADMIN" fromDate="2001-01-01 12:00:00.000"/>
+    <UserLoginSecurityGroup userLoginId="system" groupId="ACCTG_FUNCTNL_ADMIN" fromDate="2001-01-01 12:00:00.000"/>
+    <UserLoginSecurityGroup userLoginId="system" groupId="HUMANRES_ADMIN" fromDate="2001-01-01 12:00:00.000"/>
+    <UserLoginSecurityGroup userLoginId="system" groupId="ORDERADMIN" fromDate="2001-01-01 12:00:00.000"/>
+    <UserLoginSecurityGroup userLoginId="system" groupId="ORDERADMIN_LTD" fromDate="2001-01-01 12:00:00.000"/>
+    <UserLoginSecurityGroup userLoginId="system" groupId="ASSETMAINTADMIN" fromDate="2001-01-01 12:00:00.000"/>
+    <UserLoginSecurityGroup userLoginId="system" groupId="PROJECTADMIN" fromDate="2001-01-01 12:00:00.000"/>
+    <UserLoginSecurityGroup userLoginId="system" groupId="SCRUM_ADMIN" fromDate="2001-01-01 12:00:00.000"/>
+    <UserLoginSecurityGroup userLoginId="system" groupId="SCRUM_TEST_ADMIN" fromDate="2001-01-01 12:00:00.000"/>
+    <UserLoginSecurityGroup userLoginId="system" groupId="GOOGLEBASEADMIN" fromDate="2001-01-01 12:00:00.000"/>
+    <UserLoginSecurityGroup userLoginId="system" groupId="COMPDOCADMIN" fromDate="2001-01-01 12:00:00.000"/>
+</entity-engine-xml>

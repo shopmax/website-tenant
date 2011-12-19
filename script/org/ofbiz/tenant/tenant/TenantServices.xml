@@ -46,31 +46,41 @@ under the License.
         <!-- Delete a tenant -->
         <remove-value value-field="tenant"/>
     </simple-method>
-    <simple-method method-name="createTenantDataSource" short-description="Create a Tenant Data Source">
+    <simple-method method-name="createTenantDataSource" short-description="Create a Tenant Data Source" use-transaction="false">
         <!-- trim parameters before creating-->
         <call-object-method obj-field="parameters.entityGroupName" method-name="trim" ret-field="parameters.entityGroupName"/>
         <call-object-method obj-field="parameters.jdbcUri" method-name="trim" ret-field="parameters.jdbcUri"/>
-        <call-object-method obj-field="parameters.jdbcUsername" method-name="trim" ret-field="parameters.jdbcUsername"/>
-        <call-object-method obj-field="parameters.jdbcPassword" method-name="trim" ret-field="parameters.jdbcPassword"/>
         
+        <transaction-begin began-transaction-name="beganTransaction"/>
         <make-value value-field="tenantDataSource" entity-name="TenantDataSource"/>
         <set-pk-fields value-field="tenantDataSource" map="parameters"/>
         <set-nonpk-fields value-field="tenantDataSource" map="parameters"/>
         <create-value value-field="tenantDataSource"/>
+        
+        <call-class-method method-name="getStatusString" class-name="org.ofbiz.entity.transaction.TransactionUtil" ret-field="transactionStatus"/>
+        <call-class-method method-name="getStatus" class-name="org.ofbiz.entity.transaction.TransactionUtil" ret-field="transactionStatus"/>
+        <set field="statusActive" value="${groovy:org.ofbiz.entity.transaction.TransactionUtil.STATUS_ACTIVE}" type="Integer"/>
+        <if-compare-field field="transactionStatus" operator="equals" to-field="statusActive" type="Integer">
+            <transaction-commit/>
+        </if-compare-field>
     </simple-method>
-    <simple-method method-name="updateTenantDataSource" short-description="Update a Tenant Data Source">
+    <simple-method method-name="updateTenantDataSource" short-description="Update a Tenant Data Source" use-transaction="false">
         <!-- trim parameters before creating-->
         <call-object-method obj-field="parameters.jdbcUri" method-name="trim" ret-field="parameters.jdbcUri"/>
         <call-object-method obj-field="parameters.jdbcUsername" method-name="trim" ret-field="parameters.jdbcUsername"/>
         <call-object-method obj-field="parameters.jdbcPassword" method-name="trim" ret-field="parameters.jdbcPassword"/>
         
+        <transaction-begin began-transaction-name="beganTransaction"/>
         <entity-one value-field="tenantDataSource" entity-name="TenantDataSource"/>
         <set-nonpk-fields value-field="tenantDataSource" map="parameters"/>
         <store-value value-field="tenantDataSource"/>
+        <transaction-commit began-transaction-name="beganTransaction"/>
     </simple-method>
-    <simple-method method-name="deleteTenantDataSource" short-description="Delete a Tenant Data Source">
+    <simple-method method-name="deleteTenantDataSource" short-description="Delete a Tenant Data Source" use-transaction="false">
+        <transaction-begin began-transaction-name="beganTransaction"/>
         <entity-one value-field="tenantDataSource" entity-name="TenantDataSource"/>
         <remove-value value-field="tenantDataSource"/>
+        <transaction-commit began-transaction-name="beganTransaction"/>
     </simple-method>
     
     <simple-method method-name="createTenantComponent" short-description="Create a Tenant Component">

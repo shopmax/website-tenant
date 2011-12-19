@@ -48,7 +48,7 @@
     </service>
     <!-- Data Source -->
     <service name="createTenantDataSource" default-entity-name="TenantDataSource" engine="simple" location="component://tenant/script/org/ofbiz/tenant/tenant/TenantServices.xml"
-        invoke="createTenantDataSource" auth="true">
+        invoke="createTenantDataSource" auth="true" use-transaction="false">
         <description>Create a Tenant Data Source</description>
         <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
         <attribute name="entityGroupName" mode="IN" type="String" optional="false"></attribute>
@@ -57,7 +57,7 @@
         <attribute name="jdbcPassword" mode="IN" type="String" optional="true"></attribute>
     </service>
     <service name="updateTenantDataSource" default-entity-name="TenantDataSource" engine="simple" location="component://tenant/script/org/ofbiz/tenant/tenant/TenantServices.xml"
-        invoke="updateTenantDataSource" auth="true">
+        invoke="updateTenantDataSource" auth="true" use-transaction="false">
         <description>Update a Tenant Data Source</description>
         <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
         <attribute name="entityGroupName" mode="IN" type="String" optional="false"></attribute>
@@ -66,7 +66,7 @@
         <attribute name="jdbcPassword" mode="IN" type="String" optional="true"></attribute>
     </service>
     <service name="deleteTenantDataSource" default-entity-name="TenantDataSource" engine="simple" location="component://tenant/script/org/ofbiz/tenant/tenant/TenantServices.xml"
-        invoke="deleteTenantDataSource" auth="true">
+        invoke="deleteTenantDataSource" auth="true" use-transaction="false">
         <description>Delete a Tenant Data Source</description>
         <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
         <attribute name="entityGroupName" mode="IN" type="String" optional="false"></attribute>
@@ -93,19 +93,13 @@
         <attribute name="tenantComponentName" mode="IN" type="String" optional="false"></attribute>
     </service>
     <!-- Install -->
-    <service name="installTenantDataSource" default-entity-name="Tenant" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
-        invoke="installTenantDataSource" auth="true" use-transaction="false">
-        <description>Install a tenant data source</description>
-        <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
-        <attribute name="entityGroupName" mode="IN" type="String" optional="false"></attribute>
-        <attribute name="reader" mode="IN" type="String" optional="false"></attribute>
-    </service>
     <service name="installTenantDataSources" default-entity-name="Tenant" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
         invoke="installTenantDataSources" auth="true" use-transaction="false">
         <description>Install a tenant data sources</description>
         <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
         <attribute name="reader" mode="IN" type="String" optional="false"></attribute>
     </service>
+    <!-- delete databases -->
     <service name="deleteTenantDataSourceDb" default-entity-name="Tenant" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
         invoke="deleteTenantDataSourceDb" auth="true" use-transaction="false">
         <description>Delete a tenant data source</description>

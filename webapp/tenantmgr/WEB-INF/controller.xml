@@ -44,7 +44,7 @@
     <request-map uri="deleteTenant">
         <security https="true" auth="true"/>
         <event type="service" invoke="deleteTenant"/>
-        <response name="success" type="view" value="FindTenant"/>
+        <response name="success" type="request-redirect-noparam" value="FindTenant"/>
         <response name="error" type="view-last" value="FindTenant"/>
     </request-map>
     <request-map uri="createTenantDataSource">
