@@ -97,7 +97,14 @@
         invoke="installTenantDataSources" auth="true" use-transaction="false">
         <description>Install a tenant data sources</description>
         <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
-        <attribute name="reader" mode="IN" type="String" optional="false"></attribute>
+        <attribute name="reader" mode="IN" type="String" optional="true"></attribute>
+    </service>
+    <!-- create databases -->
+    <service name="createTenantDataSourceDb" default-entity-name="Tenant" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
+        invoke="createTenantDataSourceDb" auth="true" use-transaction="false">
+        <description>Create a tenant data source</description>
+        <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
+        <attribute name="entityGroupName" mode="IN" type="String" optional="false"></attribute>
     </service>
     <!-- delete databases -->
     <service name="deleteTenantDataSourceDb" default-entity-name="Tenant" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"

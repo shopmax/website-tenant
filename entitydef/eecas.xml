@@ -21,12 +21,8 @@
 <entity-eca xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="http://ofbiz.apache.org/dtds/entity-eca.xsd">
     
-    <!-- To install tenant data sources if the entity group is org.ofbiz.olap -->
-    <!--
+    <!-- Create an empty database for a tenant data source -->
     <eca entity="TenantDataSource" operation="create" event="return">
-        <condition field-name="entityGroupName" operator="equals" value="org.ofbiz.olap"/>
-        <set field-name="reader" value="seed,demo,ext"/>
-        <action service="installTenantDataSources" mode="sync"/>
+        <action service="createTenantDataSourceDb" mode="sync"/>
     </eca>
-    -->
 </entity-eca>

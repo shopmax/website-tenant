@@ -18,8 +18,10 @@
  *******************************************************************************/
 package org.ofbiz.tenant.tenant;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import javolution.util.FastList;
 import javolution.util.FastMap;
@@ -32,6 +34,7 @@ import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.GenericValue;
 import org.ofbiz.entity.transaction.TransactionUtil;
+import org.ofbiz.entity.util.EntityUtil;
 import org.ofbiz.entityext.data.EntityDataLoadContainer;
 import org.ofbiz.service.DispatchContext;
 import org.ofbiz.service.LocalDispatcher;
@@ -61,28 +64,45 @@ public class TenantServices {
         
         boolean beganTransaction = false;
         try {
-            if (TransactionUtil.getStatus() == TransactionUtil.STATUS_ACTIVE) {
-                TransactionUtil.commit();
-            }
-
-            // fist make sure if connection handlers are exist
-            List<GenericValue> tenantDataSources = delegator.findByAnd("TenantDataSource", UtilMisc.toMap("tenantId", tenantId));
-            for (GenericValue tenantDataSource : tenantDataSources) {
-                String entityGroupName = tenantDataSource.getString("entityGroupName");
-                TenantJdbcConnectionHandler connectionHandler = TenantConnectionFactory.getTenantJdbcConnectionHandler(tenantId, entityGroupName, delegator);
+            
+            if (UtilValidate.isEmpty(reader)) {
+                // get a reader from file
+                List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", tenantId));
+                if (UtilValidate.isNotEmpty(tenantComponents)) {
+                    GenericValue tenantComponent = EntityUtil.getFirst(tenantComponents);
+                    String componentName = tenantComponent.getString("componentName");
+                    String demoLoadDataPath = "component://" + componentName + "/data/DemoLoadData.txt";
+                    try {
+                        File demoLoadDataFile = FileUtil.getFile(demoLoadDataPath);
+                        Scanner scanner = new Scanner(demoLoadDataFile);
+                        while (scanner.hasNext()) {
+                            reader = scanner.nextLine();
+                            break;
+                        }
+                    } catch (Exception e) {
+                        Debug.logWarning(e, "Could not read the " + demoLoadDataPath + " file", module);
+                    }
+                }
             }
             
-            // load data
-            beganTransaction = TransactionUtil.begin(300000);
-            String configFile = FileUtil.getFile("component://base/config/install-containers.xml").getAbsolutePath();
-            String delegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
-            String[] args = new String[2];
-            args[0] = "-reader=" + reader;
-            args[1] = "-delegator=" + delegatorName;
-            EntityDataLoadContainer entityDataLoadContainer = new EntityDataLoadContainer();
-            entityDataLoadContainer.init(args, configFile);
-            entityDataLoadContainer.start();
-            TransactionUtil.commit(beganTransaction);
+            // if the reader exists then install data
+            if (UtilValidate.isNotEmpty(reader)) {
+                if (TransactionUtil.getStatus() == TransactionUtil.STATUS_ACTIVE) {
+                    TransactionUtil.commit();
+                }
+                
+                // load data
+                beganTransaction = TransactionUtil.begin(300000);
+                String configFile = FileUtil.getFile("component://base/config/install-containers.xml").getAbsolutePath();
+                String delegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
+                String[] args = new String[2];
+                args[0] = "-reader=" + reader;
+                args[1] = "-delegator=" + delegatorName;
+                EntityDataLoadContainer entityDataLoadContainer = new EntityDataLoadContainer();
+                entityDataLoadContainer.init(args, configFile);
+                entityDataLoadContainer.start();
+                TransactionUtil.commit(beganTransaction);
+            }
         } catch (Exception e) {
             try {
                 if (TransactionUtil.getStatus() != TransactionUtil.STATUS_COMMITTED) {
@@ -96,6 +116,26 @@ public class TenantServices {
             return ServiceUtil.returnError(errMsg);
         }
         return ServiceUtil.returnSuccess();
+    }
+
+    /**
+     * create tenant data source database
+     * @param ctx
+     * @param context
+     * @return
+     */
+    public static Map<String, Object> createTenantDataSourceDb(DispatchContext ctx, Map<String, Object> context) {
+        Delegator delegator = ctx.getDelegator();
+        String tenantId = (String) context.get("tenantId");
+        String entityGroupName = (String) context.get("entityGroupName");
+        try {
+            TenantJdbcConnectionHandler connectionHandler = TenantConnectionFactory.getTenantJdbcConnectionHandler(tenantId, entityGroupName, delegator);
+            return ServiceUtil.returnSuccess();
+        } catch (Exception e) {
+            String errMsg = "Could not install databases for tenant " + tenantId + " : " + e.getMessage();
+            Debug.logError(e, errMsg, module);
+            return ServiceUtil.returnError(errMsg);
+        }
     }
     
     /**
