@@ -92,7 +92,7 @@ public class TenantServices {
                 }
                 
                 // load data
-                beganTransaction = TransactionUtil.begin(300000);
+                beganTransaction = TransactionUtil.begin(72000);
                 String configFile = FileUtil.getFile("component://base/config/install-containers.xml").getAbsolutePath();
                 String delegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
                 String[] args = new String[2];
