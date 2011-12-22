@@ -1,0 +1,24 @@
+// *********************************************
+// Specifying Tenat Definition In Your Componnet
+// *********************************************
+
+Create Tenant Data
+==================
+- create a seed data file called data/TenantData.xml
+- order the tenant data respectively following:
+  * Tenant
+  * TenantComponent
+  * TenantDataSource (org.ofbiz)
+  * TenantDataSource (org.ofbiz.olap)
+- specific the seed data file in a ofbiz-component.xml file following:
+  
+  ...
+  ...
+  <entity-resource type="data" reader-name="seed" loader="main" location="data/TenantData.xml"/>
+  ...
+  ...
+
+Specific Demo Reader
+====================
+- create a demo reader file called data/DemoLoadData.txt
+- enter a line for the reader, for example, seed,seed-initial,demo,ext-demo
