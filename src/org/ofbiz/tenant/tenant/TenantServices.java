@@ -33,6 +33,10 @@ import org.ofbiz.base.util.UtilMisc;
 import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.GenericValue;
+import org.ofbiz.entity.condition.EntityComparisonOperator;
+import org.ofbiz.entity.condition.EntityCondition;
+import org.ofbiz.entity.condition.EntityFunction;
+import org.ofbiz.entity.condition.EntityJoinOperator;
 import org.ofbiz.entity.transaction.TransactionUtil;
 import org.ofbiz.entity.util.EntityUtil;
 import org.ofbiz.entityext.data.EntityDataLoadContainer;
@@ -52,6 +56,37 @@ public class TenantServices {
     public final static String module = TenantServices.class.getName();
     
     /**
+     * install tenants
+     * @param ctx
+     * @param context
+     * @return
+     */
+    public static Map<String, Object> installTenants(DispatchContext ctx, Map<String, Object> context) {
+        Delegator delegator = ctx.getDelegator();
+        LocalDispatcher dispatcher = ctx.getDispatcher();
+        
+        try {
+            List<EntityCondition> conds = FastList.newInstance();
+            conds.add(EntityCondition.makeCondition(EntityJoinOperator.OR
+                    , EntityCondition.makeCondition("disabled", null)
+                    , EntityCondition.makeCondition(EntityFunction.UPPER("disabled"), EntityComparisonOperator.NOT_EQUAL, "N")));
+            List<GenericValue> tenants = delegator.findList("Tenant", null, null, null, null, false);
+            for (GenericValue tenant : tenants) {
+                String tenantId = tenant.getString("tenantId");
+                Map<String, Object> installTenantDataSourcesInMap = FastMap.newInstance();
+                installTenantDataSourcesInMap.put("tenantId", tenantId);
+                Map<String, Object> results = dispatcher.runSync("installTenantDataSources", installTenantDataSourcesInMap);
+                if (ServiceUtil.isError(results)) {
+                    return ServiceUtil.returnError("Could not install tenant data sources");
+                }
+            }
+            return ServiceUtil.returnSuccess();
+        } catch (Exception e) {
+            return ServiceUtil.returnError(e.getMessage());
+        }
+    }
+    
+    /**
      * install tenant data sources
      * @param ctx
      * @param context
@@ -62,9 +97,8 @@ public class TenantServices {
         String tenantId = (String) context.get("tenantId");
         String reader = (String) context.get("reader");
         
-        boolean beganTransaction = false;
         try {
-            
+        
             if (UtilValidate.isEmpty(reader)) {
                 // get a reader from file
                 List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", tenantId));
@@ -92,7 +126,6 @@ public class TenantServices {
                 }
                 
                 // load data
-                beganTransaction = TransactionUtil.begin(72000);
                 String configFile = FileUtil.getFile("component://base/config/install-containers.xml").getAbsolutePath();
                 String delegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
                 String[] args = new String[2];
@@ -101,16 +134,8 @@ public class TenantServices {
                 EntityDataLoadContainer entityDataLoadContainer = new EntityDataLoadContainer();
                 entityDataLoadContainer.init(args, configFile);
                 entityDataLoadContainer.start();
-                TransactionUtil.commit(beganTransaction);
             }
         } catch (Exception e) {
-            try {
-                if (TransactionUtil.getStatus() != TransactionUtil.STATUS_COMMITTED) {
-                    TransactionUtil.commit(beganTransaction);
-                }
-            } catch (Exception te) {
-                Debug.logError(te, module);
-            }
             String errMsg = "Could not install databases for tenant " + tenantId + " : " + e.getMessage();
             Debug.logError(e, errMsg, module);
             return ServiceUtil.returnError(errMsg);

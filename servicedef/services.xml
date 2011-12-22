@@ -93,6 +93,10 @@
         <attribute name="tenantComponentName" mode="IN" type="String" optional="false"></attribute>
     </service>
     <!-- Install -->
+    <service name="installTenants" default-entity-name="Tenant" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
+        invoke="installTenants" auth="false" use-transaction="false">
+        <description>Install tenants</description>
+    </service>
     <service name="installTenantDataSources" default-entity-name="Tenant" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
         invoke="installTenantDataSources" auth="false"  use-transaction="false">
         <description>Install a tenant data sources</description>
