@@ -1,0 +1,174 @@
+Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java
+===================================================================
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(revision 1224680)
++++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(working copy)
+@@ -564,6 +564,8 @@
+                 }
+             }
+         }
++
++        dbUtil.close();
+     }
+     /**
+      * @see org.ofbiz.base.container.Container#stop()
+Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java
+===================================================================
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1224680)
++++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(working copy)
+@@ -407,6 +407,8 @@
+         // step 8 - checkdb
+         Debug.logImportant("Running DB check with add missing enabled", module);
+         dbUtil.checkDb(modelEntities, messages, true);
++        
++        dbUtil.close();
+ 
+         Map<String, Object> result = ServiceUtil.returnSuccess();
+         result.put("messages", messages);
+Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
+===================================================================
+--- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1224680)
++++ framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(working copy)
+@@ -1212,11 +1212,14 @@
+     public void checkDb(Map<String, ModelEntity> modelEntities, List<String> messages, boolean addMissing) {
+         DatabaseUtil dbUtil = new DatabaseUtil(this.helperInfo, this.executor);
+         dbUtil.checkDb(modelEntities, messages, addMissing);
++        dbUtil.close();
+     }
+ 
+     /** Creates a list of ModelEntity objects based on meta data from the database */
+     public List<ModelEntity> induceModelFromDb(Collection<String> messages) {
+         DatabaseUtil dbUtil = new DatabaseUtil(this.helperInfo, this.executor);
+-        return dbUtil.induceModelFromDb(messages);
++        List<ModelEntity> modelEntities = dbUtil.induceModelFromDb(messages);
++        dbUtil.close();
++        return modelEntities;
+     }
+ }
+Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java
+===================================================================
+--- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1224680)
++++ framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(working copy)
+@@ -18,6 +18,16 @@
+  *******************************************************************************/
+ package org.ofbiz.entity.connection;
+ 
++import java.sql.Connection;
++import java.sql.Driver;
++import java.sql.SQLException;
++import java.util.Map;
++import java.util.Properties;
++
++import javax.transaction.TransactionManager;
++
++import javolution.util.FastMap;
++
+ import org.apache.commons.dbcp.ConnectionFactory;
+ import org.apache.commons.dbcp.DriverConnectionFactory;
+ import org.apache.commons.dbcp.PoolableConnectionFactory;
+@@ -32,15 +42,6 @@
+ import org.ofbiz.entity.transaction.TransactionFactory;
+ import org.w3c.dom.Element;
+ 
+-import javax.transaction.TransactionManager;
+-import java.sql.Connection;
+-import java.sql.Driver;
+-import java.sql.SQLException;
+-import java.util.Map;
+-import java.util.Properties;
+-
+-import javolution.util.FastMap;
+-
+ /**
+  * DBCPConnectionFactory
+  */
+@@ -48,6 +49,8 @@
+ 
+     public static final String module = DBCPConnectionFactory.class.getName();
+     protected static Map<String, ManagedDataSource> dsCache = FastMap.newInstance();
++    protected static Map<String, XAConnectionFactory> xacfCache = FastMap.newInstance();
++    protected static Map<String, GenericObjectPool> gopCache = FastMap.newInstance();
+ 
+     public Connection getConnection(GenericHelperInfo helperInfo, Element jdbcElement) throws SQLException, GenericEntityException {
+         ManagedDataSource mds = dsCache.get(helperInfo.getHelperFullName());
+@@ -171,13 +174,27 @@
+ 
+             // cache the pool
+             dsCache.put(helperInfo.getHelperFullName(), mds);
++            xacfCache.put(helperInfo.getHelperFullName(), xacf);
++            gopCache.put(helperInfo.getHelperFullName(), pool);
+ 
+             return TransactionFactory.getCursorConnection(helperInfo, mds.getConnection());
+         }
+     }
++    
++    public void removeConnection(GenericHelperInfo helperInfo) {
++        dsCache.remove(helperInfo.getHelperFullName());
++    }
+ 
+     public void closeAll() {
+         // no methods on the pool to shutdown; so just clearing for GC
+         dsCache.clear();
+     }
++    
++    public XAConnectionFactory getXAConnectionFactory(GenericHelperInfo helperInfo) {
++        return xacfCache.get(helperInfo.getHelperFullName());
++    }
++    
++    public GenericObjectPool getGenericObjectPool(GenericHelperInfo helperInfo) {
++        return gopCache.get(helperInfo.getHelperFullName());
++    }
+ }
+Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
+===================================================================
+--- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1224680)
++++ framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(working copy)
+@@ -83,6 +83,7 @@
+ 
+     boolean isLegacy = false;
+     protected ExecutorService executor;
++    protected List<Connection> connections = FastList.newInstance();
+ 
+     // OFBiz DatabaseUtil
+     public DatabaseUtil(GenericHelperInfo helperInfo) {
+@@ -145,6 +146,9 @@
+                 throw new GenericEntityException("No connection avaialble for URL [" + connectionUrl + "]");
+             }
+         }
++        
++        connections.add(connection);
++        
+         if (!TransactionUtil.isTransactionInPlace()) {
+             connection.setAutoCommit(true);
+         }
+@@ -3203,6 +3207,18 @@
+             }
+         }
+     }
++    
++    public void close() {
++        for (Connection connection : connections) {
++            try {
++                if (!connection.isClosed()) {
++                    connection.close();
++                }
++            } catch (SQLException e) {
++                Debug.logWarning("Could not close connection: " + connection, module);
++            }
++        }
++    }
+ 
+     /* ====================================================================== */
+     /* ====================================================================== */
+Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
+===================================================================
+--- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1224680)
++++ framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(working copy)
+@@ -56,4 +56,8 @@
+             delegatorCache.putIfAbsent(delegatorName, delegator);
+         } while (true);
+     }
++    
++    public static void removeDelegator(String delegatorName) {
++        delegatorCache.remove(delegatorName);
++    }
+ }

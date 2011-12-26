@@ -44,6 +44,14 @@ public abstract class TenantJdbcConnectionHandler {
     }
     
     /**
+    * get tenant ID
+    * @return
+    */
+    public String getTenantId() {
+        return tenantDataSource.getString("tenantId");
+    }
+    
+    /**
      * get Jdbc Uri
      * @return
      */
