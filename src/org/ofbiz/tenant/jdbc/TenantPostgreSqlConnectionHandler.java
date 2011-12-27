@@ -23,20 +23,10 @@ import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.dbcp.PoolableConnection;
-import org.apache.commons.dbcp.managed.TransactionContext;
-import org.apache.commons.dbcp.managed.TransactionRegistry;
-import org.apache.commons.dbcp.managed.XAConnectionFactory;
-import org.apache.commons.pool.impl.GenericObjectPool;
 import org.ofbiz.base.util.Debug;
-import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.entity.Delegator;
-import org.ofbiz.entity.DelegatorFactory;
 import org.ofbiz.entity.GenericEntityException;
 import org.ofbiz.entity.GenericValue;
-import org.ofbiz.entity.config.DatasourceInfo;
-import org.ofbiz.entity.config.EntityConfigUtil;
-import org.ofbiz.entity.connection.DBCPConnectionFactory;
 import org.ofbiz.entity.datasource.GenericHelperInfo;
 import org.ofbiz.entity.jdbc.ConnectionFactory;
 import org.ofbiz.entity.jdbc.SQLProcessor;
@@ -95,51 +85,13 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
         return databaseName;
     }
 
-    /**
-     * delete database
-     */
     @Override
-    public int deleteDatabase(String databaseName) throws GenericEntityException, SQLException {
-        Delegator delegator = tenantDataSource.getDelegator();
-        GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
-        helperInfo.setTenantId(this.getTenantId());
-        DatasourceInfo datasourceInfo = EntityConfigUtil.getDatasourceInfo(helperInfo.getHelperBaseName());
-        datasourceInfo.inlineJdbcElement.setAttribute("jdbc-uri", this.getJdbcUri());
-        
-        // get pool and shared connection
-        DBCPConnectionFactory managedConnectionFactory = (DBCPConnectionFactory) ConnectionFactory.getManagedConnectionFactory();
-        GenericObjectPool pool = managedConnectionFactory.getGenericObjectPool(helperInfo);
-        XAConnectionFactory xacf = managedConnectionFactory.getXAConnectionFactory(helperInfo);
-
-        // return shared connection
-        if (UtilValidate.isNotEmpty(xacf)) {
-            TransactionRegistry transactionRegistry = xacf.getTransactionRegistry();
-            TransactionContext transactionContext = transactionRegistry.getActiveTransactionContext();
-            PoolableConnection sharedConnection = (PoolableConnection) transactionContext.getSharedConnection();
-            
-            try {
-                pool.returnObject(sharedConnection);
-                pool.clear();
-            } catch (Exception e) {
-                Debug.logError(e, module);
-            }
-        }
-        
-        // drop database
+    protected void doDeleteDatabase(String databaseName, GenericHelperInfo helperInfo) throws GenericEntityException, SQLException {
         Connection conn = ConnectionFactory.getConnection(this.getPostgresJdbcUri(), this.getJdbcUsername(), this.getJdbcPassword());
         SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, conn);
-        int result = sqlProcessor.executeUpdate("DROP DATABASE \"" + this.getDatabaseName() + "\"");
+        sqlProcessor.executeUpdate("DROP DATABASE \"" + this.getDatabaseName() + "\"");
         sqlProcessor.close();
         conn.close();
-        
-        // remove delegator
-        String tenantDelegatorName = delegator.getDelegatorBaseName() + "#" + this.getTenantId();
-        DelegatorFactory.removeDelegator(tenantDelegatorName);
-        
-        // remove connection
-        managedConnectionFactory.removeConnection(helperInfo);
-        
-        return result;
     }
     
     protected String getPostgresJdbcUri() {

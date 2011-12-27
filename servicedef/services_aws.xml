@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+  -->
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://ofbiz.apache.org/dtds/services.xsd">
+    <description>Amazon Web Service Services</description>
+    <vendor></vendor>
+    <version>1.0</version>
+
+    <!-- Get Amazon Route53 Hosted Zones -->
+    <service name="getAmazonRoute53HostedZones" engine="java" location="org.ofbiz.tenant.aws.AwsServices"
+        invoke="getAmazonRoute53HostedZones" auth="true">
+        <description>Get Amazon Route53 Hosted Zones</description>
+        <attribute name="hostedZones" type="List" mode="OUT" optional="false"/>
+    </service>
+    
+    <!-- Get Amazon Route53 Hosted Zone -->
+    <service name="getAmazonRoute53HostedZone" engine="java" location="org.ofbiz.tenant.aws.AwsServices"
+        invoke="getAmazonRoute53HostedZone" auth="true">
+        <description>Get Amazon Route53 Hosted Zone</description>
+        <attribute name="hostedZoneId" type="String" mode="IN" optional="false"/>
+        <attribute name="hostedZone" type="com.amazonaws.services.route53.model.HostedZone" mode="OUT" optional="false"/>
+        <attribute name="delegationSet" type="com.amazonaws.services.route53.model.DelegationSet" mode="OUT" optional="false"/>
+    </service>
+    
+    <!-- Get Amazon Route53 Resource Record Sets -->
+    <service name="getAmazonRoute53ResourceRecordSets" engine="java" location="org.ofbiz.tenant.aws.AwsServices"
+        invoke="getAmazonRoute53ResourceRecordSets" auth="true">
+        <description>Get Amazon Route53 Resource Record Sets</description>
+        <attribute name="hostedZoneId" type="String" mode="IN" optional="false"/>
+        <attribute name="resourceRecordSets" type="List" mode="OUT" optional="false"/>
+    </service>
+    
+    <!-- Create Amazon Route53 Resource Record Set -->
+    <service name="createAmazonRoute53ResourceRecordSet" engine="java" location="org.ofbiz.tenant.aws.AwsServices"
+        invoke="createAmazonRoute53ResourceRecordSet" auth="true">
+        <description>Create Amazon Route53 Resource Record Set</description>
+        <attribute name="hostedZoneId" type="String" mode="IN" optional="false"/>
+        <attribute name="recordSetName" type="String" mode="IN" optional="false"/>
+        <attribute name="recordSetType" type="String" mode="IN" optional="false"/>
+        <attribute name="domainNames" type="List" mode="IN" optional="false"/>
+        <attribute name="dNSName" type="String" mode="IN" optional="true"/>
+        <attribute name="tTL" type="Long" mode="IN" optional="false"/>
+        <attribute name="status" type="String" mode="OUT" optional="false"/>
+        <attribute name="submittedAt" type="Date" mode="OUT" optional="false"/>
+        <attribute name="comments" type="String" mode="OUT" optional="true"/>
+    </service>
+    
+    <!-- Delete Amazon Route53 Resource Record Set -->
+    <service name="deleteAmazonRoute53ResourceRecordSet" engine="java" location="org.ofbiz.tenant.aws.AwsServices"
+        invoke="deleteAmazonRoute53ResourceRecordSet" auth="true">
+        <description>Delete Amazon Route53 Resource Record Set</description>
+        <attribute name="hostedZoneId" type="String" mode="IN" optional="false"/>
+        <attribute name="recordSetName" type="String" mode="IN" optional="false"/>
+        <attribute name="recordSetType" type="String" mode="IN" optional="false"/>
+        <attribute name="dNSName" type="String" mode="IN" optional="false"/>
+        <attribute name="status" type="String" mode="OUT" optional="false"/>
+        <attribute name="submittedAt" type="Date" mode="OUT" optional="false"/>
+        <attribute name="comments" type="String" mode="OUT" optional="true"/>
+    </service>
+</services>

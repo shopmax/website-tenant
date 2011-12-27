@@ -77,16 +77,12 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
         return databaseName;
     }
 
-    /**
-     * delete database
-     */
     @Override
-    public int deleteDatabase(String databaseName) throws GenericEntityException, SQLException {
+    public void doDeleteDatabase(String databaseName, GenericHelperInfo helperInfo) throws GenericEntityException, SQLException {
         File databaseDir = new File(System.getProperty("ofbiz.home") + File.separator + "runtime" + File.separator + "data"
             + File.separator + "derby" + File.separator + this.getDatabaseName());
         if (databaseDir.exists()) {
-            return TenantUtil.deleteDirectory(databaseDir) ? 1 : 0;
+            TenantUtil.deleteDirectory(databaseDir);
         }
-        return 0;
     }
 }
