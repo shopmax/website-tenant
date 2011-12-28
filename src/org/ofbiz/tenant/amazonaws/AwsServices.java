@@ -193,6 +193,100 @@ public class AwsServices {
     }
     
     /**
+     * update Amazon Rout53 resource record set
+     * @param ctx
+     * @param context
+     * @return
+     */
+    public static Map<String, Object> updateAmazonRoute53ResourceRecordSet(DispatchContext ctx, Map<String, Object> context) {
+        String hostedZoneId = (String) context.get("hostedZoneId");
+        String recordSetName = (String) context.get("recordSetName");
+        String recordSetType = (String) context.get("recordSetType");
+        List<String> domainNames = UtilGenerics.checkList(context.get("domainNames"));
+        List<String> newDomainNames = UtilGenerics.checkList(context.get("newDomainNames"));
+        String dNSName = (String) context.get("dNSName");
+        String resourceRecordSetId = (String) context.get("resourceRecordSetId");
+        Long weight = (Long) context.get("weight");
+        Long tTL = (Long) context.get("tTL");
+        
+        try {
+            AmazonRoute53 route53 = AwsFactory.getAmazonRoute53();
+            RRType rrType = AwsUtil.getRRType(recordSetType);
+            ResourceRecordSet deleteResourceRecordSet = new ResourceRecordSet(recordSetName, rrType);
+            ResourceRecordSet createResourceRecordSet = new ResourceRecordSet(recordSetName, rrType);
+            
+            // set alias target
+            if (UtilValidate.isNotEmpty(dNSName)) {
+                AliasTarget aliasTarget = new AliasTarget(hostedZoneId, dNSName);
+                deleteResourceRecordSet.setAliasTarget(aliasTarget);
+                createResourceRecordSet.setAliasTarget(aliasTarget);
+            }
+            
+            // set resource record set identifier
+            if (UtilValidate.isNotEmpty(resourceRecordSetId)) {
+                deleteResourceRecordSet.setSetIdentifier(resourceRecordSetId);
+                createResourceRecordSet.setSetIdentifier(resourceRecordSetId);
+            }
+            
+            // set weight
+            if (UtilValidate.isEmpty(weight)) {
+                weight = 0L;
+            }
+            deleteResourceRecordSet.setWeight(weight);
+            createResourceRecordSet.setWeight(weight);
+            
+            // set TTL
+            if (UtilValidate.isEmpty(tTL)) {
+                tTL = 300L;
+            }
+            deleteResourceRecordSet.setTTL(tTL);
+            createResourceRecordSet.setTTL(tTL);
+            
+            //--------- Delete Resource Record Set Change
+            List<ResourceRecord> deleteResourceRecords = FastList.newInstance();
+            // set delete resource records
+            for (String domainName : domainNames) {
+                ResourceRecord resourceRecord = new ResourceRecord(domainName);
+                deleteResourceRecords.add(resourceRecord);
+            }
+            deleteResourceRecordSet.setResourceRecords(deleteResourceRecords);
+            Change deleteChange = new Change(ChangeAction.DELETE, deleteResourceRecordSet);
+            
+            //-------- Create New Resource Record Set Change
+            List<ResourceRecord> createResourceRecords = FastList.newInstance();
+            // set create resource records
+            for (String newDomainName : newDomainNames) {
+                ResourceRecord resourceRecord = new ResourceRecord(newDomainName);
+                createResourceRecords.add(resourceRecord);
+            }
+            createResourceRecordSet.setResourceRecords(createResourceRecords);
+            Change createChange = new Change(ChangeAction.CREATE, createResourceRecordSet);
+            
+            // send request
+            List<Change> changes = FastList.newInstance();
+            changes.add(deleteChange);
+            changes.add(createChange);
+            ChangeBatch changeBatch = new ChangeBatch(changes);
+            ChangeResourceRecordSetsRequest request = new ChangeResourceRecordSetsRequest(hostedZoneId, changeBatch);
+            ChangeResourceRecordSetsResult resourceRecordSetsResult = route53.changeResourceRecordSets(request);
+            ChangeInfo changeInfo = resourceRecordSetsResult.getChangeInfo();
+            String changeId = changeInfo.getId();
+            String status = changeInfo.getStatus();
+            Date submittedAt = changeInfo.getSubmittedAt();
+            String comment = changeInfo.getComment();
+            Map<String, Object> results = ServiceUtil.returnSuccess();
+            results.put("changeId", changeId);
+            results.put("status", status);
+            results.put("submittedAt", submittedAt);
+            results.put("comment", comment);
+            return results;
+        } catch (Exception e) {
+            Debug.logError(e, module);
+            return ServiceUtil.returnError(e.getMessage());
+        }
+    }
+    
+    /**
      * delete Amazon Rout53 resource record set
      * @param ctx
      * @param context

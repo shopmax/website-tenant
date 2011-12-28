@@ -114,6 +114,35 @@ public class Route53Tests extends OFBizTestCase {
         }
     }
 
+    public void testUpdateAmazonRoute53ResourceRecordSet() throws Exception {
+        List<String> domainNames = UtilMisc.toList("\"test\"");
+        List<String> newDomainNames = UtilMisc.toList("\"test2\"");
+        Map<String, Object> ctx = FastMap.newInstance();
+        ctx.put("hostedZoneId", "ZSL0SZERL2LEB");
+        ctx.put("recordSetName", "ofbizsaas.com");
+        ctx.put("recordSetType", "TXT");
+        ctx.put("resourceRecordSetId", "testtest");
+        ctx.put("domainNames", domainNames);
+        ctx.put("newDomainNames", newDomainNames);
+        //ctx.put("weight", Long.valueOf("0"));
+        //ctx.put("tTL", Long.valueOf("300"));
+        ctx.put("userLogin", userLogin);
+        Map<String, Object> results = dispatcher.runSync("updateAmazonRoute53ResourceRecordSet", ctx);
+        if (ServiceUtil.isSuccess(results)) {
+            String changeId = (String) results.get("changeId");
+            String status = (String) results.get("status");
+            Date submittedAt = (Date) results.get("submittedAt");
+            String comment = (String) results.get("comment");
+            Debug.logInfo("-- changeId: " + changeId, module);
+            Debug.logInfo("-- status: " + status, module);
+            Debug.logInfo("-- submittedAt: " + submittedAt, module);
+            Debug.logInfo("-- comment: " + comment, module);
+        } else {
+            String errMsg = (String) results.get("errorMessage");
+            Debug.logError(errMsg, module);
+        }
+    }
+
     public void testDeleteAmazonRoute53ResourceRecordSet() throws Exception {
         List<String> domainNames = UtilMisc.toList("\"test\"");
         Map<String, Object> ctx = FastMap.newInstance();
