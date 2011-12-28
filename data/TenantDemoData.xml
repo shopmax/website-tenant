@@ -18,9 +18,4 @@
   under the License.
   -->
 <entity-engine-xml>
-    <Tenant tenantId="TENANTDEMO1" tenantName="Demo Tenant One"/>
-    <TenantDataSource tenantId="TENANTDEMO1" entityGroupName="org.ofbiz" 
-        jdbcUri="jdbc:postgresql://127.0.0.1/TENANTDEMO1" jdbcUsername="ofbiz" jdbcPassword="ofbiz"/>
-    <TenantDataSource tenantId="TENANTDEMO1" entityGroupName="org.ofbiz.olap" 
-        jdbcUri="jdbc:postgresql://127.0.0.1/TENANTDEMO1Olap" jdbcUsername="ofbiz" jdbcPassword="ofbiz"/>
 </entity-engine-xml>
