@@ -59,9 +59,10 @@
         <attribute name="resourceRecordSetId" type="String" mode="IN" optional="true"/>
         <attribute name="weight" type="Long" mode="IN" optional="true"/>
         <attribute name="tTL" type="Long" mode="IN" optional="true"/>
+        <attribute name="changeId" type="String" mode="OUT" optional="false"/>
         <attribute name="status" type="String" mode="OUT" optional="false"/>
         <attribute name="submittedAt" type="java.util.Date" mode="OUT" optional="false"/>
-        <attribute name="comments" type="String" mode="OUT" optional="true"/>
+        <attribute name="comment" type="String" mode="OUT" optional="true"/>
     </service>
     
     <!-- Delete Amazon Route53 Resource Record Set -->
@@ -76,8 +77,19 @@
         <attribute name="resourceRecordSetId" type="String" mode="IN" optional="true"/>
         <attribute name="weight" type="Long" mode="IN" optional="true"/>
         <attribute name="tTL" type="Long" mode="IN" optional="true"/>
+        <attribute name="changeId" type="String" mode="OUT" optional="false"/>
         <attribute name="status" type="String" mode="OUT" optional="false"/>
         <attribute name="submittedAt" type="java.util.Date" mode="OUT" optional="false"/>
-        <attribute name="comments" type="String" mode="OUT" optional="true"/>
+        <attribute name="comment" type="String" mode="OUT" optional="true"/>
+    </service>
+    
+    <!-- Get Amazon Route53 Resource Record Set Change -->
+    <service name="getAmazonRoute53ResourceRecordSetChange" engine="java" location="org.ofbiz.tenant.amazonaws.AwsServices"
+        invoke="getAmazonRoute53ResourceRecordSetChange" auth="true">
+        <description>Get Amazon Route53 Resource Record Set Change</description>
+        <attribute name="changeId" type="String" mode="INOUT" optional="false"/>
+        <attribute name="status" type="String" mode="OUT" optional="false"/>
+        <attribute name="submittedDate" type="java.util.Date" mode="OUT" optional="false"/>
+        <attribute name="comment" type="String" mode="OUT" optional="true"/>
     </service>
 </services>

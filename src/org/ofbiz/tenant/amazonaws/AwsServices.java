@@ -40,6 +40,8 @@ import com.amazonaws.services.route53.model.ChangeInfo;
 import com.amazonaws.services.route53.model.ChangeResourceRecordSetsRequest;
 import com.amazonaws.services.route53.model.ChangeResourceRecordSetsResult;
 import com.amazonaws.services.route53.model.DelegationSet;
+import com.amazonaws.services.route53.model.GetChangeRequest;
+import com.amazonaws.services.route53.model.GetChangeResult;
 import com.amazonaws.services.route53.model.GetHostedZoneRequest;
 import com.amazonaws.services.route53.model.GetHostedZoneResult;
 import com.amazonaws.services.route53.model.HostedZone;
@@ -174,13 +176,15 @@ public class AwsServices {
             ChangeResourceRecordSetsRequest request = new ChangeResourceRecordSetsRequest(hostedZoneId, changeBatch);
             ChangeResourceRecordSetsResult resourceRecordSetsResult = route53.changeResourceRecordSets(request);
             ChangeInfo changeInfo = resourceRecordSetsResult.getChangeInfo();
+            String changeId = changeInfo.getId();
             String status = changeInfo.getStatus();
             Date submittedAt = changeInfo.getSubmittedAt();
             String comment = changeInfo.getComment();
             Map<String, Object> results = ServiceUtil.returnSuccess();
+            results.put("changeId", changeId);
             results.put("status", status);
             results.put("submittedAt", submittedAt);
-            results.put("comments", comment);
+            results.put("comment", comment);
             return results;
         } catch (Exception e) {
             Debug.logError(e, module);
@@ -189,7 +193,7 @@ public class AwsServices {
     }
     
     /**
-     * delete Amazon Rout53 resource record sets
+     * delete Amazon Rout53 resource record set
      * @param ctx
      * @param context
      * @return
@@ -247,13 +251,44 @@ public class AwsServices {
             ChangeResourceRecordSetsRequest request = new ChangeResourceRecordSetsRequest(hostedZoneId, changeBatch);
             ChangeResourceRecordSetsResult resourceRecordSetsResult = route53.changeResourceRecordSets(request);
             ChangeInfo changeInfo = resourceRecordSetsResult.getChangeInfo();
+            String changeId = changeInfo.getId();
             String status = changeInfo.getStatus();
             Date submittedAt = changeInfo.getSubmittedAt();
             String comment = changeInfo.getComment();
             Map<String, Object> results = ServiceUtil.returnSuccess();
+            results.put("changeId", changeId);
             results.put("status", status);
             results.put("submittedAt", submittedAt);
-            results.put("comments", comment);
+            results.put("comment", comment);
+            return results;
+        } catch (Exception e) {
+            Debug.logError(e, module);
+            return ServiceUtil.returnError(e.getMessage());
+        }
+    }
+    
+    /**
+     * get Amazon Rout53 resource record set change
+     * @param ctx
+     * @param context
+     * @return
+     */
+    public static Map<String, Object> getAmazonRoute53ResourceRecordSetChange(DispatchContext ctx, Map<String, Object> context) {
+        String changeId = (String) context.get("changeId");
+        
+        try {
+            AmazonRoute53 route53 = AwsFactory.getAmazonRoute53();
+            GetChangeRequest request = new GetChangeRequest(changeId);
+            GetChangeResult getChangeResult = route53.getChange(request);
+            ChangeInfo changeInfo = getChangeResult.getChangeInfo();
+            String status = changeInfo.getStatus();
+            Date submittedDate = changeInfo.getSubmittedAt();
+            String comment = changeInfo.getComment();
+            Map<String, Object> results = ServiceUtil.returnSuccess();
+            results.put("changeId", changeId);
+            results.put("status", status);
+            results.put("submittedDate", submittedDate);
+            results.put("comment", comment);
             return results;
         } catch (Exception e) {
             Debug.logError(e, module);

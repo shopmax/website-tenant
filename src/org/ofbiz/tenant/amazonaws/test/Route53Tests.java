@@ -100,12 +100,14 @@ public class Route53Tests extends OFBizTestCase {
         ctx.put("userLogin", userLogin);
         Map<String, Object> results = dispatcher.runSync("createAmazonRoute53ResourceRecordSet", ctx);
         if (ServiceUtil.isSuccess(results)) {
+            String changeId = (String) results.get("changeId");
             String status = (String) results.get("status");
             Date submittedAt = (Date) results.get("submittedAt");
-            String comments = (String) results.get("comments");
+            String comment = (String) results.get("comment");
+            Debug.logInfo("-- changeId: " + changeId, module);
             Debug.logInfo("-- status: " + status, module);
             Debug.logInfo("-- submittedAt: " + submittedAt, module);
-            Debug.logInfo("-- comments: " + comments, module);
+            Debug.logInfo("-- comment: " + comment, module);
         } else {
             String errMsg = (String) results.get("errorMessage");
             Debug.logError(errMsg, module);
@@ -125,12 +127,34 @@ public class Route53Tests extends OFBizTestCase {
         ctx.put("userLogin", userLogin);
         Map<String, Object> results = dispatcher.runSync("deleteAmazonRoute53ResourceRecordSet", ctx);
         if (ServiceUtil.isSuccess(results)) {
+            String changeId = (String) results.get("changeId");
             String status = (String) results.get("status");
             Date submittedAt = (Date) results.get("submittedAt");
-            String comments = (String) results.get("comments");
+            String comment = (String) results.get("comment");
+            Debug.logInfo("-- changeId: " + changeId, module);
             Debug.logInfo("-- status: " + status, module);
             Debug.logInfo("-- submittedAt: " + submittedAt, module);
-            Debug.logInfo("-- comments: " + comments, module);
+            Debug.logInfo("-- comment: " + comment, module);
+        } else {
+            String errMsg = (String) results.get("errorMessage");
+            Debug.logError(errMsg, module);
+        }
+    }
+
+    public void testGetAmazonRoute53ResourceRecordSetChange() throws Exception {
+        Map<String, Object> ctx = FastMap.newInstance();
+        ctx.put("changeId", "C1SDBY89BDJV3Y");
+        ctx.put("userLogin", userLogin);
+        Map<String, Object> results = dispatcher.runSync("getAmazonRoute53ResourceRecordSetChange", ctx);
+        if (ServiceUtil.isSuccess(results)) {
+            String changeId = (String) results.get("changeId");
+            String status = (String) results.get("status");
+            Date submittedDate = (Date) results.get("submittedDate");
+            String comment = (String) results.get("comment");
+            Debug.logInfo("-- changeId: " + changeId, module);
+            Debug.logInfo("-- status: " + status, module);
+            Debug.logInfo("-- submittedDate: " + submittedDate, module);
+            Debug.logInfo("-- comment: " + comment, module);
         } else {
             String errMsg = (String) results.get("errorMessage");
             Debug.logError(errMsg, module);
