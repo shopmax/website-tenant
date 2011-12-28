@@ -35,6 +35,11 @@ import com.amazonaws.services.route53.model.DelegationSet;
 import com.amazonaws.services.route53.model.HostedZone;
 import com.amazonaws.services.route53.model.ResourceRecordSet;
 
+/**
+ * Route53 Tests
+ * @author chatree
+ *
+ */
 public class Route53Tests extends OFBizTestCase {
     
     public final static String module = Route53Tests.class.getName();
@@ -90,7 +95,8 @@ public class Route53Tests extends OFBizTestCase {
         ctx.put("recordSetType", "TXT");
         ctx.put("resourceRecordSetId", "testtest");
         ctx.put("domainNames", domainNames);
-        ctx.put("tTL", Long.valueOf("300"));
+        //ctx.put("weight", Long.valueOf("0"));
+        //ctx.put("tTL", Long.valueOf("300"));
         ctx.put("userLogin", userLogin);
         Map<String, Object> results = dispatcher.runSync("createAmazonRoute53ResourceRecordSet", ctx);
         if (ServiceUtil.isSuccess(results)) {
@@ -107,11 +113,15 @@ public class Route53Tests extends OFBizTestCase {
     }
 
     public void testDeleteAmazonRoute53ResourceRecordSet() throws Exception {
+        List<String> domainNames = UtilMisc.toList("\"test\"");
         Map<String, Object> ctx = FastMap.newInstance();
         ctx.put("hostedZoneId", "ZSL0SZERL2LEB");
         ctx.put("recordSetName", "ofbizsaas.com");
         ctx.put("recordSetType", "TXT");
         ctx.put("resourceRecordSetId", "testtest");
+        ctx.put("domainNames", domainNames);
+        //ctx.put("weight", Long.valueOf("0"));
+        //ctx.put("tTL", Long.valueOf("300"));
         ctx.put("userLogin", userLogin);
         Map<String, Object> results = dispatcher.runSync("deleteAmazonRoute53ResourceRecordSet", ctx);
         if (ServiceUtil.isSuccess(results)) {

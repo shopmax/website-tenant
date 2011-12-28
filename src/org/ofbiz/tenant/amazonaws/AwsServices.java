@@ -50,6 +50,11 @@ import com.amazonaws.services.route53.model.RRType;
 import com.amazonaws.services.route53.model.ResourceRecord;
 import com.amazonaws.services.route53.model.ResourceRecordSet;
 
+/**
+ * Amazon Web Service Services
+ * @author chatree
+ *
+ */
 public class AwsServices {
 
     public final static String module = AwsServices.class.getName();
@@ -123,6 +128,7 @@ public class AwsServices {
         List<String> domainNames = UtilGenerics.checkList(context.get("domainNames"));
         String dNSName = (String) context.get("dNSName");
         String resourceRecordSetId = (String) context.get("resourceRecordSetId");
+        Long weight = (Long) context.get("weight");
         Long tTL = (Long) context.get("tTL");
         
         try {
@@ -149,7 +155,18 @@ public class AwsServices {
             }
             resourceRecordSet.setResourceRecords(resourceRecords);
             
+            // set weight
+            if (UtilValidate.isEmpty(weight)) {
+                weight = 0L;
+            }
+            resourceRecordSet.setWeight(weight);
+            
+            // set TTL
+            if (UtilValidate.isEmpty(tTL)) {
+                tTL = 300L;
+            }
             resourceRecordSet.setTTL(tTL);
+            
             Change change = new Change(ChangeAction.CREATE, resourceRecordSet);
             List<Change> changes = FastList.newInstance();
             changes.add(change);
@@ -181,8 +198,11 @@ public class AwsServices {
         String hostedZoneId = (String) context.get("hostedZoneId");
         String recordSetName = (String) context.get("recordSetName");
         String recordSetType = (String) context.get("recordSetType");
+        List<String> domainNames = UtilGenerics.checkList(context.get("domainNames"));
         String dNSName = (String) context.get("dNSName");
         String resourceRecordSetId = (String) context.get("resourceRecordSetId");
+        Long weight = (Long) context.get("weight");
+        Long tTL = (Long) context.get("tTL");
         
         try {
             AmazonRoute53 route53 = AwsFactory.getAmazonRoute53();
@@ -199,6 +219,26 @@ public class AwsServices {
             if (UtilValidate.isNotEmpty(resourceRecordSetId)) {
                 resourceRecordSet.setSetIdentifier(resourceRecordSetId);
             }
+
+            // set resource records
+            List<ResourceRecord> resourceRecords = FastList.newInstance();
+            for (String domainName : domainNames) {
+                ResourceRecord resourceRecord = new ResourceRecord(domainName);
+                resourceRecords.add(resourceRecord);
+            }
+            resourceRecordSet.setResourceRecords(resourceRecords);
+            
+            // set weight
+            if (UtilValidate.isEmpty(weight)) {
+                weight = 0L;
+            }
+            resourceRecordSet.setWeight(weight);
+            
+            // set TTL
+            if (UtilValidate.isEmpty(tTL)) {
+                tTL = 300L;
+            }
+            resourceRecordSet.setTTL(tTL);
             
             Change change = new Change(ChangeAction.DELETE, resourceRecordSet);
             List<Change> changes = FastList.newInstance();

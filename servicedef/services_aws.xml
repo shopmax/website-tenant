@@ -57,7 +57,8 @@
         <attribute name="domainNames" type="List" mode="IN" optional="false"/>
         <attribute name="dNSName" type="String" mode="IN" optional="true"/>
         <attribute name="resourceRecordSetId" type="String" mode="IN" optional="true"/>
-        <attribute name="tTL" type="Long" mode="IN" optional="false"/>
+        <attribute name="weight" type="Long" mode="IN" optional="true"/>
+        <attribute name="tTL" type="Long" mode="IN" optional="true"/>
         <attribute name="status" type="String" mode="OUT" optional="false"/>
         <attribute name="submittedAt" type="java.util.Date" mode="OUT" optional="false"/>
         <attribute name="comments" type="String" mode="OUT" optional="true"/>
@@ -70,8 +71,11 @@
         <attribute name="hostedZoneId" type="String" mode="IN" optional="false"/>
         <attribute name="recordSetName" type="String" mode="IN" optional="false"/>
         <attribute name="recordSetType" type="String" mode="IN" optional="false"/>
+        <attribute name="domainNames" type="List" mode="IN" optional="false"/>
         <attribute name="dNSName" type="String" mode="IN" optional="true"/>
         <attribute name="resourceRecordSetId" type="String" mode="IN" optional="true"/>
+        <attribute name="weight" type="Long" mode="IN" optional="true"/>
+        <attribute name="tTL" type="Long" mode="IN" optional="true"/>
         <attribute name="status" type="String" mode="OUT" optional="false"/>
         <attribute name="submittedAt" type="java.util.Date" mode="OUT" optional="false"/>
         <attribute name="comments" type="String" mode="OUT" optional="true"/>
