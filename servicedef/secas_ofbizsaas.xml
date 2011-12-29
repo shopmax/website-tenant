@@ -21,8 +21,4 @@ under the License.
 <service-eca xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://ofbiz.apache.org/dtds/service-eca.xsd">
 
-    <!-- To install tenant data sources if the entity group is org.ofbiz.olap -->
-    <eca service="createPersonAndUserLogin" event="return">
-        <action service="installUserLoginTenant" mode="async" run-as-user="system"/>
-    </eca>
 </service-eca>

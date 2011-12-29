@@ -26,6 +26,7 @@
     <service name="installUserLoginTenant" engine="simple" location="component://tenant/script/org/ofbiz/tenant/ofbizsaas/OfbizSaasServices.xml"
         invoke="installUserLoginTenant" auth="true">
         <description>Install UserLogin Tenant</description>
-        <attribute name="userLoginId" type="String" mode="IN" optional="false"/>
+        <attribute name="tenantUserLoginId" type="String" mode="IN" optional="false"/>
+        <attribute name="reader" type="String" mode="IN" optional="false"/>
     </service>
 </services>

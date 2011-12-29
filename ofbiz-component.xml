@@ -42,13 +42,12 @@
         title="Tenant"
         server="default-server"
         location="webapp/tenantmgr"
-        base-permission="OFBTOOLS"
+        base-permission="OFBTOOLS,TENANTMGR"
         mount-point="/tenantmgr"/>
     <webapp name="ofbizsaas"
         title="OFBiz SAAS"
         server="default-server"
         location="webapp/ofbizsaas"
-        base-permission="OFBTOOLS"
         mount-point="/"/>
         
     <!-- Themes -->

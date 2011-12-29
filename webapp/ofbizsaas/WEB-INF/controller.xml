@@ -23,6 +23,14 @@ under the License.
     <include location="component://ecommerce/webapp/ecommerce/WEB-INF/controller.xml"/>
     <description>OFBiz: SaaS Controller Configuration File</description>
     
+    <!-- Customer Request Mappings -->
+    <request-map uri="createcustomer">
+        <security https="true" auth="false"/>
+        <event type="simple" path="component://tenant/script/org/ofbiz/tenant/ofbizsaas/customer/CustomerEvents.xml" invoke="createCustomer"/>
+        <response name="success" type="view" value="main"/>
+        <response name="error" type="view" value="newcustomer"/>
+    </request-map>
+    
     <view-map name="main" type="screen" page="component://tenant/widget/ofbizsaas/CommonScreens.xml#main"/>
     <view-map name="login" type="screen" page="component://tenant/widget/ofbizsaas/CommonScreens.xml#main"/>
     
