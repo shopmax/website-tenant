@@ -18,14 +18,11 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<site-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="http://ofbiz.apache.org/dtds/site-conf.xsd">
-    <include location="component://ecommerce/webapp/ecommerce/WEB-INF/controller.xml"/>
-    <description>OFBiz: SaaS Controller Configuration File</description>
-    
-    <view-map name="main" type="screen" page="component://tenant/widget/ofbizsaas/CommonScreens.xml#main"/>
-    <view-map name="login" type="screen" page="component://tenant/widget/ofbizsaas/CommonScreens.xml#main"/>
-    
-    <!-- Customer View Mappings -->
-    <view-map name="newcustomer" type="screen" page="component://tenant/widget/ofbizsaas/CustomerScreens.xml#newcustomer"/>
-</site-conf>
+<service-eca xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://ofbiz.apache.org/dtds/service-eca.xsd">
+
+    <!-- To install tenant data sources if the entity group is org.ofbiz.olap -->
+    <eca service="createPersonAndUserLogin" event="return">
+        <action service="installUserLoginTenant" mode="async" run-as-user="system"/>
+    </eca>
+</service-eca>
