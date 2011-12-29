@@ -22,6 +22,7 @@ under the License.
         xsi:noNamespaceSchemaLocation="http://ofbiz.apache.org/dtds/simple-methods.xsd">
         
     <simple-method method-name="createCustomer" short-description="Create Customer" login-required="false">
+        <if-empty field="parameters.CUSTOMER_SYSTEM"><add-error><fail-message message="System is missing"/></add-error></if-empty>
         <call-simple-method method-name="createCustomer" xml-resource="component://ecommerce/script/org/ofbiz/ecommerce/customer/CustomerEvents.xml"/>
         <if-compare field="_LOGIN_PASSED_" operator="equals" value="TRUE">
             <set field="reader" value="seed,seed-initial"/>
