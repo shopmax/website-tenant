@@ -20,7 +20,42 @@ under the License.
 
 <simple-methods xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://ofbiz.apache.org/dtds/simple-methods.xsd">
-    <simple-method method-name="installUserLoginTenant" short-description="Install UserLogin Tenant">
         
+    <simple-method method-name="installUserLoginTenant" short-description="Install UserLogin Tenant">
+        <entity-one value-field="tenant" entity-name="Tenant">
+            <field-map field-name="tenantId" from-field="parameters.tenantUserLoginId"/>
+        </entity-one>
+        <if-empty field="tenant">
+            <!-- create Tenant -->
+            <make-value value-field="tenant" entity-name="Tenant"/>
+            <set field="tenant.tenantId" from-field="parameters.tenantUserLoginId"/>
+            <set field="tenant.tenantName" from-field="parameters.tenantUserLoginId"/>
+            <create-value value-field="tenant"/>
+            
+            <!-- create Tenant Data Sources -->
+            
+            <!-- org.ofbiz -->
+            <make-value value-field="tenantDataSource" entity-name="TenantDataSource"/>
+            <set field="tenantDataSource.tenantId" from-field="tenant.tenantId"/>
+            <set field="tenantDataSource.entityGroupName" value="org.ofbiz"/>
+            <set field="tenantDataSource.jdbcUri" value="jdbc:postgresql://127.0.0.1/${tenant.tenantId}"/>
+            <set field="tenantDataSource.jdbcUsername" value="ofbiz"/>
+            <set field="tenantDataSource.jdbcPassword" value="ofbiz"/>
+            <create-value value-field="tenantDataSource"/>
+            
+            <!-- org.ofbiz.olap -->
+            <make-value value-field="tenantDataSourceOlap" entity-name="TenantDataSource"/>
+            <set field="tenantDataSourceOlap.tenantId" from-field="tenant.tenantId"/>
+            <set field="tenantDataSourceOlap.entityGroupName" value="org.ofbiz.olap"/>
+            <set field="tenantDataSourceOlap.jdbcUri" value="jdbc:postgresql://127.0.0.1/${tenant.tenantId}olap"/>
+            <set field="tenantDataSourceOlap.jdbcUsername" value="ofbiz"/>
+            <set field="tenantDataSourceOlap.jdbcPassword" value="ofbiz"/>
+            <create-value value-field="tenantDataSourceOlap"/>
+        </if-empty>
+        
+        <!-- install tenant data sources -->
+        <set field="installTenantDataSourcesInMap.tenantId" from-field="tenant.tenantId"/>
+        <set field="installTenantDataSourcesInMap.reader" from-field="parameters.reader"/>
+        <call-service service-name="installTenantDataSources" in-map-name="installTenantDataSourcesInMap"/>
     </simple-method>
 </simple-methods>

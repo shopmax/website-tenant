@@ -24,7 +24,7 @@ under the License.
     <simple-method method-name="createCustomer" short-description="Create Customer" login-required="false">
         <call-simple-method method-name="createCustomer" xml-resource="component://ecommerce/script/org/ofbiz/ecommerce/customer/CustomerEvents.xml"/>
         <if-compare field="_LOGIN_PASSED_" operator="equals" value="TRUE">
-            <set field="reader" value="seed,seed-initial,tenant"/>
+            <set field="reader" value="seed,seed-initial"/>
             <if-compare field="parameters.CUSTOMER_SYSTEM" operator="equals" value="DEMO">
                 <set field="reader" value="${reader},demo,ext-demo"/>
             </if-compare>
