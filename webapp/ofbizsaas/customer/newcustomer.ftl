@@ -390,6 +390,15 @@ will generally always be reserved for the logo at the top of the page.
       </div>
     </#if>
   </fieldset>
+
+  <fieldset class="col">
+    <legend>${uiLabelMap.OfbizSaasSystem}</legend>
+    <div>
+        <label for="CUSTOMER_SYSTEM">${uiLabelMap.OfbizSaasSystem}*</label>
+        <input type="radio" name="CUSTOMER_SYSTEM" value="EMPTY"/> ${uiLabelMap.OfbizSaasEmpty}<br/>
+        <input type="radio" name="CUSTOMER_SYSTEM" value="DEMO"/> ${uiLabelMap.OfbizSaasDemo}
+    </div>
+  </fieldset>
 </form>
 
 <#------------------------------------------------------------------------------
