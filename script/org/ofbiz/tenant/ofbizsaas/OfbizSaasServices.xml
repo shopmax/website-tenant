@@ -57,5 +57,9 @@ under the License.
         <set field="installTenantDataSourcesInMap.tenantId" from-field="tenant.tenantId"/>
         <set field="installTenantDataSourcesInMap.reader" from-field="parameters.reader"/>
         <call-service service-name="installTenantDataSources" in-map-name="installTenantDataSourcesInMap"/>
+        <field-to-result field="tenant.tenantId" result-name="tenantId"/>
+    </simple-method>
+    <simple-method method-name="sendTenantConfirmationMail" short-description="Send Tenant Confirmation Mail">
+        
     </simple-method>
 </simple-methods>

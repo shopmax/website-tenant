@@ -28,5 +28,11 @@
         <description>Install UserLogin Tenant</description>
         <attribute name="tenantUserLoginId" type="String" mode="IN" optional="false"/>
         <attribute name="reader" type="String" mode="IN" optional="false"/>
+        <attribute name="tenantId" type="String" mode="OUT" optional="false"/>
+    </service>
+    <service name="sendTenantConfirmationMail" engine="simple" location="component://tenant/script/org/ofbiz/tenant/ofbizsaas/OfbizSaasServices.xml"
+        invoke="sendTenantConfirmationMail" auth="true">
+        <description>Send Tenant Confirmation Mail</description>
+        <attribute name="tenantId" type="String" mode="IN" optional="false"/>
     </service>
 </services>

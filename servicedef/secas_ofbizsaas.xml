@@ -21,4 +21,8 @@ under the License.
 <service-eca xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://ofbiz.apache.org/dtds/service-eca.xsd">
 
+    <!-- send tenant confirmation mail -->
+    <eca service="installUserLoginTenant" event="return">
+        <action service="sendTenantConfirmationMail" mode="sync"/>
+    </eca>
 </service-eca>
