@@ -60,6 +60,22 @@ under the License.
         <field-to-result field="tenant.tenantId" result-name="tenantId"/>
     </simple-method>
     <simple-method method-name="sendTenantConfirmationMail" short-description="Send Tenant Confirmation Mail">
-        
+        <entity-one value-field="tenantUserLogin" entity-name="UserLogin">
+            <field-map field-name="userLoginId" from-field="parameters.tenantId"/>
+        </entity-one>
+        <if-not-empty field="tenantUserLogin">
+            <set field="getPartyEmailInMap.partyId" from-field="tenantUserLogin.partyId"/>
+            <call-service service-name="getPartyEmail" in-map-name="getPartyEmailInMap">
+                <result-to-field result-name="emailAddress"/>
+            </call-service>
+            <if-not-empty field="emailAddress">
+                <set field="emailParams.sendFrom" value="ofbiztest@example.com"/>
+                <set field="emailParams.sendTo" from-field="emailAddress"/>
+                <set field="emailParams.subject" value="Tenant Confirmation"/>
+                <set field="emailParams.bodyScreenUri" value="component://tenant/widget/ofbizsaas/OfbizSaasEmailScreens.xml#TenantConfirmation"/>
+                <set field="emailParams.bodyParameters.tenantId" from-field="parameters.tenantId"/>
+                <call-service service-name="sendMailFromScreen" in-map-name="emailParams"/>
+            </if-not-empty>
+        </if-not-empty>
     </simple-method>
 </simple-methods>
