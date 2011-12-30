@@ -84,22 +84,14 @@
     </target>
 
     <target name="apply-ofbiz-patches" description="Apply the patches to root, framework, application and specialpurpose components.">
-        <fail message="Patch files not found.">
-            <condition>
-                <or>
-                    <not><isset property="component-name"/></not>
-                    <not>
-                        <resourcecount count="3" when="gt">
-                            <fileset dir="patches" includes="*.patch"/>
-                        </resourcecount>
-                    </not>
-                </or>
-            </condition>
-        </fail>
-        <patch strip="0" patchfile="patches/root.patch" dir="${ofbiz.home.dir}"/>
-        <patch strip="0" patchfile="patches/framework.patch" dir="${ofbiz.home.dir}"/>
-        <patch strip="0" patchfile="patches/applications.patch" dir="${ofbiz.home.dir}"/>
-        <patch strip="0" patchfile="patches/specialpurpose.patch" dir="${ofbiz.home.dir}"/>
+        <apply executable="patch" dir="${ofbiz.home.dir}" failonerror="true">
+            <arg value="--strip=0"/>
+            <arg value="-i"/>
+            <fileset id="patches" dir="patches" includes="*.patch">
+                <contains text="Index:"/>
+            </fileset>
+        </apply>
+
         <delete>          
             <fileset dir="${ofbiz.home.dir}" includes="**/*.rej"/>
         </delete>
