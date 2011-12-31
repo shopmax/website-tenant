@@ -3,7 +3,7 @@
     <Tenant tenantId="ofbizsaas" tenantName="OFBiz SAAS Tenant" domainName="ofbizsaas.antwebsystems.com" initialPath="/ofbizsaas"/>
     <TenantComponent tenantId="ofbizsaas" componentName="tenant" sequenceNum="01"/>
     <TenantDataSource tenantId="ofbizsaasofbiz" entityGroupName="org.ofbiz"
-       jdbcUri="jdbc:postgresql://127.0.0.1/ofbizsaas" jdbcUsername="ofbiz" jdbcPassword="ofbiz"/>
+       jdbcUri="jdbc:postgresql://127.0.0.1/ofbizsaasofbiz" jdbcUsername="ofbiz" jdbcPassword="ofbiz"/>
     <TenantDataSource tenantId="ofbizsaas" entityGroupName="org.ofbiz.olap"
        jdbcUri="jdbc:postgresql://127.0.0.1/ofbizsaasolap" jdbcUsername="ofbiz" jdbcPassword="ofbiz"/>
 </entity-engine-xml>
