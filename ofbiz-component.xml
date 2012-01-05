@@ -48,7 +48,7 @@
         title="OFBiz SAAS"
         server="default-server"
         location="webapp/ofbizsaas"
-        mount-point="/"/>
+        mount-point="/ofbizsaas"/>
         
     <!-- Themes -->
     <webapp name="ofbizsaas-default"
