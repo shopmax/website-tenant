@@ -9,4 +9,7 @@
     <property key="OfbizSaasDemo">
         <value xml:lang="en">Demo</value>
     </property>
+    <property key="OfbizSaasSubDomain">
+        <value xml:lang="en">Sub Domain</value>
+    </property>
 </resource>

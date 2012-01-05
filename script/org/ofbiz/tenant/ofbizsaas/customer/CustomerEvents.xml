@@ -23,14 +23,36 @@ under the License.
         
     <simple-method method-name="createCustomer" short-description="Create Customer" login-required="false">
         <if-empty field="parameters.CUSTOMER_SYSTEM"><add-error><fail-message message="System is missing"/></add-error></if-empty>
+        <if-empty field="parameters.SUBDOMAIN"><add-error><fail-message message="Sub domain is missing"/></add-error></if-empty>
+        
+        <!-- create customer -->
         <call-simple-method method-name="createCustomer" xml-resource="component://ecommerce/script/org/ofbiz/ecommerce/customer/CustomerEvents.xml"/>
+        
+        <!-- if log in passed then install a user login tenant -->
         <if-compare field="_LOGIN_PASSED_" operator="equals" value="TRUE">
+            <!-- reader -->
             <set field="reader" value="seed,seed-initial"/>
             <if-compare field="parameters.CUSTOMER_SYSTEM" operator="equals" value="DEMO">
                 <set field="reader" value="${reader},demo,ext-demo"/>
             </if-compare>
+            
+            <!-- host name -->
+            <call-class-method method-name="getWebSiteId" class-name="org.ofbiz.webapp.website.WebSiteWorker" ret-field="webSiteId">
+                <field field="request" type="javax.servlet.ServletRequest"/>
+            </call-class-method>
+            <entity-one value-field="webSite" entity-name="WebSite"/>
+            <set field="hostName" from-field="webSite.httpHost" default-value="localhost"/>
+            
+            <!-- domain name -->
+            <set field="domainName" value="${parameters.SUBDOMAIN}.${hostName}"/>
+            
+            <!-- set initial path from request's context path -->
+            <call-object-method method-name="getContextPath" obj-field="request" ret-field="initialPath"/>
+            
             <set field="installUserLoginTenant.tenantUserLoginId" from-field="newUserLogin.userLoginId"/>
             <set field="installUserLoginTenant.reader" from-field="reader"/>
+            <set field="installUserLoginTenant.domainName" from-field="domainName"/>
+            <set field="installUserLoginTenant.initialPath" from-field="initialPath"/>
             <call-service-asynch service-name="installUserLoginTenant" in-map-name="installUserLoginTenant"/>
         </if-compare>
     </simple-method>

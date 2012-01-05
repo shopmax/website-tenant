@@ -13,5 +13,5 @@
         authErrorMessage="Problem connecting to payment processor; we will continue to retry and notify you by email."
         storeCreditValidDays="90" storeCreditAccountEnumId="FIN_ACCOUNT"
         visualThemeId="OFBIZSAAS_DEFAULT" prodSearchExcludeVariants="Y" autoApproveInvoice="Y" shipIfCaptureFails="Y" autoApproveOrder="Y" showOutOfStockProducts="Y"/>
-    <WebSite webSiteId="OFBIZSAAS" siteName="OFBiz SAAS" visualThemeSetId="OFBIZSAAS" productStoreId="OFBIZSAAS"/>
+    <WebSite webSiteId="OFBIZSAAS" siteName="OFBiz SAAS" visualThemeSetId="OFBIZSAAS" productStoreId="OFBIZSAAS" httpHost="ofbizsaas.com"/>
 </entity-engine-xml>

@@ -398,6 +398,10 @@ will generally always be reserved for the logo at the top of the page.
         <input type="radio" name="CUSTOMER_SYSTEM" value="EMPTY"/> ${uiLabelMap.OfbizSaasEmpty}<br/>
         <input type="radio" name="CUSTOMER_SYSTEM" value="DEMO"/> ${uiLabelMap.OfbizSaasDemo}
     </div>
+    <div>
+        <label>${uiLabelMap.OfbizSaasSubDomain}*</label>
+        <input type="text" name="SUBDOMAIN"/>
+    </div>
   </fieldset>
 </form>
 

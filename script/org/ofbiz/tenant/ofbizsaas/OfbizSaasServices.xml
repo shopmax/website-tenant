@@ -30,6 +30,8 @@ under the License.
             <make-value value-field="tenant" entity-name="Tenant"/>
             <set field="tenant.tenantId" from-field="parameters.tenantUserLoginId"/>
             <set field="tenant.tenantName" from-field="parameters.tenantUserLoginId"/>
+            <set field="tenant.domainName" from-field="parameters.domainName"/>
+            <set field="tenant.initialPath" from-field="parameters.initialPath"/>
             <create-value value-field="tenant"/>
             
             <!-- create Tenant Data Sources -->
@@ -51,6 +53,10 @@ under the License.
             <set field="tenantDataSourceOlap.jdbcUsername" value="ofbiz"/>
             <set field="tenantDataSourceOlap.jdbcPassword" value="ofbiz"/>
             <create-value value-field="tenantDataSourceOlap"/>
+            <else>
+                <add-error><fail-message message="Tenant ${parameters.tenantUserLoginId} already exists."/></add-error>
+                <check-errors/>
+            </else>
         </if-empty>
         
         <!-- install tenant data sources -->
