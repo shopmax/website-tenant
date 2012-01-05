@@ -30,6 +30,11 @@ under the License.
     </screen>
     <screen name="TenantCompletion">
         <section>
+            <actions>
+                <entity-one value-field="tenant" entity-name="Tenant">
+                    <field-map field-name="tenantId" from-field="parameters.tenantUserLoginId"/>
+                </entity-one>
+            </actions>
             <widgets>
                 <platform-specific><html><html-template location="component://tenant/templates/email/TenantCompletionEmail.ftl"/></html></platform-specific>
             </widgets>
