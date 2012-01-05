@@ -22,7 +22,12 @@ under the License.
         xsi:noNamespaceSchemaLocation="http://ofbiz.apache.org/dtds/service-eca.xsd">
 
     <!-- send tenant confirmation mail -->
-    <eca service="installUserLoginTenant" event="return">
+    <eca service="installUserLoginTenant" event="invoke">
         <action service="sendTenantConfirmationMail" mode="sync"/>
+    </eca>
+    
+    <!-- send tenant completion mail -->
+    <eca service="installUserLoginTenant" event="return">
+        <action service="sendTenantCompletionMail" mode="sync"/>
     </eca>
 </service-eca>

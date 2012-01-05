@@ -33,6 +33,11 @@
     <service name="sendTenantConfirmationMail" engine="simple" location="component://tenant/script/org/ofbiz/tenant/ofbizsaas/OfbizSaasServices.xml"
         invoke="sendTenantConfirmationMail" auth="true">
         <description>Send Tenant Confirmation Mail</description>
-        <attribute name="tenantId" type="String" mode="IN" optional="false"/>
+        <attribute name="tenantUserLoginId" type="String" mode="IN" optional="false"/>
+    </service>
+    <service name="sendTenantCompletionMail" engine="simple" location="component://tenant/script/org/ofbiz/tenant/ofbizsaas/OfbizSaasServices.xml"
+        invoke="sendTenantCompletionMail" auth="true">
+        <description>Send Tenant Completion Mail</description>
+        <attribute name="tenantUserLoginId" type="String" mode="IN" optional="false"/>
     </service>
 </services>

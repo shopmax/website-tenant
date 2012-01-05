@@ -28,4 +28,11 @@ under the License.
             </widgets>
         </section>
     </screen>
+    <screen name="TenantCompletion">
+        <section>
+            <widgets>
+                <platform-specific><html><html-template location="component://tenant/templates/email/TenantCompletionEmail.ftl"/></html></platform-specific>
+            </widgets>
+        </section>
+    </screen>
 </screens>
