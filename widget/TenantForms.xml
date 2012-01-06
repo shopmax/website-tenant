@@ -157,7 +157,7 @@
     <form name="EditTenantInstallation" type="single" target="installTenantDataSources" title="" default-map-name="tenant"
         header-row-style="header-row" default-table-style="basic-table">
         <field name="tenantId"><hidden/></field>
-        <field name="reader" title="${uiLabelMap.TenantReader}" required-field="true" tooltip="For example: seed,demo,ext"><text size="30" maxlength="255"/></field>
+        <field name="readers" title="${uiLabelMap.TenantReaders}" required-field="true" tooltip="For example: seed,demo,ext"><text size="30" maxlength="255"/></field>
         <field name="submitButton" title="${uiLabelMap.CommonSubmit}" widget-style="smallSubmit"><submit button-type="button"/></field>
     </form>
 </forms>

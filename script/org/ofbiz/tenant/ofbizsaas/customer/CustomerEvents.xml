@@ -31,9 +31,9 @@ under the License.
         <!-- if log in passed then install a user login tenant -->
         <if-compare field="_LOGIN_PASSED_" operator="equals" value="TRUE">
             <!-- reader -->
-            <set field="reader" value="seed,seed-initial"/>
+            <set field="readers" value="seed,seed-initial"/>
             <if-compare field="parameters.CUSTOMER_SYSTEM" operator="equals" value="DEMO">
-                <set field="reader" value="${reader},demo,ext-demo"/>
+                <set field="readers" value="${readers},demo,ext-demo"/>
             </if-compare>
             
             <!-- host name -->
@@ -50,7 +50,7 @@ under the License.
             <call-object-method method-name="getContextPath" obj-field="request" ret-field="initialPath"/>
             
             <set field="installUserLoginTenant.tenantUserLoginId" from-field="newUserLogin.userLoginId"/>
-            <set field="installUserLoginTenant.reader" from-field="reader"/>
+            <set field="installUserLoginTenant.readers" from-field="readers"/>
             <set field="installUserLoginTenant.domainName" from-field="domainName"/>
             <set field="installUserLoginTenant.initialPath" from-field="initialPath"/>
             <call-service-asynch service-name="installUserLoginTenant" in-map-name="installUserLoginTenant"/>

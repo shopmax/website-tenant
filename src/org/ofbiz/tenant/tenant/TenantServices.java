@@ -95,11 +95,11 @@ public class TenantServices {
     public static Map<String, Object> installTenantDataSources(DispatchContext ctx, Map<String, Object> context) {
         Delegator delegator = ctx.getDelegator();
         String tenantId = (String) context.get("tenantId");
-        String reader = (String) context.get("reader");
+        String readers = (String) context.get("readers");
         
         try {
         
-            if (UtilValidate.isEmpty(reader)) {
+            if (UtilValidate.isEmpty(readers)) {
                 // get a reader from file
                 List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", tenantId));
                 if (UtilValidate.isNotEmpty(tenantComponents)) {
@@ -110,7 +110,7 @@ public class TenantServices {
                         File demoLoadDataFile = FileUtil.getFile(demoLoadDataPath);
                         Scanner scanner = new Scanner(demoLoadDataFile);
                         while (scanner.hasNext()) {
-                            reader = scanner.nextLine();
+                            readers = scanner.nextLine();
                             break;
                         }
                     } catch (Exception e) {
@@ -120,7 +120,7 @@ public class TenantServices {
             }
             
             // if the reader exists then install data
-            if (UtilValidate.isNotEmpty(reader)) {
+            if (UtilValidate.isNotEmpty(readers)) {
                 if (TransactionUtil.getStatus() == TransactionUtil.STATUS_ACTIVE) {
                     TransactionUtil.commit();
                 }
@@ -129,7 +129,7 @@ public class TenantServices {
                 String configFile = FileUtil.getFile("component://base/config/install-containers.xml").getAbsolutePath();
                 String delegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
                 String[] args = new String[2];
-                args[0] = "-reader=" + reader;
+                args[0] = "-readers=" + readers;
                 args[1] = "-delegator=" + delegatorName;
                 EntityDataLoadContainer entityDataLoadContainer = new EntityDataLoadContainer();
                 entityDataLoadContainer.init(args, configFile);

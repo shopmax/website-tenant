@@ -55,8 +55,8 @@
     <property key="TenantDomainName">
         <value xml:lang="en">Domain Name</value>
     </property>
-    <property key="TenantReader">
-        <value xml:lang="en">Reader</value>
+    <property key="TenantReaders">
+        <value xml:lang="en">Readers</value>
     </property>
     <property key="TenantJdbcUri">
         <value xml:lang="en">Jdbc Uri</value>

@@ -135,7 +135,7 @@
                 <set field="tabButtonItem" value="installation"/>
                 <set field="viewIndex" from-field="parameters.VIEW_INDEX" type="Integer" default-value="0"/>
                 <set field="viewSize" from-field="parameters.VIEW_SIZE" type="Integer" default-value="20"/>
-                <set field="reader" from-field="parameters.reader"/>
+                <set field="readers" from-field="parameters.readers"/>
             </actions>
             <widgets>
                 <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">

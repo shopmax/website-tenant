@@ -61,7 +61,7 @@ under the License.
         
         <!-- install tenant data sources -->
         <set field="installTenantDataSourcesInMap.tenantId" from-field="tenant.tenantId"/>
-        <set field="installTenantDataSourcesInMap.reader" from-field="parameters.reader"/>
+        <set field="installTenantDataSourcesInMap.readers" from-field="parameters.readers"/>
         <call-service service-name="installTenantDataSources" in-map-name="installTenantDataSourcesInMap"/>
         <field-to-result field="tenant.tenantId" result-name="tenantId"/>
     </simple-method>

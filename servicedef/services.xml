@@ -101,7 +101,7 @@
         invoke="installTenantDataSources" auth="false"  use-transaction="false">
         <description>Install a tenant data sources</description>
         <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
-        <attribute name="reader" mode="IN" type="String" optional="true"></attribute>
+        <attribute name="readers" mode="IN" type="String" optional="true"></attribute>
     </service>
     <!-- create databases -->
     <service name="createTenantDataSourceDb" default-entity-name="Tenant" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
