@@ -63,6 +63,15 @@ under the License.
         <set field="installTenantDataSourcesInMap.tenantId" from-field="tenant.tenantId"/>
         <set field="installTenantDataSourcesInMap.readers" from-field="parameters.readers"/>
         <call-service service-name="installTenantDataSources" in-map-name="installTenantDataSourcesInMap"/>
+        
+        <!-- create a user login for tenant -->
+        <set field="createUserLoginForTenantInMap.tenantId" from-field="tenant.tenantId"/>
+        <set field="createUserLoginForTenantInMap.userLoginId" value="admin"/>
+        <set field="createUserLoginForTenantInMap.currentPassword" value="ofbiz"/>
+        <set field="createUserLoginForTenantInMap.currentPasswordVerify" value="ofbiz"/>
+        <call-service service-name="createUserLoginForTenant" in-map-name="createUserLoginForTenantInMap"/>
+        
+        <check-errors/>
         <field-to-result field="tenant.tenantId" result-name="tenantId"/>
     </simple-method>
     <simple-method method-name="sendTenantConfirmationMail" short-description="Send Tenant Confirmation Mail">

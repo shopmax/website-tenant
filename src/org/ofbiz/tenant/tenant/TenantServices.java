@@ -20,8 +20,10 @@ package org.ofbiz.tenant.tenant;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.TimeZone;
 
 import javolution.util.FastList;
 import javolution.util.FastMap;
@@ -32,6 +34,7 @@ import org.ofbiz.base.util.UtilGenerics;
 import org.ofbiz.base.util.UtilMisc;
 import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.entity.Delegator;
+import org.ofbiz.entity.DelegatorFactory;
 import org.ofbiz.entity.GenericValue;
 import org.ofbiz.entity.condition.EntityComparisonOperator;
 import org.ofbiz.entity.condition.EntityCondition;
@@ -41,7 +44,10 @@ import org.ofbiz.entity.transaction.TransactionUtil;
 import org.ofbiz.entity.util.EntityUtil;
 import org.ofbiz.entityext.data.EntityDataLoadContainer;
 import org.ofbiz.service.DispatchContext;
+import org.ofbiz.service.GenericDispatcher;
+import org.ofbiz.service.GenericServiceException;
 import org.ofbiz.service.LocalDispatcher;
+import org.ofbiz.service.ModelService;
 import org.ofbiz.service.ServiceUtil;
 import org.ofbiz.tenant.jdbc.TenantConnectionFactory;
 import org.ofbiz.tenant.jdbc.TenantJdbcConnectionHandler;
@@ -224,6 +230,83 @@ public class TenantServices {
             Debug.logError(e, errMsg, module);
             return ServiceUtil.returnError(errMsg);
         }
+        return ServiceUtil.returnSuccess();
+    }
+
+    /**
+     * create user login for tenant
+     * @param ctx
+     * @param context
+     * @return
+     */
+    public static Map<String, Object> createUserLoginForTenant(DispatchContext ctx, Map<String, Object> context) {
+        Delegator delegator = ctx.getDelegator();
+        LocalDispatcher dispatcher = ctx.getDispatcher();
+        Locale locale = (Locale) context.get("locale");
+        TimeZone timeZone = (TimeZone) context.get("timeZone");
+        String tenantId = (String) context.get("tenantId");
+        
+        Map<String, Object> toContext = FastMap.newInstance();
+        
+        // set createUserLogin service fields
+        String serviceName = "createUserLogin";
+        ModelService modelService = null;
+        List<Object> errorMessages = FastList.newInstance();
+        try {
+            modelService = dispatcher.getDispatchContext().getModelService(serviceName);
+        } catch (GenericServiceException e) {
+            String errMsg = "In set-service-fields could not get service definition for service name [" + serviceName + "]: " + e.toString();
+            Debug.logError(e, errMsg, module);
+            return ServiceUtil.returnError(errMsg);
+        }
+        toContext.putAll(modelService.makeValid(context, "IN", true, errorMessages, timeZone, locale));
+        
+        if (UtilValidate.isEmpty(errorMessages)) {
+            // call createUserLogin service
+            try {
+                String tenantDelegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
+                String tenantDispatcherName = dispatcher.getName() + "#" + tenantId;
+                Delegator tenantDelegator = DelegatorFactory.getDelegator(tenantDelegatorName);
+                LocalDispatcher tenantDispatcher = GenericDispatcher.getLocalDispatcher(tenantDispatcherName, tenantDelegator);
+                Map<String, Object> results = tenantDispatcher.runSync("createUserLogin", toContext);
+                return results;
+            } catch (GenericServiceException e) {
+                String errMsg = "Could not run service [" + serviceName + "] for tenant [" + tenantId + "]: " + e.toString();
+                Debug.logError(e, errMsg, module);
+                return ServiceUtil.returnError(errMsg);
+            }
+        } else {
+            return ServiceUtil.returnError(null, errorMessages);
+        }
+    }
+
+    /**
+     * add user login to security group for tenant
+     * @param ctx
+     * @param context
+     * @return
+     */
+    public static Map<String, Object> addUserLoginToSecurityGroupForTenant(DispatchContext ctx, Map<String, Object> context) {
+        return ServiceUtil.returnSuccess();
+    }
+
+    /**
+     * remove user login to security group for tenant
+     * @param ctx
+     * @param context
+     * @return
+     */
+    public static Map<String, Object> removeUserLoginFromSecurityGroupForTenant(DispatchContext ctx, Map<String, Object> context) {
+        return ServiceUtil.returnSuccess();
+    }
+
+    /**
+     * update user login to security group for tenant
+     * @param ctx
+     * @param context
+     * @return
+     */
+    public static Map<String, Object> updateUserLoginToSecurityGroupForTenant(DispatchContext ctx, Map<String, Object> context) {
         return ServiceUtil.returnSuccess();
     }
 }

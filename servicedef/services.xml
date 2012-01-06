@@ -122,4 +122,29 @@
         <description>Delete a tenant data sources</description>
         <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
     </service>
+    <!-- security -->
+    <service name="createUserLoginForTenant" default-entity-name="UserLogin" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
+        invoke="createUserLoginForTenant" auth="true" use-transaction="false">
+        <description>Create user login for tenant</description>
+        <implements service="createUserLogin"/>
+        <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
+    </service>
+    <service name="addUserLoginToSecurityGroupForTenant" default-entity-name="UserLoginSecurityGroup" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
+        invoke="addUserLoginToSecurityGroupForTenant" auth="true" use-transaction="false">
+        <description>Add user login to security group for tenant</description>
+        <implements service="addUserLoginToSecurityGroup"/>
+        <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
+    </service>
+    <service name="updateUserLoginToSecurityGroupForTenant" default-entity-name="UserLoginSecurityGroup" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
+        invoke="updateUserLoginToSecurityGroupForTenant" auth="true" use-transaction="false">
+        <description>Update user login to security group for tenant</description>
+        <implements service="updateUserLoginToSecurityGroup"/>
+        <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
+    </service>
+    <service name="removeUserLoginFromSecurityGroupForTenant" default-entity-name="UserLoginSecurityGroup" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
+        invoke="removeUserLoginFromSecurityGroupForTenant" auth="true" use-transaction="false">
+        <description>Remove user login to security group for tenant</description>
+        <implements service="removeUserLoginFromSecurityGroup"/>
+        <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
+    </service>
 </services>
