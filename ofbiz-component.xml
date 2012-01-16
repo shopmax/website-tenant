@@ -22,6 +22,7 @@
     
     <entity-resource type="data" reader-name="tenant" loader="main" location="data/OfbizSaasTenantData.xml"/>
     <entity-resource type="data" reader-name="seed" loader="main" location="data/OfbizSaasTypeData.xml"/>
+    <entity-resource type="data" reader-name="seed" loader="main" location="data/OfbizSaasSecurityData.xml"/>
     <entity-resource type="data" reader-name="seed" loader="main" location="data/OfbizSaasData.xml"/>
 
     <!-- service resources: model(s), eca(s) and group definitions -->
