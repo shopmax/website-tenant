@@ -67,17 +67,24 @@ under the License.
         <set field="adminUserLoginId" value="admin"/>
         <set field="adminPassword" value="ofbiz"/>
         
+        <!-- get the system user login -->
+        <entity-one value-field="systemUserLogin" entity-name="UserLogin">
+            <field-map field-name="userLoginId" value="system"/>
+        </entity-one>
+        
         <!-- create an admin user for tenant -->
         <set field="createUserLoginForTenantInMap.tenantId" from-field="tenant.tenantId"/>
         <set field="createUserLoginForTenantInMap.userLoginId" from-field="adminUserLoginId"/>
         <set field="createUserLoginForTenantInMap.currentPassword" from-field="adminPassword"/>
         <set field="createUserLoginForTenantInMap.currentPasswordVerify" from-field="adminPassword"/>
+        <set field="createUserLoginForTenantInMap.userLogin" from-field="systemUserLogin"/>
         <call-service service-name="createUserLoginForTenant" in-map-name="createUserLoginForTenantInMap"/>
         
         <!-- add FULLADMIN security group to the admin user -->
         <set field="addUserLoginToSecurityGroupForTenantInMap.tenantId" from-field="tenant.tenantId"/>
         <set field="addUserLoginToSecurityGroupForTenantInMap.userLoginId" from-field="adminUserLoginId"/>
         <set field="addUserLoginToSecurityGroupForTenantInMap.groupId" value="FULLADMIN"/>
+        <set field="addUserLoginToSecurityGroupForTenantInMap.userLogin" from-field="systemUserLogin"/>
         <call-service service-name="addUserLoginToSecurityGroupForTenant" in-map-name="addUserLoginToSecurityGroupForTenantInMap"/>
         
         <check-errors/>
