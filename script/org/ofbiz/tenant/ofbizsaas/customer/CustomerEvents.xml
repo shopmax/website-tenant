@@ -24,6 +24,10 @@ under the License.
     <simple-method method-name="createCustomer" short-description="Create Customer" login-required="false">
         <if-empty field="parameters.CUSTOMER_SYSTEM"><add-error><fail-message message="System is missing"/></add-error></if-empty>
         <if-empty field="parameters.SUBDOMAIN"><add-error><fail-message message="Sub domain is missing"/></add-error></if-empty>
+        <set field="parameters.CUSTOMER_ADDRESS1" value="_NA_"/>
+        <set field="parameters.CUSTOMER_CITY" value="_NA_"/>
+        <set field="parameters.CUSTOMER_STATE" value="_NA_"/>
+        <set field="parameters.CUSTOMER_POSTAL_CODE" value="_NA_"/>
         
         <!-- create customer -->
         <call-simple-method method-name="createCustomer" xml-resource="component://ecommerce/script/org/ofbiz/ecommerce/customer/CustomerEvents.xml"/>

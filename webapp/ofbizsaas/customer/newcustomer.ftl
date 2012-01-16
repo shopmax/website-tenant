@@ -177,6 +177,7 @@ will generally always be reserved for the logo at the top of the page.
 
   <fieldset class="col">
     <legend>${uiLabelMap.OrderAddress}</legend>
+    <#--
     <div>
       <label for="CUSTOMER_ADDRESS1">${uiLabelMap.PartyAddressLine1}*</label>
       <@fieldErrors fieldName="CUSTOMER_ADDRESS1"/>
@@ -199,7 +200,7 @@ will generally always be reserved for the logo at the top of the page.
       <label for="CUSTOMER_POSTAL_CODE">${uiLabelMap.PartyZipCode}*</label>
       <@fieldErrors fieldName="CUSTOMER_POSTAL_CODE"/>
       <input type="text" name="CUSTOMER_POSTAL_CODE" id="CUSTOMER_POSTAL_CODE" value="${requestParameters.CUSTOMER_POSTAL_CODE?if_exists}" />
-    </div>
+    </div-->
 
     <div>
       <label for="customerCountry">${uiLabelMap.PartyCountry}*</label>
@@ -211,7 +212,7 @@ will generally always be reserved for the logo at the top of the page.
         ${screens.render("component://common/widget/CommonScreens.xml#countries")}
       </select>
     </div>
-
+    <#--
     <div>
       <label for="customerState">${uiLabelMap.PartyState}*</label>
       <@fieldErrors fieldName="CUSTOMER_STATE"/>
@@ -233,9 +234,9 @@ will generally always be reserved for the logo at the top of the page.
         <option value="Y">${uiLabelMap.CommonY}</option>
         <option value="N">${uiLabelMap.CommonN}</option>
       </select>
-    </div>
-
+    </div-->
   </fieldset>
+  
 
   <#--
   <fieldset>
@@ -328,6 +329,7 @@ will generally always be reserved for the logo at the top of the page.
       <@fieldErrors fieldName="CUSTOMER_EMAIL"/>
       <input type="text" name="CUSTOMER_EMAIL" id="CUSTOMER_EMAIL" value="${requestParameters.CUSTOMER_EMAIL?if_exists}" onchange="changeEmail()" onkeyup="changeEmail()" />
     </div>
+    <#--
     <div>
       <label for="CUSTOMER_EMAIL_ALLOW_SOL">${uiLabelMap.PartyAllowSolicitation}</label>
       <select name="CUSTOMER_EMAIL_ALLOW_SOL" id="CUSTOMER_EMAIL_ALLOW_SOL">
@@ -338,11 +340,13 @@ will generally always be reserved for the logo at the top of the page.
         <option value="N">${uiLabelMap.CommonN}</option>
       </select>
     </div>
+    -->
   </fieldset>
 
   <fieldset class="col">
     <legend><#if getUsername>${uiLabelMap.CommonUsername}</#if></legend>
     <#if getUsername>
+    <#--
       <@fieldErrors fieldName="USERNAME"/>
       <#if !requestParameters.preferredUsername?has_content>
         <div class="form-row inline">
@@ -350,8 +354,7 @@ will generally always be reserved for the logo at the top of the page.
             <input type="checkbox" class="checkbox" name="UNUSEEMAIL" id="UNUSEEMAIL" value="on" onclick="setEmailUsername();" onfocus="setLastFocused(this);"/> ${uiLabelMap.EcommerceUseEmailAddress}
           </label>
         </div>
-      </#if>
-
+      </#if> -->
       <div>
         <label for="USERNAME">${uiLabelMap.CommonUsername}*</label>
         <#if requestParameters.preferredUsername?has_content>
@@ -362,9 +365,7 @@ will generally always be reserved for the logo at the top of the page.
         </#if>
       </div>
     </#if>
-  </fieldset>
 
-  <fieldset class="col">
     <legend>${uiLabelMap.CommonPassword}</legend>
     <#if createAllowPassword>
       <div>
@@ -378,7 +379,7 @@ will generally always be reserved for the logo at the top of the page.
         <@fieldErrors fieldName="CONFIRM_PASSWORD"/>
         <input type="password" class='inputBox' name="CONFIRM_PASSWORD" id="CONFIRM_PASSWORD" value="" maxlength="50"/>
       </div>
-
+      <#--
       <div>
         <label for="PASSWORD_HINT">${uiLabelMap.PartyPasswordHint}</label>
         <@fieldErrors fieldName="PASSWORD_HINT"/>
@@ -388,6 +389,7 @@ will generally always be reserved for the logo at the top of the page.
       <div>
         <label>${uiLabelMap.PartyReceivePasswordByEmail}.</div>
       </div>
+      -->
     </#if>
   </fieldset>
 
