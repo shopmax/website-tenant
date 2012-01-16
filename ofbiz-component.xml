@@ -35,7 +35,7 @@
     -->
 
     <test-suite loader="main" location="testdef/TenantTests.xml"/>
-    <test-suite loader="main" location="testdef/AwsTests.xml"/>
+    <test-suite loader="main" location="testdef/AmazonAwsTests.xml"/>
 
     <!-- web applications; will be mounted when using the embedded container -->
     <webapp name="tenantmgr"

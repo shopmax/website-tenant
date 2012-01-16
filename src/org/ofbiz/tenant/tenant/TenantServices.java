@@ -51,6 +51,7 @@ import org.ofbiz.service.ModelService;
 import org.ofbiz.service.ServiceUtil;
 import org.ofbiz.tenant.jdbc.TenantConnectionFactory;
 import org.ofbiz.tenant.jdbc.TenantJdbcConnectionHandler;
+import org.ofbiz.tenant.tenant.TenantWorker;
 
 /**
  * Tenant Services
@@ -250,33 +251,13 @@ public class TenantServices {
         
         // set createUserLogin service fields
         String serviceName = "createUserLogin";
-        ModelService modelService = null;
-        List<Object> errorMessages = FastList.newInstance();
-        try {
-            modelService = dispatcher.getDispatchContext().getModelService(serviceName);
-        } catch (GenericServiceException e) {
-            String errMsg = "In set-service-fields could not get service definition for service name [" + serviceName + "]: " + e.toString();
-            Debug.logError(e, errMsg, module);
-            return ServiceUtil.returnError(errMsg);
-        }
-        toContext.putAll(modelService.makeValid(context, "IN", true, errorMessages, timeZone, locale));
+        Map<String, Object> setServiceFieldsResults = TenantWorker.setServiceFields(serviceName, context, toContext, timeZone, locale, dispatcher);
         
-        if (UtilValidate.isEmpty(errorMessages)) {
-            // call createUserLogin service
-            try {
-                String tenantDelegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
-                String tenantDispatcherName = dispatcher.getName() + "#" + tenantId;
-                Delegator tenantDelegator = DelegatorFactory.getDelegator(tenantDelegatorName);
-                LocalDispatcher tenantDispatcher = GenericDispatcher.getLocalDispatcher(tenantDispatcherName, tenantDelegator);
-                Map<String, Object> results = tenantDispatcher.runSync("createUserLogin", toContext);
-                return results;
-            } catch (GenericServiceException e) {
-                String errMsg = "Could not run service [" + serviceName + "] for tenant [" + tenantId + "]: " + e.toString();
-                Debug.logError(e, errMsg, module);
-                return ServiceUtil.returnError(errMsg);
-            }
+        if (!ServiceUtil.isError(setServiceFieldsResults)) {
+            // run createUserLogin service
+            return TenantWorker.runService(serviceName, toContext, true, tenantId, delegator, dispatcher);
         } else {
-            return ServiceUtil.returnError(null, errorMessages);
+            return setServiceFieldsResults;
         }
     }
 
@@ -287,7 +268,24 @@ public class TenantServices {
      * @return
      */
     public static Map<String, Object> addUserLoginToSecurityGroupForTenant(DispatchContext ctx, Map<String, Object> context) {
-        return ServiceUtil.returnSuccess();
+        Delegator delegator = ctx.getDelegator();
+        LocalDispatcher dispatcher = ctx.getDispatcher();
+        Locale locale = (Locale) context.get("locale");
+        TimeZone timeZone = (TimeZone) context.get("timeZone");
+        String tenantId = (String) context.get("tenantId");
+        
+        Map<String, Object> toContext = FastMap.newInstance();
+        
+        // set addUserLoginToSecurityGroup service fields
+        String serviceName = "addUserLoginToSecurityGroup";
+        Map<String, Object> setServiceFieldsResults = TenantWorker.setServiceFields(serviceName, context, toContext, timeZone, locale, dispatcher);
+        
+        if (!ServiceUtil.isError(setServiceFieldsResults)) {
+            // run addUserLoginToSecurityGroup service
+            return TenantWorker.runService(serviceName, toContext, true, tenantId, delegator, dispatcher);
+        } else {
+            return setServiceFieldsResults;
+        }
     }
 
     /**
@@ -297,7 +295,24 @@ public class TenantServices {
      * @return
      */
     public static Map<String, Object> removeUserLoginFromSecurityGroupForTenant(DispatchContext ctx, Map<String, Object> context) {
-        return ServiceUtil.returnSuccess();
+        Delegator delegator = ctx.getDelegator();
+        LocalDispatcher dispatcher = ctx.getDispatcher();
+        Locale locale = (Locale) context.get("locale");
+        TimeZone timeZone = (TimeZone) context.get("timeZone");
+        String tenantId = (String) context.get("tenantId");
+        
+        Map<String, Object> toContext = FastMap.newInstance();
+        
+        // set removeUserLoginFromSecurityGroup service fields
+        String serviceName = "removeUserLoginFromSecurityGroup";
+        Map<String, Object> setServiceFieldsResults = TenantWorker.setServiceFields(serviceName, context, toContext, timeZone, locale, dispatcher);
+        
+        if (!ServiceUtil.isError(setServiceFieldsResults)) {
+            // run removeUserLoginFromSecurityGroup service
+            return TenantWorker.runService(serviceName, toContext, true, tenantId, delegator, dispatcher);
+        } else {
+            return setServiceFieldsResults;
+        }
     }
 
     /**
@@ -307,6 +322,23 @@ public class TenantServices {
      * @return
      */
     public static Map<String, Object> updateUserLoginToSecurityGroupForTenant(DispatchContext ctx, Map<String, Object> context) {
-        return ServiceUtil.returnSuccess();
+        Delegator delegator = ctx.getDelegator();
+        LocalDispatcher dispatcher = ctx.getDispatcher();
+        Locale locale = (Locale) context.get("locale");
+        TimeZone timeZone = (TimeZone) context.get("timeZone");
+        String tenantId = (String) context.get("tenantId");
+        
+        Map<String, Object> toContext = FastMap.newInstance();
+        
+        // set updateUserLoginToSecurityGroup service fields
+        String serviceName = "updateUserLoginToSecurityGroup";
+        Map<String, Object> setServiceFieldsResults = TenantWorker.setServiceFields(serviceName, context, toContext, timeZone, locale, dispatcher);
+        
+        if (!ServiceUtil.isError(setServiceFieldsResults)) {
+            // run updateUserLoginToSecurityGroup service
+            return TenantWorker.runService(serviceName, toContext, true, tenantId, delegator, dispatcher);
+        } else {
+            return setServiceFieldsResults;
+        }
     }
 }
