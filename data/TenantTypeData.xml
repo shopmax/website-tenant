@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <entity-engine-xml>
-    <DataSource dataSourceId="OFBIZSAAS_SITE" dataSourceTypeId="WEBSITE_ENTRY" description="OFBiz Saas Site Profile Maintenance"/>
+    
 </entity-engine-xml>

@@ -19,18 +19,11 @@
     <entity-resource type="data" reader-name="seed" loader="main" location="data/TenantTypeData.xml"/>
     <entity-resource type="data" reader-name="seed" loader="main" location="data/TenantSecurityData.xml"/>
     <entity-resource type="data" reader-name="demo" loader="main" location="data/TenantDemoData.xml"/>
-    
-    <entity-resource type="data" reader-name="tenant" loader="main" location="data/OfbizSaasTenantData.xml"/>
-    <entity-resource type="data" reader-name="seed" loader="main" location="data/OfbizSaasTypeData.xml"/>
-    <entity-resource type="data" reader-name="seed" loader="main" location="data/OfbizSaasSecurityData.xml"/>
-    <entity-resource type="data" reader-name="seed" loader="main" location="data/OfbizSaasData.xml"/>
 
     <!-- service resources: model(s), eca(s) and group definitions -->
     <service-resource type="model" loader="main" location="servicedef/services.xml"/>
     <service-resource type="model" loader="main" location="servicedef/services_amazonaws.xml"/>
-    <service-resource type="model" loader="main" location="servicedef/services_ofbizsaas.xml"/>
     <service-resource type="eca" loader="main" location="servicedef/secas.xml"/>
-    <service-resource type="eca" loader="main" location="servicedef/secas_ofbizsaas.xml"/>
     <!--
     <service-resource type="group" loader="main" location="servicedef/groups.xml"/>
     -->
@@ -45,16 +38,4 @@
         location="webapp/tenantmgr"
         base-permission="OFBTOOLS,TENANTMGR"
         mount-point="/tenantmgr"/>
-    <webapp name="ofbizsaas"
-        title="OFBiz SAAS"
-        server="default-server"
-        location="webapp/ofbizsaas"
-        mount-point="/ofbizsaas"/>
-        
-    <!-- Themes -->
-    <webapp name="ofbizsaas-default"
-        title="OFBiz SAAS Default Theme"
-        server="default-server"
-        location="webapp/ofbizsaas-default"
-        mount-point="/ofbizsaas-default"/>
 </ofbiz-component>

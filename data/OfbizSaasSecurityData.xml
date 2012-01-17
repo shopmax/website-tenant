@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<entity-engine-xml>
-    <SecurityGroup description="Customer user of OFBiz SaaS Limited access to own account" groupId="OFBIZSAAS_CUSTOMER"/>
-    <SecurityGroupPermission groupId="OFBIZSAAS_CUSTOMER" permissionId="CONTENTMGR_ROLE_CREATE"/>
-    <SecurityGroupPermission groupId="OFBIZSAAS_CUSTOMER" permissionId="CONTENTMGR_ROLE_UPDATE"/>
-</entity-engine-xml>
