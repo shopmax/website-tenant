@@ -41,14 +41,8 @@ under the License.
                 <set field="readers" value="${readers},demo,ext-demo"/>
             </if-compare>
             
-            <!-- host name -->
-            <call-class-method method-name="getWebSiteId" class-name="org.ofbiz.webapp.website.WebSiteWorker" ret-field="webSiteId">
-                <field field="request" type="javax.servlet.ServletRequest"/>
-            </call-class-method>
-            <entity-one value-field="webSite" entity-name="WebSite"/>
-            <set field="hostName" from-field="webSite.httpHost" default-value="localhost"/>
-            
             <!-- domain name -->
+            <property-to-field resource="tenant" property="hostName" field="hostName"/>
             <set field="domainName" value="${parameters.SUBDOMAIN}.${hostName}"/>
             
             <!-- set initial path from request's context path -->
