@@ -103,10 +103,12 @@ public class TenantServices {
         Delegator delegator = ctx.getDelegator();
         String tenantId = (String) context.get("tenantId");
         String readers = (String) context.get("readers");
+        String files = (String) context.get("files");
         
         try {
         
-            if (UtilValidate.isEmpty(readers)) {
+            // if readers and files are emty then get readers from /data/DemoLoadData.txt file 
+            if (UtilValidate.isEmpty(readers) && UtilValidate.isEmpty(files)) {
                 // get a reader from file
                 List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", tenantId));
                 if (UtilValidate.isNotEmpty(tenantComponents)) {
@@ -126,8 +128,8 @@ public class TenantServices {
                 }
             }
             
-            // if the reader exists then install data
-            if (UtilValidate.isNotEmpty(readers)) {
+            // if the reader or files exists then install data
+            if (UtilValidate.isNotEmpty(readers) || UtilValidate.isNotEmpty(files)) {
                 if (TransactionUtil.getStatus() == TransactionUtil.STATUS_ACTIVE) {
                     TransactionUtil.commit();
                 }
@@ -135,9 +137,15 @@ public class TenantServices {
                 // load data
                 String configFile = FileUtil.getFile("component://base/config/install-containers.xml").getAbsolutePath();
                 String delegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
-                String[] args = new String[2];
-                args[0] = "-readers=" + readers;
-                args[1] = "-delegator=" + delegatorName;
+                List<String> argList = FastList.newInstance();
+                argList.add("-delegator=" + delegatorName);
+                if (UtilValidate.isNotEmpty(readers)) {
+                    argList.add("-readers=" + readers);
+                }
+                if (UtilValidate.isNotEmpty(files)) {
+                    argList.add("-file=" + files);
+                }
+                String[] args = argList.toArray(new String[argList.size()]);
                 EntityDataLoadContainer entityDataLoadContainer = new EntityDataLoadContainer();
                 entityDataLoadContainer.init(args, configFile);
                 entityDataLoadContainer.start();

@@ -2,5 +2,9 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://ofbiz.apache.org/dtds/test-suite.xsd">
 
-
+    <!--
+    <test-case case-name="tenant-installation-tests">
+        <simple-method-test location="component://tenant/script/org/ofbiz/tenant/test/TenantInstallationTests.xml"/>
+    </test-case>
+    -->
 </test-suite>
