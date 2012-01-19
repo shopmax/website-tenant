@@ -1,6 +1,6 @@
 Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(revision 1232300)
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(revision 1233202)
 +++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(working copy)
 @@ -564,6 +564,8 @@
                  }
@@ -13,7 +13,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.
       * @see org.ofbiz.base.container.Container#stop()
 Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1232300)
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1233202)
 +++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(working copy)
 @@ -407,6 +407,8 @@
          // step 8 - checkdb
@@ -26,7 +26,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java
          result.put("messages", messages);
 Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1232300)
+--- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1233202)
 +++ framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(working copy)
 @@ -1212,11 +1212,14 @@
      public void checkDb(Map<String, ModelEntity> modelEntities, List<String> messages, boolean addMissing) {
@@ -46,7 +46,7 @@ Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
  }
 Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1232300)
+--- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1233202)
 +++ framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(working copy)
 @@ -18,6 +18,16 @@
   *******************************************************************************/
@@ -120,7 +120,7 @@ Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.ja
  }
 Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1232300)
+--- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1233202)
 +++ framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(working copy)
 @@ -83,6 +83,7 @@
  
@@ -161,7 +161,7 @@ Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
      /* ====================================================================== */
 Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1232300)
+--- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1233202)
 +++ framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(working copy)
 @@ -56,4 +56,8 @@
              delegatorCache.putIfAbsent(delegatorName, delegator);
@@ -172,19 +172,83 @@ Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
 +        delegatorCache.remove(delegatorName);
 +    }
  }
-Index: framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java
+Index: framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java
 ===================================================================
---- framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(revision 1232300)
-+++ framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(working copy)
-@@ -645,9 +645,11 @@
-         if (currCatalog != null) session.setAttribute("CURRENT_CATALOG_ID", currCatalog);
-         if (delegatorName != null) {
-             // if there is a tenantId in the delegatorName remove it now so that tenant selection doesn't last beyond logout
-+            /*
-             if (delegatorName.indexOf('#') > 0) {
-                 delegatorName = delegatorName.substring(0, delegatorName.indexOf('#'));
-             }
-+            */
-             session.setAttribute("delegatorName", delegatorName);
+--- framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(revision 1233202)
++++ framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(working copy)
+@@ -280,8 +280,20 @@
+             // get tenant delegator by domain name
+             String serverName = httpRequest.getServerName();
+             try {
++                // first set the delegator to default
++                String delegatorName = config.getServletContext().getInitParameter("entityDelegatorName");
++
++                if (delegatorName == null || delegatorName.length() <= 0) {
++                    delegatorName = "default";
++                }
++                if (Debug.verboseOn()) Debug.logVerbose("Setup Entity Engine Delegator with name " + delegatorName, module);
++                Delegator delegator = DelegatorFactory.getDelegator(delegatorName);
++                config.getServletContext().setAttribute("delegator", delegator);
++                if (delegator == null) {
++                    Debug.logError("[ContextFilter.init] ERROR: delegator factory returned null for delegatorName \"" + delegatorName + "\"", module);
++                }
++                
+                 // if tenant was specified, replace delegator with the new per-tenant delegator and set tenantId to session attribute
+-                Delegator delegator = getDelegator(config.getServletContext());
+                 List<GenericValue> tenants = delegator.findList("Tenant", EntityCondition.makeCondition("domainName", serverName), null, UtilMisc.toList("-createdStamp"), null, false);
+                 if (UtilValidate.isNotEmpty(tenants)) {
+                     GenericValue tenant = EntityUtil.getFirst(tenants);
+@@ -297,32 +309,33 @@
+                     }
  
-             delegator = DelegatorFactory.getDelegator(delegatorName);
+                     // make that tenant active, setup a new delegator and a new dispatcher
+-                    String tenantDelegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
+-                    httpRequest.getSession().setAttribute("delegatorName", tenantDelegatorName);
++                    delegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
++                    httpRequest.getSession().setAttribute("delegatorName", delegatorName);
+ 
+                     // after this line the delegator is replaced with the new per-tenant delegator
+-                    delegator = DelegatorFactory.getDelegator(tenantDelegatorName);
+-                    config.getServletContext().setAttribute("delegator", delegator);
+-
+-                    // clear web context objects
+-                    config.getServletContext().setAttribute("authorization", null);
+-                    config.getServletContext().setAttribute("security", null);
+-                    config.getServletContext().setAttribute("dispatcher", null);
+-
+-                    // initialize authorizer
+-                    getAuthz();
+-                    // initialize security
+-                    Security security = getSecurity();
+-                    // initialize the services dispatcher
+-                    LocalDispatcher dispatcher = getDispatcher(config.getServletContext());
+-
+-                    // set web context objects
+-                    httpRequest.getSession().setAttribute("dispatcher", dispatcher);
+-                    httpRequest.getSession().setAttribute("security", security);
++                    delegator = DelegatorFactory.getDelegator(delegatorName);
+                     
+                     httpRequest.setAttribute("tenantId", tenantId);
+                 }
++                
++                config.getServletContext().setAttribute("delegator", delegator);
+ 
++                // clear web context objects
++                config.getServletContext().setAttribute("authorization", null);
++                config.getServletContext().setAttribute("security", null);
++                config.getServletContext().setAttribute("dispatcher", null);
++
++                // initialize authorizer
++                getAuthz();
++                // initialize security
++                Security security = getSecurity();
++                // initialize the services dispatcher
++                LocalDispatcher dispatcher = getDispatcher(config.getServletContext());
++
++                // set web context objects
++                httpRequest.getSession().setAttribute("dispatcher", dispatcher);
++                httpRequest.getSession().setAttribute("security", security);
++
+                 // NOTE DEJ20101130: do NOT always put the delegator name in the user's session because the user may 
+                 // have logged in and specified a tenant, and even if no Tenant record with a matching domainName field 
+                 // is found this will change the user's delegator back to the base one instead of the one for the 

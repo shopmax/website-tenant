@@ -18,6 +18,7 @@
   under the License.
   -->
 <entity-engine-xml>
+    <!--
     <Tenant tenantId="demotenant1" tenantName="Demo Tenant 1"/>
     <TenantComponent tenantId="demotenant1" componentName="tenant" sequenceNum="02"/>
     <TenantComponent tenantId="demotenant1" componentName="common" sequenceNum="03"/>
@@ -28,4 +29,5 @@
        jdbcUri="jdbc:postgresql://127.0.0.1/demotenant1" jdbcUsername="ofbiz" jdbcPassword="ofbiz"/>
     <TenantDataSource tenantId="demotenant1" entityGroupName="org.ofbiz.olap"
        jdbcUri="jdbc:postgresql://127.0.0.1/demotenant1olap" jdbcUsername="ofbiz" jdbcPassword="ofbiz"/>
+   -->
 </entity-engine-xml>
