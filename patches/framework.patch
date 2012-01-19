@@ -1,6 +1,6 @@
 Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(revision 1233202)
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(revision 1233240)
 +++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(working copy)
 @@ -564,6 +564,8 @@
                  }
@@ -13,7 +13,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.
       * @see org.ofbiz.base.container.Container#stop()
 Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1233202)
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1233240)
 +++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(working copy)
 @@ -407,6 +407,8 @@
          // step 8 - checkdb
@@ -26,7 +26,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java
          result.put("messages", messages);
 Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1233202)
+--- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1233240)
 +++ framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(working copy)
 @@ -1212,11 +1212,14 @@
      public void checkDb(Map<String, ModelEntity> modelEntities, List<String> messages, boolean addMissing) {
@@ -46,7 +46,7 @@ Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
  }
 Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1233202)
+--- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1233240)
 +++ framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(working copy)
 @@ -18,6 +18,16 @@
   *******************************************************************************/
@@ -120,7 +120,7 @@ Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.ja
  }
 Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1233202)
+--- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1233240)
 +++ framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(working copy)
 @@ -83,6 +83,7 @@
  
@@ -161,7 +161,7 @@ Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
      /* ====================================================================== */
 Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1233202)
+--- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1233240)
 +++ framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(working copy)
 @@ -56,4 +56,8 @@
              delegatorCache.putIfAbsent(delegatorName, delegator);
@@ -172,9 +172,25 @@ Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
 +        delegatorCache.remove(delegatorName);
 +    }
  }
+Index: framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java
+===================================================================
+--- framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(revision 1233240)
++++ framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(working copy)
+@@ -645,9 +645,11 @@
+         if (currCatalog != null) session.setAttribute("CURRENT_CATALOG_ID", currCatalog);
+         if (delegatorName != null) {
+             // if there is a tenantId in the delegatorName remove it now so that tenant selection doesn't last beyond logout
++            /*
+             if (delegatorName.indexOf('#') > 0) {
+                 delegatorName = delegatorName.substring(0, delegatorName.indexOf('#'));
+             }
++            */
+             session.setAttribute("delegatorName", delegatorName);
+ 
+             delegator = DelegatorFactory.getDelegator(delegatorName);
 Index: framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java
 ===================================================================
---- framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(revision 1233202)
+--- framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(revision 1233240)
 +++ framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(working copy)
 @@ -280,8 +280,20 @@
              // get tenant delegator by domain name
@@ -226,6 +242,7 @@ Index: framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java
 -                    // set web context objects
 -                    httpRequest.getSession().setAttribute("dispatcher", dispatcher);
 -                    httpRequest.getSession().setAttribute("security", security);
+
 +                    delegator = DelegatorFactory.getDelegator(delegatorName);
                      
                      httpRequest.setAttribute("tenantId", tenantId);
