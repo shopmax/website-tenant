@@ -1,32 +1,38 @@
-// *********************************************
-// Specifying Tenant Definition In Your Component
-// *********************************************
+to automatically create a tenant demo systems:
 
-Create Tenant Data
-==================
-- create a seed data file called data/TenantData.xml
-- order the tenant data respectively following:
-  * Tenant
-  * TenantComponent
-  * TenantDataSource (org.ofbiz)
-  * TenantDataSource (org.ofbiz.olap)
-- specific the seed data file in a ofbiz-component.xml file following:
-  
-  ...
-  ...
-  <entity-resource type="data" reader-name="tenant" loader="main" location="data/TenantData.xml"/>
-  ...
-  ...
+In the component itself:
+1. create data/TenantData.xml
 
-Specific Demo Reader
-====================
-- create a demo reader file called data/DemoLoadData.txt
-- enter a line for the reader, for example, seed,seed-initial,demo,ext-demo
+example: (the records should be in this order:
 
-Install Data
-============
-Using an Ant command to install the tenant data.
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-engine-xml>
+    <Tenant tenantId="TENANTID" tenantName="Tenant Name" domainName="anyname.example.com" initialPath="/componentname"/>
+    <TenantComponent tenantId="TENANTID" componentName="componentname" sequenceNum="01"/>
+    <TenantDataSource tenantId="TENANTID" entityGroupName="org.ofbiz"
+        jdbcUri="jdbc:postgresql://127.0.0.1/demoTIDofbiz" jdbcUsername="ofbiz" jdbcpassword="ofbiz"/>
+    <TenantDataSource tenantId="TENANTID" entityGroupName="org.ofbiz.olap"
+        jdbcUri="jdbc:postgresql://127.0.0.1/demoTIDolap" jdbcUsername="ofbiz" jdbcPassword="ofbiz"/>
+</entity-engine-xml>
 
+
+2. add this entry to the ofbiz-component.xml file:
+ <entity-resource type="data" reader-name="tenant" loader="main" location="data/TenantData.xml"/>
+ 
+3. add a file with the name:  DemoLoadData.txt:
+content:
+seed,seed-initial,demo,ext-demo
+
+to specify what needs to be loaded for this tenant.
+
+4. create basic databases
+ofbiz
+ofbizolap
+ofbiztenant
+
+5. run the following command to create all required databases and content:
 ./ant run-install-readers -Ddata-readers=seed,seed-initial,tenant,demo,ext-demo
 
-** NOTE: there will be some error logs from PostgreSQL's JDBC in the terminal but they do NOT cause any problems.
+the readers spec here is for the basic system only.
+
+6. change the server name to the config/tenant.properties file
