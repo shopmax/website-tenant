@@ -30,6 +30,7 @@ import org.ofbiz.entity.GenericValue;
 import org.ofbiz.entity.datasource.GenericHelperInfo;
 import org.ofbiz.entity.jdbc.ConnectionFactory;
 import org.ofbiz.entity.jdbc.SQLProcessor;
+import org.ofbiz.tenant.jdbc.TenantJdbcConnectionHandler;
 
 /**
  * Tenant PostreSQL connection handler
@@ -69,6 +70,19 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
             Debug.logError(e, module);
         }
     }
+    /**
+     * get JDBC Server name
+     */
+    public String getJdbcServerName() {
+        String jdbcUri = getJdbcUri();
+        String serverName;
+        String []temp1,temp2;
+        temp1 = jdbcUri.split("//");
+        temp2 = temp1[1].split("/");
+        
+        serverName = temp2[0];
+        return serverName;
+    }
     
     /**
      * get database name
@@ -77,7 +91,8 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
     public String getDatabaseName() {
         String databaseName = null;
         String jdbcUri = getJdbcUri();
-        Pattern pattern = Pattern.compile(URI_PREFIX + "//127.0.0.1/(.*?)$");
+        String jdbcServerName = getJdbcServerName();
+        Pattern pattern = Pattern.compile(URI_PREFIX + "//" + jdbcServerName + "/(.*?)$");
         Matcher matcher = pattern.matcher(jdbcUri);
         if (matcher.find()) {
             databaseName = matcher.group(1);

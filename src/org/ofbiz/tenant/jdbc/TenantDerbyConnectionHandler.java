@@ -31,6 +31,7 @@ import org.ofbiz.entity.GenericValue;
 import org.ofbiz.entity.datasource.GenericHelperInfo;
 import org.ofbiz.entity.jdbc.ConnectionFactory;
 import org.ofbiz.entity.jdbc.SQLProcessor;
+import org.ofbiz.tenant.jdbc.TenantJdbcConnectionHandler;
 import org.ofbiz.tenant.util.TenantUtil;
 
 /**
@@ -61,7 +62,12 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
             Debug.logError(e, module);
         }
     }
-    
+    /**
+     * get JDBC Server name
+     */
+    public String getJdbcServerName() {
+        return null;
+    }
     /**
      * get database name
      */

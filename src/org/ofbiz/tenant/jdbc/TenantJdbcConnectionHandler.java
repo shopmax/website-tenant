@@ -146,4 +146,6 @@ public abstract class TenantJdbcConnectionHandler {
     }
     
     protected abstract void doDeleteDatabase(String databaseName, GenericHelperInfo helperInfo) throws GenericEntityException, SQLException;
+    
+    protected abstract String getJdbcServerName();
 }

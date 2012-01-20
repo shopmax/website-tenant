@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<entity-engine-xml>
-    <Tenant tenantId="test" tenantName="Test Tenant"/>
-    <TenantComponent tenantId="test" componentName="test" sequenceNum="01"/>
-    <TenantDataSource tenantId="test" entityGroupName="org.ofbiz"
-       jdbcUri="jdbc:postgresql://127.0.0.1/test" jdbcUsername="ofbiz" jdbcPassword="ofbiz"/>
-    <TenantDataSource tenantId="test" entityGroupName="org.ofbiz.olap"
-       jdbcUri="jdbc:postgresql://127.0.0.1/testolap" jdbcUsername="ofbiz" jdbcPassword="ofbiz"/>
-</entity-engine-xml>
