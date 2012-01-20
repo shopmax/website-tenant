@@ -25,14 +25,16 @@ seed,seed-initial,demo,ext-demo
 
 to specify what needs to be loaded for this tenant.
 
-4. create basic databases
+4. change the server name to the config/tenant.properties file
+
+5. change and JDBC configurations to the config/tenant.properties file
+
+6. create basic databases
 ofbiz
 ofbizolap
 ofbiztenant
 
-5. run the following command to create all required databases and content:
+7. run the following command to create all required databases and content:
 ./ant run-install-readers -Ddata-readers=seed,seed-initial,tenant,demo,ext-demo
 
 the readers spec here is for the basic system only.
-
-6. change the server name to the config/tenant.properties file
