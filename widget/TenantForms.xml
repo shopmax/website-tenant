@@ -6,8 +6,6 @@
         <field name="noConditionFind"><hidden value="Y"/><!-- if this isn't there then with all fields empty no query will be done --></field>
         <field name="tenantId"><text-find/></field>
         <field name="tenantName"><text-find/></field>
-        <field name="domainName"><text-find/></field>
-        <field name="initialPath"><text-find/></field>
         <field name="disabled">
             <drop-down allow-empty="true"><option key="Y" description="${uiLabelMap.CommonY}"/><option key="N" description="${uiLabelMap.CommonN}"/></drop-down>
         </field>
@@ -32,8 +30,6 @@
             </hyperlink>
         </field>
         <field name="tenantName"><display/></field>
-        <field name="domainName"><display/></field>
-        <field name="initialPath"><display/></field>
         <field name="disabled"><display/></field>
         <field name="deleteButton" title="${uiLabelMap.CommonDelete}" use-when="tenant!=null" widget-style="smallSubmit">
             <hyperlink target="deleteTenant" description="${uiLabelMap.CommonDelete}" confirmation-message="${uiLabelMap.TenantDeleteTenantConfirmationMessage}">
@@ -45,9 +41,21 @@
         header-row-style="header-row" default-table-style="basic-table">
         <field name="tenantId"><display/></field>
         <field name="tenantName"><display/></field>
+        <field name="disabled"><display/></field>
+    </form>
+    <form name="tenantDomainNames" type="list" list-name="listIt"
+        odd-row-style="alternate-row" header-row-style="header-row-2" default-table-style="basic-table hover-bar" separate-columns="true">
+        <actions>
+            <service service-name="performFind" result-map="result" result-map-list="listIt">
+                <field-map field-name="inputFields" from-field="parameters"/>
+                <field-map field-name="entityName" value="TenantDomainName"/>
+                <field-map field-name="orderBy" value="domainName"/>
+                <field-map field-name="viewIndex" from-field="viewIndex"/>
+                <field-map field-name="viewSize" from-field="viewSize"/>
+            </service>
+        </actions>
         <field name="domainName"><display/></field>
         <field name="initialPath"><display/></field>
-        <field name="disabled"><display/></field>
     </form>
     <form name="tenantDataSources" type="list" list-name="listIt"
         odd-row-style="alternate-row" header-row-style="header-row-2" default-table-style="basic-table hover-bar" separate-columns="true">
@@ -86,13 +94,38 @@
         <field use-when="tenant!=null" name="tenantId" title="${uiLabelMap.TenantTenantId}"><display/></field>
         <field use-when="tenant==null&amp;&amp;tenantId==null" name="tenantId" title="${uiLabelMap.TenantTenantId}"><text size="20" maxlength="20"/></field>
         <field name="tenantName" title="${uiLabelMap.TenantTenantName}" required-field="true"><text size="30" maxlength="255"/></field>
-        <field name="domainName" title="${uiLabelMap.TenantDomainName}"><text size="30" maxlength="255"/></field>
-        <field name="initialPath" title="${uiLabelMap.TenantInitialPath}"><text size="30" maxlength="255"/></field>
         <field name="disabled" title="${uiLabelMap.CommonDisabled}">
             <drop-down allow-empty="true"><option key="Y" description="${uiLabelMap.CommonY}"/><option key="N" description="${uiLabelMap.CommonN}"/></drop-down>
         </field>
         <field name="submitButton" title="${uiLabelMap.CommonUpdate}" use-when="tenant!=null" widget-style="smallSubmit"><submit button-type="button"/></field>
         <field name="submitButton" title="${uiLabelMap.CommonCreate}" use-when="tenant==null" widget-style="smallSubmit"><submit button-type="button"/></field>
+    </form>
+    <form name="EditTenantDomainName" type="single" target="createTenantDomainName" title="" default-map-name="tenant"
+        header-row-style="header-row" default-table-style="basic-table">
+        <field use-when="tenantDataSource!=null" name="tenantId" title="${uiLabelMap.TenantTenantId}"><display/></field>
+        <field use-when="tenantDataSource==null&amp;&amp;tenantId==null" name="tenantId" title="${uiLabelMap.TenantTenantId}"><text size="20" maxlength="20"/></field>
+        <field name="tenantId"><hidden/></field>
+        <field name="domainName" title="${uiLabelMap.TenantDomainName}" required-field="true"><text size="30" maxlength="255"/></field>
+        <field name="initialPath" title="${uiLabelMap.TenantInitialPath}"><text size="30" maxlength="255"/></field>
+        <field name="submitButton" title="${uiLabelMap.CommonCreate}" widget-style="smallSubmit"><submit button-type="button"/></field>
+    </form>
+    <form name="ListTenantDomainNames" type="multi" list-name="listIt" use-row-submit="true"
+        odd-row-style="alternate-row" header-row-style="header-row-2" default-table-style="basic-table hover-bar" separate-columns="true">
+        <actions>
+            <service service-name="performFind" result-map="result" result-map-list="listIt">
+                <field-map field-name="inputFields" from-field="parameters"/>
+                <field-map field-name="entityName" value="TenantDomainName"/>
+                <field-map field-name="orderBy" value="domainName"/>
+                <field-map field-name="viewIndex" from-field="viewIndex"/>
+                <field-map field-name="viewSize" from-field="viewSize"/>
+            </service>
+        </actions>
+        <field name="tenantId"><hidden/></field>
+        <field name="_rowSubmit" title="${uiLabelMap.CommonSelect}"><check/></field>
+        <field name="domainName" title="${uiLabelMap.TenantDomainName}"><display/></field>
+        <field name="initialPath" title="${uiLabelMap.TenantInitialPath}"><text/></field>
+        <field name="updateButton" title="${uiLabelMap.CommonUpdate}" use-when="tenant!=null" widget-style="smallSubmit" event="onclick" action="javascript:document.ListTenantDomainNames.action='updateTenantDomainNames';"><submit button-type="button"/></field>
+        <field name="deleteButton" title="${uiLabelMap.CommonDelete}" use-when="tenant!=null" widget-style="smallSubmit" event="onclick" action="javascript:document.ListTenantDomainNames.action='deleteTenantDomainNames';"><submit button-type="button"/></field>
     </form>
     <form name="EditTenantDataSource" type="single" target="createTenantDataSource" title="" default-map-name="tenant"
         header-row-style="header-row" default-table-style="basic-table">

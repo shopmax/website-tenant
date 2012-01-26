@@ -22,6 +22,14 @@
                 <parameter param-name="tenantId" from-field="tenant.tenantId"/>
             </link>
         </menu-item>
+        <menu-item name="domainNames" title="${uiLabelMap.TenantDomainName}">
+            <condition>
+                <not><if-empty field="tenant.tenantId"/></not>
+            </condition>
+            <link target="ListTenantDomainNames">
+                <parameter param-name="tenantId" from-field="tenant.tenantId"/>
+            </link>
+        </menu-item>
         <menu-item name="dataSources" title="${uiLabelMap.TenantDataSources}">
             <condition>
                 <not><if-empty field="tenant.tenantId"/></not>

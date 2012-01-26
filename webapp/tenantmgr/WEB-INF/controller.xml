@@ -25,6 +25,7 @@
     <request-map uri="FindTenant"><security https="true" auth="true"/><response name="success" type="view" value="FindTenant"/></request-map>
     <request-map uri="TenantOverview"><security https="true" auth="true"/><response name="success" type="view" value="TenantOverview"/></request-map>
     <request-map uri="EditTenant"><security https="true" auth="true"/><response name="success" type="view" value="EditTenant"/></request-map>
+    <request-map uri="ListTenantDomainNames"><security https="true" auth="true"/><response name="success" type="view" value="ListTenantDomainNames"/></request-map>
     <request-map uri="ListTenantDataSources"><security https="true" auth="true"/><response name="success" type="view" value="ListTenantDataSources"/></request-map>
     <request-map uri="ListTenantComponents"><security https="true" auth="true"/><response name="success" type="view" value="ListTenantComponents"/></request-map>
     <request-map uri="EditTenantInstallation"><security https="true" auth="true"/><response name="success" type="view" value="EditTenantInstallation"/></request-map>
@@ -46,6 +47,24 @@
         <event type="service" invoke="deleteTenant"/>
         <response name="success" type="request-redirect-noparam" value="FindTenant"/>
         <response name="error" type="view-last" value="FindTenant"/>
+    </request-map>
+    <request-map uri="createTenantDomainName">
+        <security https="true" auth="true"/>
+        <event type="service" invoke="createTenantDomainName"/>
+        <response name="success" type="view-last" value="ListTenantDomainNames"/>
+        <response name="error" type="view-last" value="ListTenantDomainNames"/>
+    </request-map>
+    <request-map uri="updateTenantDomainNames">
+        <security https="true" auth="true"/>
+        <event type="service-multi" invoke="updateTenantDomainName"/>
+        <response name="success" type="view-last" value="ListTenantDomainNames"/>
+        <response name="error" type="view-last" value="ListTenantDomainNames"/>
+    </request-map>
+    <request-map uri="deleteTenantDomainNames">
+        <security https="true" auth="true"/>
+        <event type="service-multi" invoke="deleteTenantDomainName"/>
+        <response name="success" type="view-last" value="ListTenantDomainNames"/>
+        <response name="error" type="view-last" value="ListTenantDomainNames"/>
     </request-map>
     <request-map uri="createTenantDataSource">
         <security https="true" auth="true"/>
@@ -95,6 +114,7 @@
     <view-map name="FindTenant" type="screen" page="component://tenant/widget/TenantScreens.xml#FindTenant"/>
     <view-map name="TenantOverview" type="screen" page="component://tenant/widget/TenantScreens.xml#TenantOverview"/>
     <view-map name="EditTenant" type="screen" page="component://tenant/widget/TenantScreens.xml#EditTenant"/>
+    <view-map name="ListTenantDomainNames" type="screen" page="component://tenant/widget/TenantScreens.xml#ListTenantDomainNames"/>
     <view-map name="ListTenantDataSources" type="screen" page="component://tenant/widget/TenantScreens.xml#ListTenantDataSources"/>
     <view-map name="ListTenantComponents" type="screen" page="component://tenant/widget/TenantScreens.xml#ListTenantComponents"/>
     <view-map name="EditTenantInstallation" type="screen" page="component://tenant/widget/TenantScreens.xml#EditTenantInstallation"/>

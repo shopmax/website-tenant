@@ -46,6 +46,27 @@
         <description>Delete a Tenant</description>
         <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
     </service>
+    <!-- Domain Name -->
+    <service name="createTenantDomainName" default-entity-name="TenantDomainName" engine="simple" location="component://tenant/script/org/ofbiz/tenant/tenant/TenantServices.xml"
+        invoke="createTenantDomainName" auth="true">
+        <description>Create a Tenant Domain Name</description>
+        <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
+        <attribute name="domainName" mode="IN" type="String" optional="false"></attribute>
+        <attribute name="initialPath" mode="IN" type="String" optional="true"></attribute>
+    </service>
+    <service name="updateTenantDomainName" default-entity-name="TenantDomainName" engine="simple" location="component://tenant/script/org/ofbiz/tenant/tenant/TenantServices.xml"
+        invoke="updateTenantDomainName" auth="true">
+        <description>Update a Tenant Domain Name</description>
+        <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
+        <attribute name="domainName" mode="IN" type="String" optional="false"></attribute>
+        <attribute name="initialPath" mode="IN" type="String" optional="true"></attribute>
+    </service>
+    <service name="deleteTenantDomainName" default-entity-name="TenantDomainName" engine="simple" location="component://tenant/script/org/ofbiz/tenant/tenant/TenantServices.xml"
+        invoke="deleteTenantDomainName" auth="true">
+        <description>Delete a Tenant Domain Name</description>
+        <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
+        <attribute name="domainName" mode="IN" type="String" optional="false"></attribute>
+    </service>
     <!-- Data Source -->
     <service name="createTenantDataSource" default-entity-name="TenantDataSource" engine="simple" location="component://tenant/script/org/ofbiz/tenant/tenant/TenantServices.xml"
         invoke="createTenantDataSource" auth="true" use-transaction="false">

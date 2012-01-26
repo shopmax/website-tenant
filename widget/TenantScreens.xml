@@ -54,6 +54,9 @@
                         <screenlet title="${uiLabelMap.TenantTenant}">
                             <include-form name="tenantHeader" location="component://tenant/widget/TenantForms.xml"/>
                         </screenlet>
+                        <screenlet title="${uiLabelMap.TenantDomainNames}">
+                            <include-form name="tenantDomainNames" location="component://tenant/widget/TenantForms.xml"/>
+                        </screenlet>
                         <screenlet title="${uiLabelMap.TenantDataSources}">
                             <include-form name="tenantDataSources" location="component://tenant/widget/TenantForms.xml"/>
                         </screenlet>
@@ -78,6 +81,28 @@
                     <decorator-section name="body">
                         <screenlet title="${uiLabelMap.TenantTenant}">
                             <include-form name="EditTenant" location="component://tenant/widget/TenantForms.xml"/>
+                        </screenlet>
+                    </decorator-section>
+                </decorator-screen>
+            </widgets>
+        </section>
+    </screen>
+    <screen name="ListTenantDomainNames">
+        <section>
+            <actions>
+                <set field="headerItem" value="tenant"/><!-- this highlights the selected menu-item with name "main" -->
+                <set field="tabButtonItem" value="domainNames"/>
+                <set field="viewIndex" from-field="parameters.VIEW_INDEX" type="Integer" default-value="0"/>
+                <set field="viewSize" from-field="parameters.VIEW_SIZE" type="Integer" default-value="20"/>
+            </actions>
+            <widgets>
+                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                    <decorator-section name="body">
+                        <screenlet title="${uiLabelMap.TenantDomainNames}">
+                            <include-form name="ListTenantDomainNames" location="component://tenant/widget/TenantForms.xml"/>
+                        </screenlet>
+                        <screenlet title="${uiLabelMap.TenantCreateDomainName}">
+                            <include-form name="EditTenantDomainName" location="component://tenant/widget/TenantForms.xml"/>
                         </screenlet>
                     </decorator-section>
                 </decorator-screen>

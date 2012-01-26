@@ -1,6 +1,6 @@
 Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(revision 1233244)
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(revision 1236036)
 +++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(working copy)
 @@ -564,6 +564,8 @@
                  }
@@ -13,7 +13,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.
       * @see org.ofbiz.base.container.Container#stop()
 Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1233244)
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1236036)
 +++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(working copy)
 @@ -407,6 +407,8 @@
          // step 8 - checkdb
@@ -26,7 +26,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java
          result.put("messages", messages);
 Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1233244)
+--- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1236036)
 +++ framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(working copy)
 @@ -1212,11 +1212,14 @@
      public void checkDb(Map<String, ModelEntity> modelEntities, List<String> messages, boolean addMissing) {
@@ -46,7 +46,7 @@ Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
  }
 Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1233244)
+--- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1236036)
 +++ framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(working copy)
 @@ -18,6 +18,16 @@
   *******************************************************************************/
@@ -120,7 +120,7 @@ Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.ja
  }
 Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1233244)
+--- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1236036)
 +++ framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(working copy)
 @@ -83,6 +83,7 @@
  
@@ -161,7 +161,7 @@ Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
      /* ====================================================================== */
 Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1233244)
+--- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1236036)
 +++ framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(working copy)
 @@ -56,4 +56,8 @@
              delegatorCache.putIfAbsent(delegatorName, delegator);
@@ -172,9 +172,47 @@ Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
 +        delegatorCache.remove(delegatorName);
 +    }
  }
+Index: framework/entity/entitydef/entitygroup.xml
+===================================================================
+--- framework/entity/entitydef/entitygroup.xml	(revision 1236036)
++++ framework/entity/entitydef/entitygroup.xml	(working copy)
+@@ -29,4 +29,5 @@
+ <!--     <entity-group group="org.ofbiz.tenant" entity="TenantUserLogin"/> -->
+     <entity-group group="org.ofbiz.tenant" entity="Component"/>
+     <entity-group group="org.ofbiz.tenant" entity="TenantComponent"/>
++    <entity-group group="org.ofbiz.tenant" entity="TenantDomainName"/>
+ </entitygroup>
+Index: framework/entity/entitydef/entitymodel.xml
+===================================================================
+--- framework/entity/entitydef/entitymodel.xml	(revision 1236036)
++++ framework/entity/entitydef/entitymodel.xml	(working copy)
+@@ -66,8 +66,6 @@
+     <entity entity-name="Tenant" package-name="org.ofbiz.entity.tenant">
+         <field name="tenantId" type="id-ne"/>
+         <field name="tenantName" type="name"/>
+-        <field name="domainName" type="long-varchar"/>
+-        <field name="initialPath" type="value"/>
+         <field name="disabled" type="indicator"><description>Disabled if 'Y', defaults to 'N' (not disabled).</description></field>
+         <prim-key field="tenantId"/>
+     </entity>
+@@ -141,4 +139,14 @@
+             <key-map field-name="componentName"/>
+         </relation>
+     </entity>
++    <entity entity-name="TenantDomainName" package-name="org.ofbiz.entity.tenant">
++        <field name="tenantId" type="id-ne"/>
++        <field name="domainName" type="long-varchar"/>
++        <field name="initialPath" type="value"/>
++        <prim-key field="tenantId"/>
++        <prim-key field="domainName"/>
++        <relation type="one" fk-name="TNTDMN_TNT" rel-entity-name="Tenant">
++            <key-map field-name="tenantId"/>
++        </relation>
++    </entity>
+ </entitymodel>
 Index: framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java
 ===================================================================
---- framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(revision 1233244)
+--- framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(revision 1236036)
 +++ framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(working copy)
 @@ -645,9 +645,11 @@
          if (currCatalog != null) session.setAttribute("CURRENT_CATALOG_ID", currCatalog);
@@ -190,9 +228,9 @@ Index: framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java
              delegator = DelegatorFactory.getDelegator(delegatorName);
 Index: framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java
 ===================================================================
---- framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(revision 1233244)
+--- framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(revision 1236036)
 +++ framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(working copy)
-@@ -280,8 +280,20 @@
+@@ -280,16 +280,28 @@
              // get tenant delegator by domain name
              String serverName = httpRequest.getServerName();
              try {
@@ -211,9 +249,22 @@ Index: framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java
 +                
                  // if tenant was specified, replace delegator with the new per-tenant delegator and set tenantId to session attribute
 -                Delegator delegator = getDelegator(config.getServletContext());
-                 List<GenericValue> tenants = delegator.findList("Tenant", EntityCondition.makeCondition("domainName", serverName), null, UtilMisc.toList("-createdStamp"), null, false);
-                 if (UtilValidate.isNotEmpty(tenants)) {
-                     GenericValue tenant = EntityUtil.getFirst(tenants);
+-                List<GenericValue> tenants = delegator.findList("Tenant", EntityCondition.makeCondition("domainName", serverName), null, UtilMisc.toList("-createdStamp"), null, false);
+-                if (UtilValidate.isNotEmpty(tenants)) {
+-                    GenericValue tenant = EntityUtil.getFirst(tenants);
+-                    String tenantId = tenant.getString("tenantId");
++                List<GenericValue> tenantDomainNames = delegator.findList("TenantDomainName", EntityCondition.makeCondition("domainName", serverName), null, UtilMisc.toList("-createdStamp"), null, false);
++                if (UtilValidate.isNotEmpty(tenantDomainNames)) {
++                    GenericValue tenantDomainName = EntityUtil.getFirst(tenantDomainNames);
++                    String tenantId = tenantDomainName.getString("tenantId");
+ 
+                     // if the request path is a root mount then redirect to the initial path
+                     if (UtilValidate.isNotEmpty(requestPath) && requestPath.equals(contextUri)) {
+-                        String initialPath = tenant.getString("initialPath");
++                        String initialPath = tenantDomainName.getString("initialPath");
+                         if (UtilValidate.isNotEmpty(initialPath) && !"/".equals(initialPath)) {
+                             ((HttpServletResponse)response).sendRedirect(initialPath);
+                             return;
 @@ -297,32 +309,33 @@
                      }
  

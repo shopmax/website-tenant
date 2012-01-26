@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <entity-engine-xml>
-    <Tenant tenantId="@tenantId@" tenantName="@tenantName@" domainName="@subdomain@.@serverName@" initialPath="@initialPath@"/>
+    <Tenant tenantId="@tenantId@" tenantName="@tenantName@"/>
     <TenantComponent tenantId="@tenantId@" componentName="@componentName@" sequenceNum="10"/>
     <TenantDataSource tenantId="@tenantId@" entityGroupName="org.ofbiz"
        jdbcUri="jdbc:postgresql://@jdbcServerName@/@tenantId@ofbiz" jdbcUsername="@jdbcUsername@" jdbcPassword="@jdbcPassword@"/>
     <TenantDataSource tenantId="@tenantId@" entityGroupName="org.ofbiz.olap"
        jdbcUri="jdbc:postgresql://@jdbcServerName@/@tenantId@olap" jdbcUsername="@jdbcUsername@" jdbcPassword="@jdbcPassword@"/>
+    <TenantDomainName tenantId="@tenantId@" domainName="@subdomain@.@serverName@" initialPath="@initialPath@"/>
 </entity-engine-xml>

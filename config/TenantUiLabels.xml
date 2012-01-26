@@ -28,6 +28,12 @@
     <property key="TenantOverview">
         <value xml:lang="en">Overview</value>
     </property>
+    <property key="TenantDomainNames">
+        <value xml:lang="en">Domain Names</value>
+    </property>
+    <property key="TenantCreateDomainName">
+        <value xml:lang="en">Create Domain Name</value>
+    </property>
     <property key="TenantDataSources">
         <value xml:lang="en">Data Sources</value>
     </property>

@@ -20,6 +20,8 @@ package org.ofbiz.tenant.util;
 
 import java.io.File;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * Tenant Utility
  * @author chatree
@@ -47,5 +49,20 @@ public class TenantUtil {
 
         // The directory is now empty so delete it
         return directory.delete();
+    }
+    
+    /**
+     * is active
+     * @param tenantId
+     * @param request
+     * @return
+     */
+    public static boolean isActive(String tenantId, HttpServletRequest request) {
+        String tId = (String) request.getAttribute("tenantId");
+        if (tenantId.equals(tId)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

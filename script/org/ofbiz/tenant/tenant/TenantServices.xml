@@ -20,6 +20,8 @@ under the License.
 
 <simple-methods xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://ofbiz.apache.org/dtds/simple-methods.xsd">
+        
+    <!-- Tenant -->
     <simple-method method-name="createTenant" short-description="Create a Tenant">
         <make-value value-field="tenant" entity-name="Tenant"/>
         <set-pk-fields value-field="tenant" map="parameters"/>
@@ -46,6 +48,31 @@ under the License.
         <!-- Delete a tenant -->
         <remove-value value-field="tenant"/>
     </simple-method>
+    
+    <!-- Tenant Domain Name -->
+    <simple-method method-name="createTenantDomainName" short-description="Create a Tenant Domain Name">
+        <!-- trim parameters before creating-->
+        <call-object-method obj-field="parameters.domainName" method-name="trim" ret-field="parameters.domainName"/>
+        
+        <make-value value-field="tenantDomainName" entity-name="TenantDomainName"/>
+        <set-pk-fields value-field="tenantDomainName" map="parameters"/>
+        <set-nonpk-fields value-field="tenantDomainName" map="parameters"/>
+        <create-value value-field="tenantDomainName"/>
+    </simple-method>
+    <simple-method method-name="updateTenantDomainName" short-description="Update a Tenant Domain Name">
+        <!-- trim parameters before creating-->
+        <call-object-method obj-field="parameters.domainName" method-name="trim" ret-field="parameters.domainName"/>
+        
+        <entity-one value-field="tenantDomainName" entity-name="TenantDomainName"/>
+        <set-nonpk-fields value-field="tenantDomainName" map="parameters"/>
+        <store-value value-field="tenantDomainName"/>
+    </simple-method>
+    <simple-method method-name="deleteTenantDomainName" short-description="Delete a Tenant Domain Name">
+        <entity-one value-field="tenantDomainName" entity-name="TenantDomainName"/>
+        <remove-value value-field="tenantDomainName"/>
+    </simple-method>
+    
+    <!-- Tenant Data Resource -->
     <simple-method method-name="createTenantDataSource" short-description="Create a Tenant Data Source" use-transaction="false">
         <!-- trim parameters before creating-->
         <call-object-method obj-field="parameters.entityGroupName" method-name="trim" ret-field="parameters.entityGroupName"/>
@@ -83,6 +110,7 @@ under the License.
         <transaction-commit began-transaction-name="beganTransaction"/>
     </simple-method>
     
+    <!-- Tenant Component -->
     <simple-method method-name="createTenantComponent" short-description="Create a Tenant Component">
         <!-- trim parameters before creating-->
         <call-object-method obj-field="parameters.tenantComponentName" method-name="trim" ret-field="parameters.tenantComponentName"/>
