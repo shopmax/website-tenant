@@ -1,6 +1,59 @@
+Index: framework/common/src/org/ofbiz/common/UrlServletHelper.java
+===================================================================
+--- framework/common/src/org/ofbiz/common/UrlServletHelper.java	(revision 1236115)
++++ framework/common/src/org/ofbiz/common/UrlServletHelper.java	(working copy)
+@@ -55,20 +55,31 @@
+             // get tenant delegator by domain name
+             String serverName = request.getServerName();
+             try {
++                // first set the delegator to default
++                String delegatorName = servletContext.getInitParameter("entityDelegatorName");
++
++                if (delegatorName == null || delegatorName.length() <= 0) {
++                    delegatorName = "default";
++                }
++                if (Debug.verboseOn()) Debug.logVerbose("Setup Entity Engine Delegator with name " + delegatorName, module);
++                delegator = DelegatorFactory.getDelegator(delegatorName);
++                servletContext.setAttribute("delegator", delegator);
++                if (delegator == null) {
++                    Debug.logError("[ContextFilter.init] ERROR: delegator factory returned null for delegatorName \"" + delegatorName + "\"", module);
++                }
++                
+                 // if tenant was specified, replace delegator with the new per-tenant delegator and set tenantId to session attribute
+-                delegator = getDelegator(servletContext);
+-                List<GenericValue> tenants = delegator.findList("Tenant", EntityCondition.makeCondition("domainName", serverName), null, UtilMisc.toList("-createdStamp"), null, false);
+-                if (UtilValidate.isNotEmpty(tenants)) {
+-                    GenericValue tenant = EntityUtil.getFirst(tenants);
+-                    String tenantId = tenant.getString("tenantId");
++                List<GenericValue> tenantDomainNames = delegator.findList("TenantDomainName", EntityCondition.makeCondition("domainName", serverName), null, UtilMisc.toList("-createdStamp"), null, false);
++                if (UtilValidate.isNotEmpty(tenantDomainNames)) {
++                    GenericValue tenantDomainName = EntityUtil.getFirst(tenantDomainNames);
++                    String tenantId = tenantDomainName.getString("tenantId");
+                     
+                     // make that tenant active, setup a new delegator and a new dispatcher
+-                    String tenantDelegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
+-                    httpRequest.getSession().setAttribute("delegatorName", tenantDelegatorName);
++                    delegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
++                    httpRequest.getSession().setAttribute("delegatorName", delegatorName);
+                 
+                     // after this line the delegator is replaced with the new per-tenant delegator
+-                    delegator = DelegatorFactory.getDelegator(tenantDelegatorName);
+-                    servletContext.setAttribute("delegator", delegator);
++                    delegator = DelegatorFactory.getDelegator(delegatorName);
+                 }
+                 
+             } catch (GenericEntityException e) {
+@@ -79,6 +90,7 @@
+         // set the web context in the request for future use
+         request.setAttribute("servletContext", httpRequest.getSession().getServletContext());
+         request.setAttribute("delegator", delegator);
++        servletContext.setAttribute("delegator", delegator);
+ 
+         // set the webSiteId in the session
+         if (UtilValidate.isEmpty(httpRequest.getSession().getAttribute("webSiteId"))){
 Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(revision 1236036)
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(revision 1236115)
 +++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(working copy)
 @@ -564,6 +564,8 @@
                  }
@@ -13,7 +66,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.
       * @see org.ofbiz.base.container.Container#stop()
 Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1236036)
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1236115)
 +++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(working copy)
 @@ -407,6 +407,8 @@
          // step 8 - checkdb
@@ -26,7 +79,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java
          result.put("messages", messages);
 Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1236036)
+--- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1236115)
 +++ framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(working copy)
 @@ -1212,11 +1212,14 @@
      public void checkDb(Map<String, ModelEntity> modelEntities, List<String> messages, boolean addMissing) {
@@ -46,7 +99,7 @@ Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
  }
 Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1236036)
+--- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1236115)
 +++ framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(working copy)
 @@ -18,6 +18,16 @@
   *******************************************************************************/
@@ -120,7 +173,7 @@ Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.ja
  }
 Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1236036)
+--- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1236115)
 +++ framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(working copy)
 @@ -83,6 +83,7 @@
  
@@ -161,7 +214,7 @@ Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
      /* ====================================================================== */
 Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1236036)
+--- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1236115)
 +++ framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(working copy)
 @@ -56,4 +56,8 @@
              delegatorCache.putIfAbsent(delegatorName, delegator);
@@ -174,7 +227,7 @@ Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
  }
 Index: framework/entity/entitydef/entitygroup.xml
 ===================================================================
---- framework/entity/entitydef/entitygroup.xml	(revision 1236036)
+--- framework/entity/entitydef/entitygroup.xml	(revision 1236115)
 +++ framework/entity/entitydef/entitygroup.xml	(working copy)
 @@ -29,4 +29,5 @@
  <!--     <entity-group group="org.ofbiz.tenant" entity="TenantUserLogin"/> -->
@@ -184,7 +237,7 @@ Index: framework/entity/entitydef/entitygroup.xml
  </entitygroup>
 Index: framework/entity/entitydef/entitymodel.xml
 ===================================================================
---- framework/entity/entitydef/entitymodel.xml	(revision 1236036)
+--- framework/entity/entitydef/entitymodel.xml	(revision 1236115)
 +++ framework/entity/entitydef/entitymodel.xml	(working copy)
 @@ -66,8 +66,6 @@
      <entity entity-name="Tenant" package-name="org.ofbiz.entity.tenant">
@@ -212,7 +265,7 @@ Index: framework/entity/entitydef/entitymodel.xml
  </entitymodel>
 Index: framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java
 ===================================================================
---- framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(revision 1236036)
+--- framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(revision 1236115)
 +++ framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(working copy)
 @@ -645,9 +645,11 @@
          if (currCatalog != null) session.setAttribute("CURRENT_CATALOG_ID", currCatalog);
@@ -228,7 +281,7 @@ Index: framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java
              delegator = DelegatorFactory.getDelegator(delegatorName);
 Index: framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java
 ===================================================================
---- framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(revision 1236036)
+--- framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(revision 1236115)
 +++ framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(working copy)
 @@ -280,16 +280,28 @@
              // get tenant delegator by domain name
