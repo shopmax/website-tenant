@@ -3,16 +3,10 @@ to automatically create a tenant demo systems:
 In the component itself:
 1. create data/TenantData.xml
 
-example: (the records should be in this order:
+empty seed:
 
 <?xml version="1.0" encoding="UTF-8"?>
 <entity-engine-xml>
-    <Tenant tenantId="TENANTID" tenantName="Tenant Name" domainName="anyname.example.com" initialPath="/componentname"/>
-    <TenantComponent tenantId="TENANTID" componentName="componentname" sequenceNum="01"/>
-    <TenantDataSource tenantId="TENANTID" entityGroupName="org.ofbiz"
-        jdbcUri="jdbc:postgresql://127.0.0.1/demoTIDofbiz" jdbcUsername="ofbiz" jdbcpassword="ofbiz"/>
-    <TenantDataSource tenantId="TENANTID" entityGroupName="org.ofbiz.olap"
-        jdbcUri="jdbc:postgresql://127.0.0.1/demoTIDolap" jdbcUsername="ofbiz" jdbcPassword="ofbiz"/>
 </entity-engine-xml>
 
 
@@ -25,16 +19,30 @@ seed,seed-initial,demo,ext-demo
 
 to specify what needs to be loaded for this tenant.
 
-4. change the server name to the config/tenant.properties file
+4. add a file with the name: config/demo.properties:
+content:
 
-5. change and JDBC configurations to the config/tenant.properties file
+tenantId=[tenant's id]
+tenantName=[tenant's name]
+subdomain=[tenant's subdomain]
+initialPath=[tenant's initial path]
 
-6. create basic databases
+5. change the server name to the config/tenant.properties file
+
+6. change and JDBC configurations to the config/tenant.properties file
+
+7. create basic databases
 ofbiz
 ofbizolap
 ofbiztenant
 
-7. run the following command to create all required databases and content:
+8. run the following command to create a TenantData.xml file to the specific component:
+
+../../ant generate-demo-tenant-seed -Dcomponent=[component's name]
+
+Then enter a component's name
+
+9. run the following command to create all required databases and content:
 ./ant run-install-readers -Ddata-readers=seed,seed-initial,tenant,demo,ext-demo
 
 the readers spec here is for the basic system only.
