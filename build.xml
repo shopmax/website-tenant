@@ -16,6 +16,9 @@
     <property name="dtd.dir" value="dtd"/>
     <property name="lib.dir" value="lib"/>
     <property name="build.dir" value="build"/>
+    <property name="hot-deploy.home.dir" value="${ofbiz.home.dir}/hot-deploy"/>
+    <property name="tenant.home.dir" value="${hot-deploy.home.dir}/tenant"/>
+    <property file="${tenant.home.dir}/config/tenant.properties"/>
 
     <path id="local.class.path">
         <fileset dir="${lib.dir}" includes="*.jar"/>
@@ -117,5 +120,33 @@
     <target name="jar" depends="classes">
         <main-jar/>
         <test-jar/>
+    </target>
+
+    <target name="generate-demo-tenant-seed" description="Generate seed tenant file from tenant/config/tenant.properties and ofbizsaas/config/build.properties">
+        <input addproperty="componentName" message="Input Component Name"/>
+        <fail message="Must have component name.">
+            <condition>
+                <equals arg1="${componentName}" arg2=""/>
+            </condition>
+        </fail>
+        <property file="${hot-deploy.home.dir}/${componentName}/config/demo.properties"/>
+        <fail message="${componentName} component doesn't have demo.properties file">
+            <condition>
+                <filesmatch file1="${hot-deploy.home.dir}/${componentName}/config/demo.properties" file2=" "/>
+            </condition>
+        </fail>
+        <copy file="${tenant.home.dir}/templates/data/TenantData.xml" tofile="${hot-deploy.home.dir}/${componentName}/data/TenantData.xml" overwrite="true">
+            <filterset>
+                <filter token="tenantId" value="${tenantId}"/>
+                <filter token="tenantName" value="${tenantName}"/>
+                <filter token="serverName" value="${serverName}"/>
+                <filter token="initialPath" value="${initialPath}"/>
+                <filter token="subdomain" value="${subdomain}"/>
+                <filter token="componentName" value="${componentName}"/>
+                <filter token="jdbcServerName" value="${jdbcServerName}"/>
+                <filter token="jdbcUsername" value="${jdbcUsername}"/>
+                <filter token="jdbcPassword" value="${jdbcPassword}"/>
+            </filterset>
+        </copy>
     </target>
 </project>
