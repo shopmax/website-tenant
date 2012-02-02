@@ -123,19 +123,18 @@
     </target>
 
     <target name="generate-demo-tenant-seed" description="Generate seed tenant file from tenant/config/tenant.properties and ofbizsaas/config/build.properties">
-        <input addproperty="componentName" message="Input Component Name"/>
         <fail message="Must have component name.">
             <condition>
-                <equals arg1="${componentName}" arg2=""/>
+                <equals arg1="${component}" arg2=""/>
             </condition>
         </fail>
-        <property file="${hot-deploy.home.dir}/${componentName}/config/demo.properties"/>
-        <fail message="${componentName} component doesn't have demo.properties file">
+        <property file="${hot-deploy.home.dir}/${component}/config/demo.properties"/>
+        <fail message="${component} component doesn't have demo.properties file">
             <condition>
-                <filesmatch file1="${hot-deploy.home.dir}/${componentName}/config/demo.properties" file2=" "/>
+                <filesmatch file1="${hot-deploy.home.dir}/${component}/config/demo.properties" file2=" "/>
             </condition>
         </fail>
-        <copy file="${tenant.home.dir}/templates/data/TenantData.xml" tofile="${hot-deploy.home.dir}/${componentName}/data/TenantData.xml" overwrite="true">
+        <copy file="${tenant.home.dir}/templates/data/TenantData.xml" tofile="${hot-deploy.home.dir}/${component}/data/TenantData.xml" overwrite="true">
             <filterset>
                 <filter token="tenantId" value="${tenantId}"/>
                 <filter token="tenantName" value="${tenantName}"/>
