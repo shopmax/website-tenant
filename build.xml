@@ -141,7 +141,7 @@
                 <filter token="serverName" value="${serverName}"/>
                 <filter token="initialPath" value="${initialPath}"/>
                 <filter token="subdomain" value="${subdomain}"/>
-                <filter token="componentName" value="${componentName}"/>
+                <filter token="componentName" value="${component}"/>
                 <filter token="jdbcServerName" value="${jdbcServerName}"/>
                 <filter token="jdbcUsername" value="${jdbcUsername}"/>
                 <filter token="jdbcPassword" value="${jdbcPassword}"/>
