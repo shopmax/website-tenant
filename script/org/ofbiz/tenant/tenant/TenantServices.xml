@@ -156,4 +156,90 @@ under the License.
             </else>
         </if-not-empty>
     </simple-method>
+    
+    <!-- create JavaMail listener -->
+    <simple-method method-name="createTenantJavaMailListener" short-description="Create a JavaMail listener for a tenant">
+        <create-object field="props" class-name="java.util.Properties"/>
+        
+        <!-- mail store protocol -->
+        <call-object-method method-name="setProperty" obj-field="props">
+            <string value="mail.store.protocol"/>
+            <field field="parameters.mailStoreProtocol" type="String"/>
+        </call-object-method>
+        
+        <!-- mail host -->
+        <call-object-method method-name="setProperty" obj-field="props">
+            <string value="mail.host"/>
+            <field field="parameters.mailHost" type="String"/>
+        </call-object-method>
+        
+        <!-- mail user -->
+        <call-object-method method-name="setProperty" obj-field="props">
+            <string value="mail.user"/>
+            <field field="parameters.mailUser" type="String"/>
+        </call-object-method>
+        
+        <!-- mail pass -->
+        <call-object-method method-name="setProperty" obj-field="props">
+            <string value="mail.pass"/>
+            <field field="parameters.mailPass" type="String"/>
+        </call-object-method>
+        
+        <!-- mail debug -->
+        <call-object-method method-name="setProperty" obj-field="props">
+            <string value="mail.debug"/>
+            <string value="true"/>
+        </call-object-method>
+        
+        <!-- get session -->
+        <call-class-method ret-field="session" method-name="getInstance" class-name="javax.mail.Session">
+            <field field="props" type="java.util.Properties"/>
+        </call-class-method>
+        
+        <!-- get store -->
+        <call-object-method ret-field="store" method-name="getStore" obj-field="session"/>
+        
+        <!-- re-write the URLName including the password for this store -->
+        <if-not-empty field="store">
+            <call-object-method ret-field="urlName" method-name="getURLName" obj-field="store"/>
+            <if-not-empty field="urlName">
+                <set field="protocol" from-field="parameters.mailStoreProtocol"/>
+                <set field="username" from-field="parameters.mailUser"/>
+                <set field="password" from-field="parameters.mailPass"/>
+                <set field="host" from-field="parameters.mailHost"/>
+                <call-object-method ret-field="file" method-name="getFile" obj-field="urlName"/>
+                <call-object-method ret-field="port" method-name="getPort" obj-field="urlName"/>
+                
+                <call-bsh><![CDATA[
+                    import javax.mail.URLName;
+                    urlName = new URLName(protocol, host, port, file, username, password);
+                    parameters.put("urlName", urlName);
+                ]]></call-bsh>
+                <set field="urlName" from-field="parameters.urlName"/>
+            </if-not-empty>
+            <call-object-method ret-field="store" method-name="getStore" obj-field="session">
+                <field field="urlName" type="javax.mail.URLName"/>
+            </call-object-method>
+        </if-not-empty>
+        
+        <if-empty field="store">
+            <add-error><fail-message message="No store configured!"/></add-error>
+            <check-errors/>
+        </if-empty>
+        
+        <!-- test store -->
+        <call-object-method method-name="connect" obj-field="store"/>
+        <call-object-method method-name="close" obj-field="store"/>
+        
+        <!-- add logging store listener -->
+        <if-not-empty field="store">
+            <create-object field="loggingStoreListener" class-name="org.ofbiz.tenant.mail.LoggingStoreListener"/>
+            <call-object-method method-name="addStoreListener" obj-field="store">
+                <field field="loggingStoreListener" type="javax.mail.event.StoreListener"/>
+            </call-object-method>
+        </if-not-empty>
+        
+        <field-to-result field="session" result-name="session"/>
+        <field-to-result field="store" result-name="store"/>
+    </simple-method>
 </simple-methods>

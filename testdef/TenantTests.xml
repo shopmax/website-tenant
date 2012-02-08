@@ -6,5 +6,8 @@
     <test-case case-name="tenant-installation-tests">
         <simple-method-test location="component://tenant/script/org/ofbiz/tenant/test/TenantInstallationTests.xml"/>
     </test-case>
+    <test-case case-name="tenant-javamail-tests">
+        <simple-method-test location="component://tenant/script/org/ofbiz/tenant/test/TenantJavaMailTests.xml"/>
+    </test-case>
     -->
 </test-suite>
