@@ -18,7 +18,6 @@
  *******************************************************************************/
 package org.ofbiz.tenant.mail;
 
-import java.util.Map;
 import java.util.TimerTask;
 
 import javax.mail.FetchProfile;
@@ -33,49 +32,44 @@ import javax.mail.search.FlagTerm;
 
 import org.ofbiz.base.util.Debug;
 import org.ofbiz.base.util.UtilMisc;
-import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.entity.GenericValue;
 import org.ofbiz.service.GenericServiceException;
 import org.ofbiz.service.LocalDispatcher;
 import org.ofbiz.service.mail.MimeMessageWrapper;
 import org.ofbiz.service.mail.ServiceMcaUtil;
 
-public class PollerTask extends TimerTask {
+public class TenantPollerTask extends TimerTask {
     
-    public final static String module = PollerTask.class.getName();
+    public final static String module = TenantPollerTask.class.getName();
     
     public static final String INBOX = "INBOX";
 
-    protected Map<Store, Session> stores;
+    protected Store store;
+    protected Session session;
     protected long maxSize = 1000000;
     protected boolean deleteMail = false;
     LocalDispatcher dispatcher;
     GenericValue userLogin;
 
-    public PollerTask(Map<Store, Session> stores, long maxSize, LocalDispatcher dispatcher, GenericValue userLogin) {
-        this.stores = stores;
+    public TenantPollerTask(Store store, Session session, long maxSize, LocalDispatcher dispatcher, GenericValue userLogin) {
+        this.store = store;
+        this.session = session;
         this.dispatcher = dispatcher;
         this.userLogin = userLogin;
     }
 
     @Override
     public void run() {
-        if (UtilValidate.isNotEmpty(stores)) {
-            for (Map.Entry<Store, Session> entry: stores.entrySet()) {
-                Store store = entry.getKey();
-                Session session = entry.getValue();
-                try {
-                    checkMessages(store, session);
-                } catch (Exception e) {
-                    // Catch all exceptions so the loop will continue running
-                    Debug.logError("Mail service invocation error for mail store " + store + ": " + e, module);
-                }
-                if (store.isConnected()) {
-                    try {
-                        store.close();
-                    } catch (Exception e) {}
-                }
-            }
+        try {
+            checkMessages(store, session);
+        } catch (Exception e) {
+            // Catch all exceptions so the loop will continue running
+            Debug.logError("Mail service invocation error for mail store " + store + ": " + e, module);
+        }
+        if (store.isConnected()) {
+            try {
+                store.close();
+            } catch (Exception e) {}
         }
     }
 

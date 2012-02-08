@@ -23,9 +23,9 @@ import javax.mail.event.StoreListener;
 
 import org.ofbiz.base.util.Debug;
 
-public class LoggingStoreListener implements StoreListener {
+public class TenantLoggingStoreListener implements StoreListener {
     
-    public final static String module = LoggingStoreListener.class.getName();
+    public final static String module = TenantLoggingStoreListener.class.getName();
 
     @Override
     public void notification(StoreEvent event) {

@@ -182,4 +182,13 @@
         <attribute name="session" mode="OUT" type="javax.mail.Session" optional="false"/>
         <attribute name="store" mode="OUT" type="javax.mail.Store" optional="false"/>
     </service>
+    
+    <!-- schedule JavaMail poller task -->
+    <service name="scheduleTenantJavaMailPollerTask" engine="simple" location="component://tenant/script/org/ofbiz/tenant/tenant/TenantServices.xml"
+        invoke="scheduleTenantJavaMailPollerTask" auth="true" use-transaction="false">
+        <description>Schedule a JavaMail poller task</description>
+        <attribute name="tenantId" mode="IN" type="String" optional="false"/>
+        <attribute name="maxSize" mode="IN" type="Long" optional="false"/>
+        <attribute name="timerDelay" mode="IN" type="Long" optional="false"/>
+    </service>
 </services>

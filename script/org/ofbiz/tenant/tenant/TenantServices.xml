@@ -233,13 +233,43 @@ under the License.
         
         <!-- add logging store listener -->
         <if-not-empty field="store">
-            <create-object field="loggingStoreListener" class-name="org.ofbiz.tenant.mail.LoggingStoreListener"/>
+            <create-object field="loggingStoreListener" class-name="org.ofbiz.tenant.mail.TenantLoggingStoreListener"/>
             <call-object-method method-name="addStoreListener" obj-field="store">
                 <field field="loggingStoreListener" type="javax.mail.event.StoreListener"/>
             </call-object-method>
         </if-not-empty>
         
+        <!-- set session to factory -->
+        <call-class-method method-name="setSession" class-name="org.ofbiz.tenant.mail.TenantJavaMailFactory">
+            <field field="parameters.tenantId"/>
+            <field field="session" type="javax.mail.Session"/>
+        </call-class-method>
+        
+        <!-- set store to factory -->
+        <call-class-method method-name="setStore" class-name="org.ofbiz.tenant.mail.TenantJavaMailFactory">
+            <field field="parameters.tenantId"/>
+            <field field="store" type="javax.mail.Store"/>
+        </call-class-method>
+        
         <field-to-result field="session" result-name="session"/>
         <field-to-result field="store" result-name="store"/>
+    </simple-method>
+    
+    <!-- schedule JavaMail poller task-->
+    <simple-method method-name="scheduleTenantJavaMailPollerTask" short-description="Schedule JavaMail poller task for a tenant">
+        <call-class-method ret-field="session" method-name="getSession" class-name="org.ofbiz.tenant.mail.TenantJavaMailFactory">
+            <field field="parameters.tenantId"/>
+        </call-class-method>
+        <call-class-method ret-field="store" method-name="getStore" class-name="org.ofbiz.tenant.mail.TenantJavaMailFactory">
+            <field field="parameters.tenantId"/>
+        </call-class-method>
+        <call-class-method ret-field="pollTimer" method-name="getPollTimer" class-name="org.ofbiz.tenant.mail.TenantJavaMailFactory"/>
+        <set field="maxSize" from-field="parameters.maxSize"/>
+        <set field="timerDelay" from-field="parameters.timerDelay"/>
+        
+        <call-bsh><![CDATA[
+            import org.ofbiz.tenant.mail.TenantPollerTask;
+            pollTimer.schedule(new TenantPollerTask(store, session, maxSize, dispatcher, userLogin), timerDelay, timerDelay);
+        ]]></call-bsh>
     </simple-method>
 </simple-methods>
