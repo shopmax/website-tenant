@@ -61,4 +61,31 @@ under the License.
         <set field="scheduleTenantJavaMailPollerTaskInMap.userLogin" from-field="userLogin"/>
         <call-service service-name="scheduleTenantJavaMailPollerTask" in-map-name="scheduleTenantJavaMailPollerTaskInMap"/>
     </simple-method>
+    <simple-method method-name="testCancelTenantJavaMailPollerTask" short-description="test the cancel tenant JavaMail poller task service" login-required="false">
+        <entity-one value-field="userLogin" entity-name="UserLogin">
+            <field-map field-name="userLoginId" value="system"/>
+        </entity-one>
+        <set field="createTenantJavaMailListenerInMap.tenantId" value="test1"/>
+        <set field="createTenantJavaMailListenerInMap.mailStoreProtocol" value="imaps"/>
+        <set field="createTenantJavaMailListenerInMap.mailHost" value="imap.gmail.com"/>
+        <set field="createTenantJavaMailListenerInMap.mailUser" value="mailUser"/>
+        <set field="createTenantJavaMailListenerInMap.mailPass" value="mailPass"/>
+        <set field="createTenantJavaMailListenerInMap.userLogin" from-field="userLogin"/>
+        <call-service service-name="createTenantJavaMailListener" in-map-name="createTenantJavaMailListenerInMap">
+            <result-to-field result-name="session"/>
+            <result-to-field result-name="store"/>
+        </call-service>
+        <assert><not><if-empty field="session"></if-empty></not></assert>
+        <assert><not><if-empty field="store"></if-empty></not></assert>
+        
+        <set field="scheduleTenantJavaMailPollerTaskInMap.tenantId" value="test1"/>
+        <set field="scheduleTenantJavaMailPollerTaskInMap.maxSize" value="1000000" type="Long"/>
+        <set field="scheduleTenantJavaMailPollerTaskInMap.timerDelay" value="300000" type="Long"/>
+        <set field="scheduleTenantJavaMailPollerTaskInMap.userLogin" from-field="userLogin"/>
+        <call-service service-name="scheduleTenantJavaMailPollerTask" in-map-name="scheduleTenantJavaMailPollerTaskInMap"/>
+        
+        <set field="cancelTenantJavaMailPollerTaskInMap.tenantId" value="test1"/>
+        <set field="cancelTenantJavaMailPollerTaskInMap.userLogin" from-field="userLogin"/>
+        <call-service service-name="cancelTenantJavaMailPollerTask" in-map-name="cancelTenantJavaMailPollerTaskInMap"/>
+    </simple-method>
 </simple-methods>

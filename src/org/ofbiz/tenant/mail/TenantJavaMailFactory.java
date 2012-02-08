@@ -24,21 +24,28 @@ import java.util.Timer;
 import javax.mail.Session;
 import javax.mail.Store;
 
+import org.ofbiz.base.util.UtilValidate;
+
 import javolution.util.FastMap;
 
 public class TenantJavaMailFactory {
 
     public final static String module = TenantJavaMailFactory.class.getName();
     
-    protected static Timer pollTimer = new Timer();
+    protected static Map<String, Timer> pollTimers = FastMap.newInstance();
     protected static Map<String, Session> sessions = FastMap.newInstance();
     protected static Map<String, Store> stores = FastMap.newInstance();
     
     /**
      * get poll timer
+     * @param tenantId
      * @return
      */
-    public static Timer getPollTimer() {
+    public static Timer getPollTimer(String tenantId) {
+        Timer pollTimer = pollTimers.get(tenantId);
+        if (UtilValidate.isEmpty(pollTimer)) {
+            pollTimer = new Timer();
+        }
         return pollTimer;
     }
     

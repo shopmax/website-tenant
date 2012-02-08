@@ -191,4 +191,11 @@
         <attribute name="maxSize" mode="IN" type="Long" optional="false"/>
         <attribute name="timerDelay" mode="IN" type="Long" optional="false"/>
     </service>
+    
+    <!-- cancel JavaMail poller task -->
+    <service name="cancelTenantJavaMailPollerTask" engine="simple" location="component://tenant/script/org/ofbiz/tenant/tenant/TenantServices.xml"
+        invoke="cancelTenantJavaMailPollerTask" auth="true" use-transaction="false">
+        <description>Cancel a JavaMail poller task</description>
+        <attribute name="tenantId" mode="IN" type="String" optional="false"/>
+    </service>
 </services>

@@ -263,7 +263,9 @@ under the License.
         <call-class-method ret-field="store" method-name="getStore" class-name="org.ofbiz.tenant.mail.TenantJavaMailFactory">
             <field field="parameters.tenantId"/>
         </call-class-method>
-        <call-class-method ret-field="pollTimer" method-name="getPollTimer" class-name="org.ofbiz.tenant.mail.TenantJavaMailFactory"/>
+        <call-class-method ret-field="pollTimer" method-name="getPollTimer" class-name="org.ofbiz.tenant.mail.TenantJavaMailFactory">
+            <field field="parameters.tenantId"/>
+        </call-class-method>
         <set field="maxSize" from-field="parameters.maxSize"/>
         <set field="timerDelay" from-field="parameters.timerDelay"/>
         
@@ -271,5 +273,15 @@ under the License.
             import org.ofbiz.tenant.mail.TenantPollerTask;
             pollTimer.schedule(new TenantPollerTask(store, session, maxSize, dispatcher, userLogin), timerDelay, timerDelay);
         ]]></call-bsh>
+    </simple-method>
+    
+    <!-- cancel JavaMail poller task-->
+    <simple-method method-name="cancelTenantJavaMailPollerTask" short-description="Cancel JavaMail poller task for a tenant">
+        <call-class-method ret-field="pollTimer" method-name="getPollTimer" class-name="org.ofbiz.tenant.mail.TenantJavaMailFactory">
+            <field field="parameters.tenantId"/>
+        </call-class-method>
+        <if-not-empty field="pollTimer">
+            <call-object-method method-name="cancel" obj-field="pollTimer"/>
+        </if-not-empty>
     </simple-method>
 </simple-methods>
