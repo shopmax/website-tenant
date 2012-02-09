@@ -177,6 +177,7 @@
         <section>
             <actions>
                 <set field="tabButtonItem" value="mailListener"/>
+                <script location="component://tenant/webapp/tenantmgr/WEB-INF/actions/ViewMailListener.groovy"/>
             </actions>
             <widgets>
                 <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
