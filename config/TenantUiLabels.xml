@@ -73,4 +73,7 @@
     <property key="TenantDeleteTenantConfirmationMessage">
         <value xml:lang="en">Are you sure to delete the tenant?</value>
     </property>
+    <property key="TenantMailListener">
+        <value xml:lang="en">Mail Listener</value>
+    </property>
 </resource>

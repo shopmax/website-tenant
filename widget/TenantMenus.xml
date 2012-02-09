@@ -54,6 +54,14 @@
                 <parameter param-name="tenantId" from-field="tenant.tenantId"/>
             </link>
         </menu-item>
+        <menu-item name="mailListener" title="${uiLabelMap.TenantMailListener}">
+            <condition>
+                <not><if-empty field="tenant.tenantId"/></not>
+            </condition>
+            <link target="EditMailListener">
+                <parameter param-name="tenantId" from-field="tenant.tenantId"/>
+            </link>
+        </menu-item>
     </menu>
     <menu name="TenantSubTabBar" menu-container-style="button-bar button-style-2" default-selected-style="selected">
         <menu-item name="createNew" title="${uiLabelMap.TenantCreateNew}" widget-style="buttontext create">

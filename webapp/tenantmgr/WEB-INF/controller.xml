@@ -29,6 +29,7 @@
     <request-map uri="ListTenantDataSources"><security https="true" auth="true"/><response name="success" type="view" value="ListTenantDataSources"/></request-map>
     <request-map uri="ListTenantComponents"><security https="true" auth="true"/><response name="success" type="view" value="ListTenantComponents"/></request-map>
     <request-map uri="EditTenantInstallation"><security https="true" auth="true"/><response name="success" type="view" value="EditTenantInstallation"/></request-map>
+    <request-map uri="EditMailListener"><security https="true" auth="true"/><response name="success" type="view" value="EditMailListener"/></request-map>
     
     <request-map uri="createTenant">
         <security https="true" auth="true"/>
@@ -48,6 +49,8 @@
         <response name="success" type="request-redirect-noparam" value="FindTenant"/>
         <response name="error" type="view-last" value="FindTenant"/>
     </request-map>
+    
+    <!-- Domain Name -->
     <request-map uri="createTenantDomainName">
         <security https="true" auth="true"/>
         <event type="service" invoke="createTenantDomainName"/>
@@ -66,6 +69,8 @@
         <response name="success" type="view-last" value="ListTenantDomainNames"/>
         <response name="error" type="view-last" value="ListTenantDomainNames"/>
     </request-map>
+    
+    <!-- Data Source -->
     <request-map uri="createTenantDataSource">
         <security https="true" auth="true"/>
         <event type="service" invoke="createTenantDataSource"/>
@@ -84,6 +89,8 @@
         <response name="success" type="view-last" value="ListTenantDataSources"/>
         <response name="error" type="view-last" value="ListTenantDataSources"/>
     </request-map>
+    
+    <!-- Component -->
     <request-map uri="createTenantComponent">
         <security https="true" auth="true"/>
         <event type="service" invoke="createTenantComponent"/>
@@ -102,11 +109,21 @@
         <response name="success" type="view-last" value="ListTenantDataSources"/>
         <response name="error" type="view-last" value="ListTenantDataSources"/>
     </request-map>
+    
+    <!-- Installation -->
     <request-map uri="installTenantDataSources">
         <security https="true" auth="true"/>
         <event type="service" invoke="installTenantDataSources"/>
         <response name="success" type="view-last" value="EditTenant"/>
         <response name="error" type="view-last" value="EditTenant"/>
+    </request-map>
+    
+    <!-- Mail Listener -->
+    <request-map uri="updateMailListener">
+        <security https="true" auth="true"/>
+        <event type="simple" path="component://tenant/script/org/ofbiz/tenant/tenant/TenantEvents.xml" invoke="updateMailListener"/>
+        <response name="success" type="view-last" value="EditMailListener"/>
+        <response name="error" type="view-last" value="EditMailListener"/>
     </request-map>
     
     <!-- View Mappings -->
@@ -118,4 +135,5 @@
     <view-map name="ListTenantDataSources" type="screen" page="component://tenant/widget/TenantScreens.xml#ListTenantDataSources"/>
     <view-map name="ListTenantComponents" type="screen" page="component://tenant/widget/TenantScreens.xml#ListTenantComponents"/>
     <view-map name="EditTenantInstallation" type="screen" page="component://tenant/widget/TenantScreens.xml#EditTenantInstallation"/>
+    <view-map name="EditMailListener" type="screen" page="component://tenant/widget/TenantScreens.xml#EditMailListener"/>
 </site-conf>

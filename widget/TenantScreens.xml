@@ -173,4 +173,20 @@
             </widgets>
         </section>
     </screen>
+    <screen name="EditMailListener">
+        <section>
+            <actions>
+                <set field="tabButtonItem" value="mailListener"/>
+            </actions>
+            <widgets>
+                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                    <decorator-section name="body">
+                        <screenlet title="${uiLabelMap.TenantMailListener}">
+                            <include-form name="EditMailListener" location="component://tenant/widget/TenantForms.xml"/>
+                        </screenlet>
+                    </decorator-section>
+                </decorator-screen>
+            </widgets>
+        </section>
+    </screen>
 </screens>

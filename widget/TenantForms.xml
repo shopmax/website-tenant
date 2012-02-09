@@ -193,4 +193,13 @@
         <field name="readers" title="${uiLabelMap.TenantReaders}" required-field="true" tooltip="For example: seed,demo,ext"><text size="30" maxlength="255"/></field>
         <field name="submitButton" title="${uiLabelMap.CommonSubmit}" widget-style="smallSubmit"><submit button-type="button"/></field>
     </form>
+    <form name="EditMailListener" type="single" target="updateMailListener" title="" default-map-name="tenant"
+        header-row-style="header-row" default-table-style="basic-table">
+        <field name="tenantId"><hidden/></field>
+        <field name="mailStoreProtocol" required-field="true"><text/></field>
+        <field name="mailHost" required-field="true"><text/></field>
+        <field name="mailUser" required-field="true"><text/></field>
+        <field name="mailPass" required-field="true"><password/></field>
+        <field name="updateButton" title="${uiLabelMap.CommonUpdate}" widget-style="smallSubmit"><submit button-type="button"/></field>
+    </form>
 </forms>
