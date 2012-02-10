@@ -73,14 +73,16 @@ under the License.
         <call-service service-name="installTenantDataSources" in-map-name="installTenantDataSourcesInMap"/>
     </simple-method>
     <simple-method method-name="updateMailListener" short-description="Update Mail Listener" login-required="true">
-        <if-not-empty field="parameters.tenantId">
+        <set field="tenantId" from-field="parameters.tenantId"/>
+        <if-not-empty field="tenantId">
+            <!-- get poll timer -->
             <call-class-method ret-field="pollTimer" method-name="getPollTimer" class-name="org.ofbiz.tenant.mail.TenantJavaMailFactory">
-                <field field="parameters.tenantId"/>
+                <field field="tenantId"/>
             </call-class-method>
             <call-object-method method-name="cancel" obj-field="pollTimer"/>
             
             <!-- create a JavaMail listener -->
-            <set field="createTenantJavaMailListenerInMap.tenantId" from-field="parameters.tenantId"/>
+            <set field="createTenantJavaMailListenerInMap.tenantId" from-field="tenantId"/>
             <set field="createTenantJavaMailListenerInMap.mailStoreProtocol" from-field="parameters.mailStoreProtocol"/>
             <set field="createTenantJavaMailListenerInMap.mailHost" from-field="parameters.mailHost"/>
             <set field="createTenantJavaMailListenerInMap.mailUser" from-field="parameters.mailUser"/>
@@ -94,13 +96,15 @@ under the License.
             <assert><not><if-empty field="store"></if-empty></not></assert>
             
             <!-- schedule java mail poller task -->
-            <set field="scheduleTenantJavaMailPollerTaskInMap.tenantId" from-field="parameters.tenantId"/>
+            <set field="scheduleTenantJavaMailPollerTaskInMap.tenantId" from-field="tenantId"/>
             <set field="scheduleTenantJavaMailPollerTaskInMap.maxSize" value="1000000" type="Long"/>
             <set field="scheduleTenantJavaMailPollerTaskInMap.timerDelay" value="300000" type="Long"/>
             <set field="scheduleTenantJavaMailPollerTaskInMap.userLogin" from-field="userLogin"/>
-            <call-service service-name="scheduleTenantJavaMailPollerTask" in-map-name="scheduleTenantJavaMailPollerTaskInMap"/>
-            
-        <set field="_event_message_" value="The mail listener for tenant[${parameters.tenantId}] has been scheduled with mail.store.protocol=${parameters.mailStoreProtocol} , mail.host=${parameters.mailHost} , mail.user=${parameters.mailUser}"/>
+            <call-bsh><![CDATA[
+                import org.ofbiz.tenant.tenant.TenantWorker;
+                TenantWorker.runService("scheduleTenantJavaMailPollerTask", scheduleTenantJavaMailPollerTaskInMap, true, tenantId, delegator, dispatcher);
+            ]]></call-bsh>
+            <set field="_event_message_" value="The mail listener for tenant[${parameters.tenantId}] has been scheduled with mail.store.protocol=${parameters.mailStoreProtocol} , mail.host=${parameters.mailHost} , mail.user=${parameters.mailUser}"/>
             <else>
                 <add-error><fail-message message="Tenat ID is missing."/></add-error>
                 <check-errors/>
