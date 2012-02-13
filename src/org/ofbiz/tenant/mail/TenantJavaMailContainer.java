@@ -106,6 +106,7 @@ public class TenantJavaMailContainer implements Container {
                         runTenantServiceInMap.put("serviceName", "scheduleTenantJavaMailPollerTask");
                         runTenantServiceInMap.put("serviceParameters", scheduleTenantJavaMailPollerTaskInMap);
                         runTenantServiceInMap.put("isAsync", Boolean.FALSE);
+                        runTenantServiceInMap.put("userLogin", systemUserLogin);
                         dispatcher.runSync("runTenantService", runTenantServiceInMap);
                     }
                 }
