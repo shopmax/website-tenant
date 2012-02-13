@@ -75,6 +75,65 @@ under the License.
     <simple-method method-name="updateMailListener" short-description="Update Mail Listener" login-required="true">
         <set field="tenantId" from-field="parameters.tenantId"/>
         <if-not-empty field="tenantId">
+            
+           <!-- update system properties -->
+           
+           <!-- mail store protocol -->
+           <set field="setSystemPropertyInMap.systemResourceId" value="mail"/>
+           <set field="setSystemPropertyInMap.systemPropertyId" value="mail.store.protocol"/>
+           <set field="setSystemPropertyInMap.systemPropertyValue" from-field="parameters.mailStoreProtocol"/>
+           <set field="setSystemPropertyInMap.userLogin" from-field="userLogin"/>
+           
+           <set field="runTenantServiceInMap.tenantId" from-field="tenantId"/>
+           <set field="runTenantServiceInMap.serviceName" value="setSystemProperty"/>
+           <set field="runTenantServiceInMap.serviceParameters" from-field="setSystemPropertyInMap"/>
+           <set field="runTenantServiceInMap.isAsync" value="false" type="Boolean"/>
+           <set field="runTenantServiceInMap.userLogin" from-field="userLogin"/>
+           <call-service service-name="runTenantService" in-map-name="runTenantServiceInMap"/>
+           <clear-field field="setSystemPropertyInMap"/>
+           
+           <!-- mail host -->
+           <set field="setSystemPropertyInMap.systemResourceId" value="mail"/>
+           <set field="setSystemPropertyInMap.systemPropertyId" value="mail.host"/>
+           <set field="setSystemPropertyInMap.systemPropertyValue" from-field="parameters.mailHost"/>
+           <set field="setSystemPropertyInMap.userLogin" from-field="userLogin"/>
+           
+           <set field="runTenantServiceInMap.tenantId" from-field="tenantId"/>
+           <set field="runTenantServiceInMap.serviceName" value="setSystemProperty"/>
+           <set field="runTenantServiceInMap.serviceParameters" from-field="setSystemPropertyInMap"/>
+           <set field="runTenantServiceInMap.isAsync" value="false" type="Boolean"/>
+           <set field="runTenantServiceInMap.userLogin" from-field="userLogin"/>
+           <call-service service-name="runTenantService" in-map-name="runTenantServiceInMap"/>
+           <clear-field field="setSystemPropertyInMap"/>
+           
+           <!-- mail user -->
+           <set field="setSystemPropertyInMap.systemResourceId" value="mail"/>
+           <set field="setSystemPropertyInMap.systemPropertyId" value="mail.user"/>
+           <set field="setSystemPropertyInMap.systemPropertyValue" from-field="parameters.mailUser"/>
+           <set field="setSystemPropertyInMap.userLogin" from-field="userLogin"/>
+           
+           <set field="runTenantServiceInMap.tenantId" from-field="tenantId"/>
+           <set field="runTenantServiceInMap.serviceName" value="setSystemProperty"/>
+           <set field="runTenantServiceInMap.serviceParameters" from-field="setSystemPropertyInMap"/>
+           <set field="runTenantServiceInMap.isAsync" value="false" type="Boolean"/>
+           <set field="runTenantServiceInMap.userLogin" from-field="userLogin"/>
+           <call-service service-name="runTenantService" in-map-name="runTenantServiceInMap"/>
+           <clear-field field="setSystemPropertyInMap"/>
+           
+           <!-- mail pass -->
+           <set field="setSystemPropertyInMap.systemResourceId" value="mail"/>
+           <set field="setSystemPropertyInMap.systemPropertyId" value="mail.pass"/>
+           <set field="setSystemPropertyInMap.systemPropertyValue" from-field="parameters.mailPass"/>
+           <set field="setSystemPropertyInMap.userLogin" from-field="userLogin"/>
+           
+           <set field="runTenantServiceInMap.tenantId" from-field="tenantId"/>
+           <set field="runTenantServiceInMap.serviceName" value="setSystemProperty"/>
+           <set field="runTenantServiceInMap.serviceParameters" from-field="setSystemPropertyInMap"/>
+           <set field="runTenantServiceInMap.isAsync" value="false" type="Boolean"/>
+           <set field="runTenantServiceInMap.userLogin" from-field="userLogin"/>
+           <call-service service-name="runTenantService" in-map-name="runTenantServiceInMap"/>
+           <clear-field field="setSystemPropertyInMap"/>
+        
             <!-- get poll timer -->
             <call-class-method ret-field="pollTimer" method-name="getPollTimer" class-name="org.ofbiz.tenant.mail.TenantJavaMailFactory">
                 <field field="tenantId"/>
@@ -100,10 +159,14 @@ under the License.
             <set field="scheduleTenantJavaMailPollerTaskInMap.maxSize" value="1000000" type="Long"/>
             <set field="scheduleTenantJavaMailPollerTaskInMap.timerDelay" value="300000" type="Long"/>
             <set field="scheduleTenantJavaMailPollerTaskInMap.userLogin" from-field="userLogin"/>
-            <call-bsh><![CDATA[
-                import org.ofbiz.tenant.tenant.TenantWorker;
-                TenantWorker.runService("scheduleTenantJavaMailPollerTask", scheduleTenantJavaMailPollerTaskInMap, true, tenantId, delegator, dispatcher);
-            ]]></call-bsh>
+            
+            <set field="runTenantServiceInMap.tenantId" from-field="tenantId"/>
+            <set field="runTenantServiceInMap.serviceName" value="scheduleTenantJavaMailPollerTask"/>
+            <set field="runTenantServiceInMap.serviceParameters" from-field="scheduleTenantJavaMailPollerTaskInMap"/>
+            <set field="runTenantServiceInMap.isAsync" value="false" type="Boolean"/>
+            <set field="runTenantServiceInMap.userLogin" from-field="userLogin"/>
+            <call-service service-name="runTenantService" in-map-name="runTenantServiceInMap"/>
+            
             <set field="_event_message_" value="The mail listener for tenant[${parameters.tenantId}] has been scheduled with mail.store.protocol=${parameters.mailStoreProtocol} , mail.host=${parameters.mailHost} , mail.user=${parameters.mailUser}"/>
             <else>
                 <add-error><fail-message message="Tenat ID is missing."/></add-error>

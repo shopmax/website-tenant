@@ -170,9 +170,20 @@
         <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
     </service>
     
+    <!-- run tenant service -->
+    <service name="runTenantService" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
+        invoke="runTenantService" auth="true">
+        <description>Run a service for a specific tenant</description>
+        <attribute name="tenantId" mode="IN" type="String" optional="false"/>
+        <attribute name="serviceName" mode="IN" type="String" optional="false"/>
+        <attribute name="serviceParameters" mode="IN" type="Map" optional="false"/>
+        <attribute name="isAsync" mode="IN" type="Boolean" optional="true"/>
+        <attribute name="serviceResults" mode="OUT" type="Map" optional="true"/>
+    </service>
+    
     <!-- create JavaMail listener -->
     <service name="createTenantJavaMailListener" engine="simple" location="component://tenant/script/org/ofbiz/tenant/tenant/TenantServices.xml"
-        invoke="createTenantJavaMailListener" auth="true" use-transaction="false">
+        invoke="createTenantJavaMailListener" auth="true">
         <description>Create a JavaMail listener</description>
         <attribute name="tenantId" mode="IN" type="String" optional="false"/>
         <attribute name="mailStoreProtocol" mode="IN" type="String" optional="false"/>
@@ -185,7 +196,7 @@
     
     <!-- schedule JavaMail poller task -->
     <service name="scheduleTenantJavaMailPollerTask" engine="simple" location="component://tenant/script/org/ofbiz/tenant/tenant/TenantServices.xml"
-        invoke="scheduleTenantJavaMailPollerTask" auth="true" use-transaction="false">
+        invoke="scheduleTenantJavaMailPollerTask" auth="true">
         <description>Schedule a JavaMail poller task</description>
         <attribute name="tenantId" mode="IN" type="String" optional="false"/>
         <attribute name="maxSize" mode="IN" type="Long" optional="false"/>
@@ -194,8 +205,17 @@
     
     <!-- cancel JavaMail poller task -->
     <service name="cancelTenantJavaMailPollerTask" engine="simple" location="component://tenant/script/org/ofbiz/tenant/tenant/TenantServices.xml"
-        invoke="cancelTenantJavaMailPollerTask" auth="true" use-transaction="false">
+        invoke="cancelTenantJavaMailPollerTask" auth="true">
         <description>Cancel a JavaMail poller task</description>
         <attribute name="tenantId" mode="IN" type="String" optional="false"/>
+    </service>
+    
+    <!-- set system property -->
+    <service name="setSystemProperty" engine="simple" location="component://tenant/script/org/ofbiz/tenant/tenant/TenantServices.xml"
+        invoke="setSystemProperty" auth="true">
+        <description>Set a system property</description>
+        <attribute name="systemResourceId" mode="IN" type="String" optional="false"/>
+        <attribute name="systemPropertyId" mode="IN" type="String" optional="false"/>
+        <attribute name="systemPropertyValue" mode="IN" type="String" optional="false"/>
     </service>
 </services>

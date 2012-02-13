@@ -47,7 +47,6 @@ import org.ofbiz.service.DispatchContext;
 import org.ofbiz.service.GenericDispatcher;
 import org.ofbiz.service.GenericServiceException;
 import org.ofbiz.service.LocalDispatcher;
-import org.ofbiz.service.ModelService;
 import org.ofbiz.service.ServiceUtil;
 import org.ofbiz.tenant.jdbc.TenantConnectionFactory;
 import org.ofbiz.tenant.jdbc.TenantJdbcConnectionHandler;
@@ -249,7 +248,6 @@ public class TenantServices {
      * @return
      */
     public static Map<String, Object> createUserLoginForTenant(DispatchContext ctx, Map<String, Object> context) {
-        Delegator delegator = ctx.getDelegator();
         LocalDispatcher dispatcher = ctx.getDispatcher();
         Locale locale = (Locale) context.get("locale");
         TimeZone timeZone = (TimeZone) context.get("timeZone");
@@ -263,7 +261,17 @@ public class TenantServices {
         
         if (!ServiceUtil.isError(setServiceFieldsResults)) {
             // run createUserLogin service
-            return TenantWorker.runService(serviceName, toContext, true, tenantId, delegator, dispatcher);
+            try {
+                Map<String, Object> runTenantServiceInMap = FastMap.newInstance();
+                runTenantServiceInMap.put("tenantId", tenantId);
+                runTenantServiceInMap.put("serviceName", serviceName);
+                runTenantServiceInMap.put("serviceParameters", toContext);
+                runTenantServiceInMap.put("isAsync", Boolean.FALSE);
+                return dispatcher.runSync("runTenantService", runTenantServiceInMap);
+            } catch (Exception e) {
+                Debug.logError(e, module);
+                return ServiceUtil.returnError(e.getMessage());
+            }
         } else {
             return setServiceFieldsResults;
         }
@@ -276,7 +284,6 @@ public class TenantServices {
      * @return
      */
     public static Map<String, Object> addUserLoginToSecurityGroupForTenant(DispatchContext ctx, Map<String, Object> context) {
-        Delegator delegator = ctx.getDelegator();
         LocalDispatcher dispatcher = ctx.getDispatcher();
         Locale locale = (Locale) context.get("locale");
         TimeZone timeZone = (TimeZone) context.get("timeZone");
@@ -290,7 +297,17 @@ public class TenantServices {
         
         if (!ServiceUtil.isError(setServiceFieldsResults)) {
             // run addUserLoginToSecurityGroup service
-            return TenantWorker.runService(serviceName, toContext, true, tenantId, delegator, dispatcher);
+            try {
+                Map<String, Object> runTenantServiceInMap = FastMap.newInstance();
+                runTenantServiceInMap.put("tenantId", tenantId);
+                runTenantServiceInMap.put("serviceName", serviceName);
+                runTenantServiceInMap.put("serviceParameters", toContext);
+                runTenantServiceInMap.put("isAsync", Boolean.FALSE);
+                return dispatcher.runSync("runTenantService", runTenantServiceInMap);
+            } catch (Exception e) {
+                Debug.logError(e, module);
+                return ServiceUtil.returnError(e.getMessage());
+            }
         } else {
             return setServiceFieldsResults;
         }
@@ -303,7 +320,6 @@ public class TenantServices {
      * @return
      */
     public static Map<String, Object> removeUserLoginFromSecurityGroupForTenant(DispatchContext ctx, Map<String, Object> context) {
-        Delegator delegator = ctx.getDelegator();
         LocalDispatcher dispatcher = ctx.getDispatcher();
         Locale locale = (Locale) context.get("locale");
         TimeZone timeZone = (TimeZone) context.get("timeZone");
@@ -317,7 +333,17 @@ public class TenantServices {
         
         if (!ServiceUtil.isError(setServiceFieldsResults)) {
             // run removeUserLoginFromSecurityGroup service
-            return TenantWorker.runService(serviceName, toContext, true, tenantId, delegator, dispatcher);
+            try {
+                Map<String, Object> runTenantServiceInMap = FastMap.newInstance();
+                runTenantServiceInMap.put("tenantId", tenantId);
+                runTenantServiceInMap.put("serviceName", serviceName);
+                runTenantServiceInMap.put("serviceParameters", toContext);
+                runTenantServiceInMap.put("isAsync", Boolean.FALSE);
+                return dispatcher.runSync("runTenantService", runTenantServiceInMap);
+            } catch (Exception e) {
+                Debug.logError(e, module);
+                return ServiceUtil.returnError(e.getMessage());
+            }
         } else {
             return setServiceFieldsResults;
         }
@@ -330,7 +356,6 @@ public class TenantServices {
      * @return
      */
     public static Map<String, Object> updateUserLoginToSecurityGroupForTenant(DispatchContext ctx, Map<String, Object> context) {
-        Delegator delegator = ctx.getDelegator();
         LocalDispatcher dispatcher = ctx.getDispatcher();
         Locale locale = (Locale) context.get("locale");
         TimeZone timeZone = (TimeZone) context.get("timeZone");
@@ -344,9 +369,61 @@ public class TenantServices {
         
         if (!ServiceUtil.isError(setServiceFieldsResults)) {
             // run updateUserLoginToSecurityGroup service
-            return TenantWorker.runService(serviceName, toContext, true, tenantId, delegator, dispatcher);
+            try {
+                Map<String, Object> runTenantServiceInMap = FastMap.newInstance();
+                runTenantServiceInMap.put("tenantId", tenantId);
+                runTenantServiceInMap.put("serviceName", serviceName);
+                runTenantServiceInMap.put("serviceParameters", toContext);
+                runTenantServiceInMap.put("isAsync", Boolean.FALSE);
+                return dispatcher.runSync("runTenantService", runTenantServiceInMap);
+            } catch (Exception e) {
+                Debug.logError(e, module);
+                return ServiceUtil.returnError(e.getMessage());
+            }
         } else {
             return setServiceFieldsResults;
+        }
+    }
+
+    /**
+     * run a service for a specific tenant
+     * @param ctx
+     * @param context
+     * @return
+     */
+    public static Map<String, Object> runTenantService(DispatchContext ctx, Map<String, Object> context) {
+        Delegator delegator = ctx.getDelegator();
+        LocalDispatcher dispatcher = ctx.getDispatcher();
+        
+        String tenantId = (String) context.get("tenantId");
+        String serviceName = (String) context.get("serviceName");
+        Map<String, Object> serviceParameters = UtilGenerics.cast(context.get("serviceParameters"));
+        Boolean isAsync = (Boolean) context.get("isAsync");
+        if (UtilValidate.isEmpty(isAsync)) {
+            isAsync = Boolean.FALSE;
+        }
+        
+        try {
+            String tenantDelegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
+            String tenantDispatcherName = dispatcher.getName() + "#" + tenantId;
+            Delegator tenantDelegator = DelegatorFactory.getDelegator(tenantDelegatorName);
+            LocalDispatcher tenantDispatcher = GenericDispatcher.getLocalDispatcher(tenantDispatcherName, tenantDelegator);
+            
+            Map<String, Object> serviceResults = null;
+            if (isAsync) {
+                tenantDispatcher.runAsyncWait(serviceName, serviceParameters);
+                serviceResults = ServiceUtil.returnSuccess();
+            } else {
+                serviceResults = tenantDispatcher.runSync(serviceName, serviceParameters);
+            }
+            
+            Map<String, Object> results = ServiceUtil.returnSuccess();
+            results.put("serviceResults", serviceResults);
+            return results;
+        } catch (GenericServiceException e) {
+            String errMsg = "Could not run service [" + serviceName + "] for tenant [" + tenantId + "]: " + e.toString();
+            Debug.logError(e, errMsg, module);
+            return ServiceUtil.returnError(errMsg);
         }
     }
 }

@@ -19,8 +19,20 @@
 package org.ofbiz.tenant.util;
 
 import java.io.File;
+import java.sql.Connection;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.dbcp.PoolableConnection;
+import org.apache.commons.dbcp.managed.ManagedConnection;
+import org.ofbiz.base.util.Debug;
+import org.ofbiz.base.util.UtilMisc;
+import org.ofbiz.base.util.UtilValidate;
+import org.ofbiz.entity.Delegator;
+import org.ofbiz.entity.GenericValue;
+import org.ofbiz.entity.datasource.GenericHelperInfo;
+import org.ofbiz.entity.jdbc.ConnectionFactory;
 
 /**
  * Tenant Utility
@@ -64,5 +76,40 @@ public class TenantUtil {
         } else {
             return false;
         }
+    }
+    
+    /**
+     * is connection available
+     * @param tenantId
+     * @param delegator
+     * @return
+     */
+    public static boolean isConnectionAvailable(String tenantId, Delegator delegator) {
+        try {
+            List<GenericValue> tenantDataSources = delegator.findByAnd("TenantDataSource", UtilMisc.toMap("tenantId", tenantId));
+            for (GenericValue tenantDataSource : tenantDataSources) {
+                String entityGroupName = tenantDataSource.getString("entityGroupName");
+                String jdbcUri = tenantDataSource.getString("jdbcUri");
+                String jdbcUsername = tenantDataSource.getString("jdbcUsername");
+                String jdbcPassword = tenantDataSource.getString("jdbcPassword");
+                
+                GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(entityGroupName);
+                Connection connection = ConnectionFactory.getConnection(jdbcUri, jdbcUsername, jdbcPassword);
+                ManagedConnection managedConn = (ManagedConnection) ConnectionFactory.getConnection(helperInfo);
+                PoolableConnection poolConn = (PoolableConnection) managedConn.getDelegate();
+                Connection innermostDelegate = poolConn.getInnermostDelegate();
+                if (UtilValidate.isNotEmpty(connection)) {
+                    if (!innermostDelegate.getClass().getName().equals(connection.getClass().getName())) {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+        } catch (Exception e) {
+            Debug.logWarning(e, module);
+            return false;
+        }
+        return true;
     }
 }

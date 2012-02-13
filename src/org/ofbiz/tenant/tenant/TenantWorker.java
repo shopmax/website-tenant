@@ -66,35 +66,4 @@ public class TenantWorker {
         toContext.putAll(modelService.makeValid(context, "IN", true, errorMessages, timeZone, locale));
         return ServiceUtil.returnSuccess();
     }
-    
-    /**
-     * run service
-     * @param serviceName
-     * @param context
-     * @param isSync
-     * @param tenantId
-     * @param delegator
-     * @param dispatcher
-     * @return
-     */
-    public static Map<String, Object> runService(String serviceName, Map<String, Object> context, boolean isSync, String tenantId, Delegator delegator, LocalDispatcher dispatcher) {
-        try {
-            String tenantDelegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
-            String tenantDispatcherName = dispatcher.getName() + "#" + tenantId;
-            Delegator tenantDelegator = DelegatorFactory.getDelegator(tenantDelegatorName);
-            LocalDispatcher tenantDispatcher = GenericDispatcher.getLocalDispatcher(tenantDispatcherName, tenantDelegator);
-            Map<String, Object> results = null;
-            if (isSync) {
-                results = tenantDispatcher.runSync(serviceName, context);
-            } else {
-                tenantDispatcher.runAsyncWait(serviceName, context);
-                results = ServiceUtil.returnSuccess();
-            }
-            return results;
-        } catch (GenericServiceException e) {
-            String errMsg = "Could not run service [" + serviceName + "] for tenant [" + tenantId + "]: " + e.toString();
-            Debug.logError(e, errMsg, module);
-            return ServiceUtil.returnError(errMsg);
-        }
-    }
 }

@@ -284,4 +284,25 @@ under the License.
             <call-object-method method-name="cancel" obj-field="pollTimer"/>
         </if-not-empty>
     </simple-method>
+    
+    <!-- set system property-->
+    <simple-method method-name="setSystemProperty" short-description="Set a system property">
+        <entity-one value-field="systemProperty" entity-name="SystemProperty">
+            <field-map field-name="systemResourceId" from-field="parameters.systemResourceId"/>
+            <field-map field-name="systemPropertyId" from-field="parameters.systemPropertyId"/>
+        </entity-one>
+        <if-not-empty field="systemProperty">
+            <if-compare field="systemProperty.systemPropertyValue" operator="not-equals" value="parameters.systemPropertyValue">
+                <set field="systemProperty.systemPropertyValue" from-field="parameters.systemPropertyValue"/>
+                <store-value value-field="systemProperty"/>
+            </if-compare>
+            <else>
+                <make-value value-field="systemProperty" entity-name="SystemProperty"/>
+                <set field="systemProperty.systemResourceId" from-field="parameters.systemResourceId"/>
+                <set field="systemProperty.systemPropertyId" from-field="parameters.systemPropertyId"/>
+                <set field="systemProperty.systemPropertyValue" from-field="parameters.systemPropertyValue"/>
+                <create-value value-field="systemProperty"/>
+            </else>
+        </if-not-empty>
+    </simple-method>
 </simple-methods>
