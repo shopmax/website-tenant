@@ -31,6 +31,7 @@ under the License.
         <call-class-method ret-field="frameworkLoadComponentElements" method-name="childElementList" class-name="org.ofbiz.base.util.UtilXml">
             <field field="frameworkComponentLoadElement" type="org.w3c.dom.Element"/>
         </call-class-method>
+        <call-class-method method-name="newInstance" class-name="javolution.util.FastList" ret-field="loadComponents"/>
         <iterate entry="frameworkLoadComponentElement" list="frameworkLoadComponentElements">
             <call-class-method ret-field="componentName" method-name="elementAttribute" class-name="org.ofbiz.base.util.UtilXml">
                 <field field="frameworkLoadComponentElement" type="org.w3c.dom.Element"/>
@@ -38,16 +39,15 @@ under the License.
                 <field field="null" type="String"/>
             </call-class-method>
             <call-object-method method-name="add" obj-field="loadComponents">
-                <field field="componentName" type="java.lang.Object"/>
+                <field field="componentName" type="Object"/>
             </call-object-method>
         </iterate>
-    
+        
         <!-- get file list from selected components -->
         <entity-and list="tenantComponents" entity-name="TenantComponent">
             <field-map field-name="tenantId" from-field="parameters.tenantId"/>
             <order-by field-name="sequenceNum"/>
         </entity-and>
-        <call-class-method method-name="newInstance" class-name="javolution.util.FastList" ret-field="loadComponents"/>
         <iterate entry="tenantComponent" list="tenantComponents">
             <set field="componentName" from-field="tenantComponent.componentName"/>
             <call-object-method method-name="add" obj-field="loadComponents">
@@ -57,13 +57,13 @@ under the License.
         
         <!-- make a reader names -->
         <call-class-method ret-field="readerNames" method-name="split" class-name="org.ofbiz.base.util.StringUtil">
-            <field field="parameters.componentReaders"/>
+            <field field="parameters.readers"/>
             <string value=","/>
         </call-class-method>
         
         <!-- get a helper name form the group name -->
         <call-object-method method-name="getGroupHelperInfo" obj-field="delegator" ret-field="helperInfo">
-            <field field="parameters.groupName"/>
+            <string value="org.ofbiz"/>
         </call-object-method>
         <call-object-method ret-field="helperName" method-name="getHelperBaseName" obj-field="helperInfo"/>
         
