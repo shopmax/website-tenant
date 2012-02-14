@@ -76,7 +76,9 @@
     <request-map uri="createTenantDataSource">
         <security https="true" auth="true"/>
         <event type="service" invoke="createTenantDataSource"/>
-        <response name="success" type="view-last" value="ListTenantDataSources"/>
+        <response name="success" type="request-redirect" value="ListTenantDataSources">
+            <redirect-parameter name="tenantId"/>
+        </response>
         <response name="error" type="view-last" value="ListTenantDataSources"/>
     </request-map>
     <request-map uri="updateTenantDataSources">
@@ -96,20 +98,22 @@
     <request-map uri="createTenantComponent">
         <security https="true" auth="true"/>
         <event type="service" invoke="createTenantComponent"/>
-        <response name="success" type="view-last" value="ListTenantDataSources"/>
-        <response name="error" type="view-last" value="ListTenantDataSources"/>
+        <response name="success" type="request-redirect" value="ListTenantComponents">
+            <redirect-parameter name="tenantId"/>
+        </response>
+        <response name="error" type="view-last" value="ListTenantComponents"/>
     </request-map>
     <request-map uri="updateTenantComponents">
         <security https="true" auth="true"/>
         <event type="service-multi" invoke="updateTenantComponent"/>
-        <response name="success" type="view-last" value="ListTenantDataSources"/>
-        <response name="error" type="view-last" value="ListTenantDataSources"/>
+        <response name="success" type="view-last" value="ListTenantComponents"/>
+        <response name="error" type="view-last" value="ListTenantComponents"/>
     </request-map>
     <request-map uri="deleteTenantComponents">
         <security https="true" auth="true"/>
         <event type="service-multi" invoke="deleteTenantComponent"/>
-        <response name="success" type="view-last" value="ListTenantDataSources"/>
-        <response name="error" type="view-last" value="ListTenantDataSources"/>
+        <response name="success" type="view-last" value="ListTenantComponents"/>
+        <response name="error" type="view-last" value="ListTenantComponents"/>
     </request-map>
     
     <!-- Installation -->
