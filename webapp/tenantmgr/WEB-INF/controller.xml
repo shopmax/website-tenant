@@ -54,7 +54,9 @@
     <request-map uri="createTenantDomainName">
         <security https="true" auth="true"/>
         <event type="service" invoke="createTenantDomainName"/>
-        <response name="success" type="view-last" value="ListTenantDomainNames"/>
+        <response name="success" type="request-redirect" value="ListTenantDomainNames">
+            <redirect-parameter name="tenantId"/>
+        </response>
         <response name="error" type="view-last" value="ListTenantDomainNames"/>
     </request-map>
     <request-map uri="updateTenantDomainNames">
