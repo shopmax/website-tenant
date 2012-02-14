@@ -50,7 +50,7 @@ import org.ofbiz.service.LocalDispatcher;
 import org.ofbiz.service.ServiceUtil;
 import org.ofbiz.tenant.jdbc.TenantConnectionFactory;
 import org.ofbiz.tenant.jdbc.TenantJdbcConnectionHandler;
-import org.ofbiz.tenant.tenant.TenantWorker;
+import org.ofbiz.tenant.util.TenantUtil;
 
 /**
  * Tenant Services
@@ -258,7 +258,7 @@ public class TenantServices {
         
         // set createUserLogin service fields
         String serviceName = "createUserLogin";
-        Map<String, Object> setServiceFieldsResults = TenantWorker.setServiceFields(serviceName, context, toContext, timeZone, locale, dispatcher);
+        Map<String, Object> setServiceFieldsResults = TenantUtil.setServiceFields(serviceName, context, toContext, timeZone, locale, dispatcher);
         
         if (!ServiceUtil.isError(setServiceFieldsResults)) {
             // run createUserLogin service
@@ -296,7 +296,7 @@ public class TenantServices {
         
         // set addUserLoginToSecurityGroup service fields
         String serviceName = "addUserLoginToSecurityGroup";
-        Map<String, Object> setServiceFieldsResults = TenantWorker.setServiceFields(serviceName, context, toContext, timeZone, locale, dispatcher);
+        Map<String, Object> setServiceFieldsResults = TenantUtil.setServiceFields(serviceName, context, toContext, timeZone, locale, dispatcher);
         
         if (!ServiceUtil.isError(setServiceFieldsResults)) {
             // run addUserLoginToSecurityGroup service
@@ -334,7 +334,7 @@ public class TenantServices {
         
         // set removeUserLoginFromSecurityGroup service fields
         String serviceName = "removeUserLoginFromSecurityGroup";
-        Map<String, Object> setServiceFieldsResults = TenantWorker.setServiceFields(serviceName, context, toContext, timeZone, locale, dispatcher);
+        Map<String, Object> setServiceFieldsResults = TenantUtil.setServiceFields(serviceName, context, toContext, timeZone, locale, dispatcher);
         
         if (!ServiceUtil.isError(setServiceFieldsResults)) {
             // run removeUserLoginFromSecurityGroup service
@@ -372,7 +372,7 @@ public class TenantServices {
         
         // set updateUserLoginToSecurityGroup service fields
         String serviceName = "updateUserLoginToSecurityGroup";
-        Map<String, Object> setServiceFieldsResults = TenantWorker.setServiceFields(serviceName, context, toContext, timeZone, locale, dispatcher);
+        Map<String, Object> setServiceFieldsResults = TenantUtil.setServiceFields(serviceName, context, toContext, timeZone, locale, dispatcher);
         
         if (!ServiceUtil.isError(setServiceFieldsResults)) {
             // run updateUserLoginToSecurityGroup service

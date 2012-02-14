@@ -21,8 +21,13 @@ package org.ofbiz.tenant.util;
 import java.io.File;
 import java.sql.Connection;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
+
+import javolution.util.FastList;
 
 import org.apache.commons.dbcp.PoolableConnection;
 import org.apache.commons.dbcp.managed.ManagedConnection;
@@ -33,6 +38,10 @@ import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.GenericValue;
 import org.ofbiz.entity.datasource.GenericHelperInfo;
 import org.ofbiz.entity.jdbc.ConnectionFactory;
+import org.ofbiz.service.GenericServiceException;
+import org.ofbiz.service.LocalDispatcher;
+import org.ofbiz.service.ModelService;
+import org.ofbiz.service.ServiceUtil;
 
 /**
  * Tenant Utility
@@ -111,5 +120,29 @@ public class TenantUtil {
             return false;
         }
         return true;
+    }
+    
+    /**
+     * set service fields
+     * @param serviceName
+     * @param context
+     * @param toContext
+     * @param timeZone
+     * @param locale
+     * @param dispatcher
+     * @return
+     */
+    public static Map<String, Object> setServiceFields(String serviceName, Map<String, Object> context, Map<String, Object> toContext, TimeZone timeZone, Locale locale, LocalDispatcher dispatcher) {
+        ModelService modelService = null;
+        List<Object> errorMessages = FastList.newInstance();
+        try {
+            modelService = dispatcher.getDispatchContext().getModelService(serviceName);
+        } catch (GenericServiceException e) {
+            String errMsg = "In set-service-fields could not get service definition for service name [" + serviceName + "]: " + e.toString();
+            Debug.logError(e, errMsg, module);
+            return ServiceUtil.returnError(errMsg);
+        }
+        toContext.putAll(modelService.makeValid(context, "IN", true, errorMessages, timeZone, locale));
+        return ServiceUtil.returnSuccess();
     }
 }
