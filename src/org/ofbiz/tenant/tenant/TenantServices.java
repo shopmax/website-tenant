@@ -251,6 +251,7 @@ public class TenantServices {
         LocalDispatcher dispatcher = ctx.getDispatcher();
         Locale locale = (Locale) context.get("locale");
         TimeZone timeZone = (TimeZone) context.get("timeZone");
+        GenericValue userLogin = (GenericValue) context.get("userLogin");
         String tenantId = (String) context.get("tenantId");
         
         Map<String, Object> toContext = FastMap.newInstance();
@@ -267,6 +268,7 @@ public class TenantServices {
                 runTenantServiceInMap.put("serviceName", serviceName);
                 runTenantServiceInMap.put("serviceParameters", toContext);
                 runTenantServiceInMap.put("isAsync", Boolean.FALSE);
+                runTenantServiceInMap.put("userLogin", userLogin);
                 return dispatcher.runSync("runTenantService", runTenantServiceInMap);
             } catch (Exception e) {
                 Debug.logError(e, module);
@@ -287,6 +289,7 @@ public class TenantServices {
         LocalDispatcher dispatcher = ctx.getDispatcher();
         Locale locale = (Locale) context.get("locale");
         TimeZone timeZone = (TimeZone) context.get("timeZone");
+        GenericValue userLogin = (GenericValue) context.get("userLogin");
         String tenantId = (String) context.get("tenantId");
         
         Map<String, Object> toContext = FastMap.newInstance();
@@ -303,6 +306,7 @@ public class TenantServices {
                 runTenantServiceInMap.put("serviceName", serviceName);
                 runTenantServiceInMap.put("serviceParameters", toContext);
                 runTenantServiceInMap.put("isAsync", Boolean.FALSE);
+                runTenantServiceInMap.put("userLogin", userLogin);
                 return dispatcher.runSync("runTenantService", runTenantServiceInMap);
             } catch (Exception e) {
                 Debug.logError(e, module);
@@ -323,6 +327,7 @@ public class TenantServices {
         LocalDispatcher dispatcher = ctx.getDispatcher();
         Locale locale = (Locale) context.get("locale");
         TimeZone timeZone = (TimeZone) context.get("timeZone");
+        GenericValue userLogin = (GenericValue) context.get("userLogin");
         String tenantId = (String) context.get("tenantId");
         
         Map<String, Object> toContext = FastMap.newInstance();
@@ -339,6 +344,7 @@ public class TenantServices {
                 runTenantServiceInMap.put("serviceName", serviceName);
                 runTenantServiceInMap.put("serviceParameters", toContext);
                 runTenantServiceInMap.put("isAsync", Boolean.FALSE);
+                runTenantServiceInMap.put("userLogin", userLogin);
                 return dispatcher.runSync("runTenantService", runTenantServiceInMap);
             } catch (Exception e) {
                 Debug.logError(e, module);
@@ -359,6 +365,7 @@ public class TenantServices {
         LocalDispatcher dispatcher = ctx.getDispatcher();
         Locale locale = (Locale) context.get("locale");
         TimeZone timeZone = (TimeZone) context.get("timeZone");
+        GenericValue userLogin = (GenericValue) context.get("userLogin");
         String tenantId = (String) context.get("tenantId");
         
         Map<String, Object> toContext = FastMap.newInstance();
@@ -375,6 +382,7 @@ public class TenantServices {
                 runTenantServiceInMap.put("serviceName", serviceName);
                 runTenantServiceInMap.put("serviceParameters", toContext);
                 runTenantServiceInMap.put("isAsync", Boolean.FALSE);
+                runTenantServiceInMap.put("userLogin", userLogin);
                 return dispatcher.runSync("runTenantService", runTenantServiceInMap);
             } catch (Exception e) {
                 Debug.logError(e, module);
