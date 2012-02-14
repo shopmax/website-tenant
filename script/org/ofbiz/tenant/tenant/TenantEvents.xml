@@ -63,17 +63,24 @@ under the License.
         
         <!-- get a helper name form the group name -->
         <call-object-method method-name="getGroupHelperInfo" obj-field="delegator" ret-field="helperInfo">
-            <string value="org.ofbiz"/>
+            <field field="parameters.entityGroupName"/>
         </call-object-method>
         <call-object-method ret-field="helperName" method-name="getHelperBaseName" obj-field="helperInfo"/>
         
         <!-- get URL list from the component list -->
-        <call-class-method ret-field="urlList" method-name="getUrlByComponentList" class-name="org.ofbiz.entity.util.EntityDataLoader">
-            <field field="helperName"/>
-            <field field="loadComponents" type="java.util.List"/>
-            <field field="readerNames" type="java.util.List"/>
-        </call-class-method>
-        
+        <if-not-empty field="readerNames">
+            <call-class-method ret-field="urlList" method-name="getUrlByComponentList" class-name="org.ofbiz.entity.util.EntityDataLoader">
+                <field field="helperName"/>
+                <field field="loadComponents" type="java.util.List"/>
+                <field field="readerNames" type="java.util.List"/>
+            </call-class-method>
+            <else>
+                <call-class-method ret-field="urlList" method-name="getUrlByComponentList" class-name="org.ofbiz.entity.util.EntityDataLoader">
+                    <field field="helperName"/>
+                    <field field="loadComponents" type="java.util.List"/>
+                </call-class-method>
+            </else>
+        </if-not-empty>
         <!-- build a String from the list of URL -->
         <create-object class-name="java.lang.StringBuilder" field="filesBuilder"/>
         <iterate entry="url" list="urlList">
