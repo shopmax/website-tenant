@@ -115,7 +115,7 @@
     <!-- Installation -->
     <request-map uri="installTenantDataSources">
         <security https="true" auth="true"/>
-        <event type="service" invoke="installTenantDataSources"/>
+        <event type="simple" path="component://tenant/script/org/ofbiz/tenant/tenant/TenantEvents.xml" invoke="installTenantDataSources"/>
         <response name="success" type="view-last" value="EditTenant"/>
         <response name="error" type="view-last" value="EditTenant"/>
     </request-map>

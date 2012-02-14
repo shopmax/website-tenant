@@ -19,6 +19,28 @@ under the License.
 -->
 <simple-methods xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://ofbiz.apache.org/dtds/simple-methods.xsd">
     <simple-method method-name="installTenantDataSources" short-description="Install tenant data sources" login-required="true">
+        <!-- load framework components -->
+        <set field="frameworkComponentLoadPath" value="file://${sys:getProperty('ofbiz.home')}/framework/component-load.xml"/>
+        <create-object field="frameworkComponentLoadUrl" class-name="java.net.URL">
+            <field field="frameworkComponentLoadPath"/>
+        </create-object>
+        <call-class-method ret-field="frameworkComponentLoadDoc" method-name="readXmlDocument" class-name="org.ofbiz.base.util.UtilXml">
+            <field field="frameworkComponentLoadUrl" type="java.net.URL"/>
+        </call-class-method>
+        <call-object-method ret-field="frameworkComponentLoadElement" method-name="getDocumentElement" obj-field="frameworkComponentLoadDoc"/>
+        <call-class-method ret-field="frameworkLoadComponentElements" method-name="childElementList" class-name="org.ofbiz.base.util.UtilXml">
+            <field field="frameworkComponentLoadElement" type="org.w3c.dom.Element"/>
+        </call-class-method>
+        <iterate entry="frameworkLoadComponentElement" list="frameworkLoadComponentElements">
+            <call-class-method ret-field="componentName" method-name="elementAttribute" class-name="org.ofbiz.base.util.UtilXml">
+                <field field="frameworkLoadComponentElement" type="org.w3c.dom.Element"/>
+                <string value="component-location"/>
+                <field field="null" type="String"/>
+            </call-class-method>
+            <call-object-method method-name="add" obj-field="loadComponents">
+                <field field="componentName" type="java.lang.Object"/>
+            </call-object-method>
+        </iterate>
     
         <!-- get file list from selected components -->
         <entity-and list="tenantComponents" entity-name="TenantComponent">
