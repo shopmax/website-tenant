@@ -269,7 +269,9 @@ public class TenantServices {
                 runTenantServiceInMap.put("serviceParameters", toContext);
                 runTenantServiceInMap.put("isAsync", Boolean.FALSE);
                 runTenantServiceInMap.put("userLogin", userLogin);
-                return dispatcher.runSync("runTenantService", runTenantServiceInMap);
+                Map<String, Object> results = dispatcher.runSync("runTenantService", runTenantServiceInMap);
+                Map<String, Object> serviceResults = UtilGenerics.cast(results.get("serviceResults"));
+                return serviceResults;
             } catch (Exception e) {
                 Debug.logError(e, module);
                 return ServiceUtil.returnError(e.getMessage());
@@ -307,7 +309,9 @@ public class TenantServices {
                 runTenantServiceInMap.put("serviceParameters", toContext);
                 runTenantServiceInMap.put("isAsync", Boolean.FALSE);
                 runTenantServiceInMap.put("userLogin", userLogin);
-                return dispatcher.runSync("runTenantService", runTenantServiceInMap);
+                Map<String, Object> results = dispatcher.runSync("runTenantService", runTenantServiceInMap);
+                Map<String, Object> serviceResults = UtilGenerics.cast(results.get("serviceResults"));
+                return serviceResults;
             } catch (Exception e) {
                 Debug.logError(e, module);
                 return ServiceUtil.returnError(e.getMessage());
@@ -345,7 +349,9 @@ public class TenantServices {
                 runTenantServiceInMap.put("serviceParameters", toContext);
                 runTenantServiceInMap.put("isAsync", Boolean.FALSE);
                 runTenantServiceInMap.put("userLogin", userLogin);
-                return dispatcher.runSync("runTenantService", runTenantServiceInMap);
+                Map<String, Object> results = dispatcher.runSync("runTenantService", runTenantServiceInMap);
+                Map<String, Object> serviceResults = UtilGenerics.cast(results.get("serviceResults"));
+                return serviceResults;
             } catch (Exception e) {
                 Debug.logError(e, module);
                 return ServiceUtil.returnError(e.getMessage());
@@ -369,7 +375,6 @@ public class TenantServices {
         String tenantId = (String) context.get("tenantId");
         
         Map<String, Object> toContext = FastMap.newInstance();
-        
         // set updateUserLoginToSecurityGroup service fields
         String serviceName = "updateUserLoginToSecurityGroup";
         Map<String, Object> setServiceFieldsResults = TenantUtil.setServiceFields(serviceName, context, toContext, timeZone, locale, dispatcher);
@@ -383,7 +388,9 @@ public class TenantServices {
                 runTenantServiceInMap.put("serviceParameters", toContext);
                 runTenantServiceInMap.put("isAsync", Boolean.FALSE);
                 runTenantServiceInMap.put("userLogin", userLogin);
-                return dispatcher.runSync("runTenantService", runTenantServiceInMap);
+                Map<String, Object> results = dispatcher.runSync("runTenantService", runTenantServiceInMap);
+                Map<String, Object> serviceResults = UtilGenerics.cast(results.get("serviceResults"));
+                return serviceResults;
             } catch (Exception e) {
                 Debug.logError(e, module);
                 return ServiceUtil.returnError(e.getMessage());
