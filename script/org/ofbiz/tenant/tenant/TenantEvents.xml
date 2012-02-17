@@ -19,29 +19,15 @@ under the License.
 -->
 <simple-methods xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://ofbiz.apache.org/dtds/simple-methods.xsd">
     <simple-method method-name="installTenantDataSources" short-description="Install tenant data sources" login-required="true">
-        <!-- load framework components -->
-        <set field="frameworkComponentLoadPath" value="file://${sys:getProperty('ofbiz.home')}/framework/component-load.xml"/>
-        <create-object field="frameworkComponentLoadUrl" class-name="java.net.URL">
-            <field field="frameworkComponentLoadPath"/>
-        </create-object>
-        <call-class-method ret-field="frameworkComponentLoadDoc" method-name="readXmlDocument" class-name="org.ofbiz.base.util.UtilXml">
-            <field field="frameworkComponentLoadUrl" type="java.net.URL"/>
-        </call-class-method>
-        <call-object-method ret-field="frameworkComponentLoadElement" method-name="getDocumentElement" obj-field="frameworkComponentLoadDoc"/>
-        <call-class-method ret-field="frameworkLoadComponentElements" method-name="childElementList" class-name="org.ofbiz.base.util.UtilXml">
-            <field field="frameworkComponentLoadElement" type="org.w3c.dom.Element"/>
-        </call-class-method>
         <call-class-method method-name="newInstance" class-name="javolution.util.FastList" ret-field="loadComponents"/>
-        <iterate entry="frameworkLoadComponentElement" list="frameworkLoadComponentElements">
-            <call-class-method ret-field="componentName" method-name="elementAttribute" class-name="org.ofbiz.base.util.UtilXml">
-                <field field="frameworkLoadComponentElement" type="org.w3c.dom.Element"/>
-                <string value="component-location"/>
-                <field field="null" type="String"/>
-            </call-class-method>
-            <call-object-method method-name="add" obj-field="loadComponents">
-                <field field="componentName" type="Object"/>
-            </call-object-method>
-        </iterate>
+        
+        <!-- load framework components -->
+        <call-class-method ret-field="frameworkComponentNames" method-name="getFrameworkComponentNames" class-name="org.ofbiz.tenant.component.ComponentWorker"/>
+        <if-not-empty field="frameworkComponentNames">
+            <call-bsh><![CDATA[
+                loadComponents.addAll(loadComponents.size(), frameworkComponentNames);
+            ]]></call-bsh>
+        </if-not-empty>
         
         <!-- get file list from selected components -->
         <entity-and list="tenantComponents" entity-name="TenantComponent">
@@ -54,47 +40,12 @@ under the License.
                 <field field="componentName" type="java.lang.Object"/>
             </call-object-method>
         </iterate>
-        
-        <!-- make a reader names -->
-        <call-class-method ret-field="readerNames" method-name="split" class-name="org.ofbiz.base.util.StringUtil">
-            <field field="parameters.readers"/>
-            <string value=","/>
-        </call-class-method>
-        
-        <!-- get a helper name form the group name -->
-        <call-object-method method-name="getGroupHelperInfo" obj-field="delegator" ret-field="helperInfo">
+        <call-class-method ret-field="files" method-name="getEntityDataUrlStringByComponentList" class-name="org.ofbiz.tenant.component.ComponentWorker">
             <field field="parameters.entityGroupName"/>
-        </call-object-method>
-        <call-object-method ret-field="helperName" method-name="getHelperBaseName" obj-field="helperInfo"/>
-        
-        <!-- get URL list from the component list -->
-        <if-not-empty field="readerNames">
-            <call-class-method ret-field="urlList" method-name="getUrlByComponentList" class-name="org.ofbiz.entity.util.EntityDataLoader">
-                <field field="helperName"/>
-                <field field="loadComponents" type="java.util.List"/>
-                <field field="readerNames" type="java.util.List"/>
-            </call-class-method>
-            <else>
-                <call-class-method ret-field="urlList" method-name="getUrlByComponentList" class-name="org.ofbiz.entity.util.EntityDataLoader">
-                    <field field="helperName"/>
-                    <field field="loadComponents" type="java.util.List"/>
-                </call-class-method>
-            </else>
-        </if-not-empty>
-        <!-- build a String from the list of URL -->
-        <create-object class-name="java.lang.StringBuilder" field="filesBuilder"/>
-        <iterate entry="url" list="urlList">
-            <set field="urlString" value="${groovy:url.toString()}"/>
-            <call-object-method method-name="append" obj-field="filesBuilder">
-                <field field="urlString"/>
-            </call-object-method>
-            <call-object-method method-name="append" obj-field="filesBuilder">
-                <string value=","/>
-            </call-object-method>
-        </iterate>
-        
-        <!-- get rid of the last comma -->
-        <set field="files" value="${groovy:filesBuilder.toString().substring(0,filesBuilder.toString().length()-1)}"/>
+            <field field="loadComponents" type="List"/>
+            <field field="parameters.readers"/>
+            <field field="delegator" type="org.ofbiz.entity.Delegator"/>
+        </call-class-method>
         
         <!-- install tenant data source -->
         <set-service-fields service-name="installTenantDataSources" to-map="installTenantDataSourcesInMap" map="parameters"/>
