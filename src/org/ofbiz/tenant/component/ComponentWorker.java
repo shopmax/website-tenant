@@ -19,8 +19,11 @@
 package org.ofbiz.tenant.component;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.net.URL;
 import java.util.List;
+
+import javolution.util.FastList;
 
 import org.ofbiz.base.util.StringUtil;
 import org.ofbiz.base.util.UtilValidate;
@@ -30,8 +33,6 @@ import org.ofbiz.entity.datasource.GenericHelperInfo;
 import org.ofbiz.entity.util.EntityDataLoader;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
-import javolution.util.FastList;
 
 /**
  * Component Worker
@@ -74,6 +75,33 @@ public class ComponentWorker {
         for (Element element : elements) {
             String componentName = UtilXml.elementAttribute(element, "component-location", null);
             componentNames.add(componentName);
+        }
+        return componentNames;
+    }
+    
+    /**
+     * get themes component names
+     * @return
+     * @throws Exception
+     */
+    public static List<String> getThemesComponentNames() throws Exception {
+        String ofbizHome = System.getProperty("ofbiz.home");
+        File themesDir = new File(ofbizHome, "themes");
+        List<String> componentNames = FastList.newInstance();
+        if (themesDir.isDirectory()) {
+            File[] themeDirs = themesDir.listFiles(new FileFilter() {
+                
+                @Override
+                public boolean accept(File file) {
+                    File dataDir = new File(file, "data");
+                    return dataDir.exists();
+                }
+            });
+            
+            for (File themeDir : themeDirs) {
+                String themeName = themeDir.getName();
+                componentNames.add(themeName);
+            }
         }
         return componentNames;
     }

@@ -106,7 +106,7 @@ public class TenantServices {
         
         try {
         
-            // if readers and files are emty then get readers from /data/DemoLoadData.txt file 
+            // if readers and files are empty then get readers from /data/DemoLoadData.txt file 
             if (UtilValidate.isEmpty(readers) && UtilValidate.isEmpty(files)) {
                 // get a reader from file
                 List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", tenantId));
