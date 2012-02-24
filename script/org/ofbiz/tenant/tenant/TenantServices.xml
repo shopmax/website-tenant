@@ -45,6 +45,11 @@ under the License.
             <field-map field-name="tenantId" from-field="tenant.tenantId"/>
         </entity-and>
         <remove-list list="tenantComponents"/>
+        <!-- Delete tenant domain name -->
+        <entity-and list="tenantDomainNames" entity-name="TenantDomainName">
+            <field-map field-name="tenantId" from-field="tenant.tenantId"/>
+        </entity-and>
+        <remove-list list="tenantDomainNames"/>
         <!-- Delete a tenant -->
         <remove-value value-field="tenant"/>
     </simple-method>
