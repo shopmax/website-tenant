@@ -7,4 +7,5 @@
     <TenantDataSource tenantId="@tenantId@" entityGroupName="org.ofbiz.olap"
        jdbcUri="jdbc:postgresql://@jdbcServerName@/@tenantId@olap" jdbcUsername="@jdbcUsername@" jdbcPassword="@jdbcPassword@"/>
     <TenantDomainName tenantId="@tenantId@" domainName="@subdomain@.@serverName@" initialPath="@initialPath@"/>
+    <TenantDomainName tenantId="@tenantId@" domainName="@subdomain@backend.@serverName@" initialPath="@initialPath@"/>
 </entity-engine-xml>
