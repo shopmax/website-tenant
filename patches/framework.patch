@@ -1,6 +1,6 @@
 Index: framework/common/src/org/ofbiz/common/UrlServletHelper.java
 ===================================================================
---- framework/common/src/org/ofbiz/common/UrlServletHelper.java	(revision 1296030)
+--- framework/common/src/org/ofbiz/common/UrlServletHelper.java	(revision 1296110)
 +++ framework/common/src/org/ofbiz/common/UrlServletHelper.java	(working copy)
 @@ -55,20 +55,31 @@
              // get tenant delegator by domain name
@@ -53,9 +53,36 @@ Index: framework/common/src/org/ofbiz/common/UrlServletHelper.java
          if (UtilValidate.isEmpty(httpRequest.getSession().getAttribute("webSiteId"))){
 Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(revision 1296030)
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(revision 1296110)
 +++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(working copy)
-@@ -564,6 +564,8 @@
+@@ -306,6 +306,26 @@
+                 Debug.logError(e.getMessage(), module);
+             }
+         }
++        
++        // refresh all components with multi tenant
++        if ("Y".equals(UtilProperties.getPropertyValue("general", "multitenant"))) {
++            allComponents.clear();
++            allComponents = FastList.newInstance();
++            allComponents.addAll(ComponentConfig.getFrameworkComponents());
++            allComponents.addAll(ComponentConfig.getApplicationsComponents());
++            allComponents.addAll(ComponentConfig.getSpecialpurposeComponents());
++            allComponents.addAll(ComponentConfig.getThemesComponents());
++            try {
++                List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", delegator.getDelegatorTenantId()), UtilMisc.toList("sequenceNum"));
++                for (GenericValue tenantComponent : tenantComponents) {
++                    String componentName = tenantComponent.getString("componentName");
++                    allComponents.add(ComponentConfig.getHotDeployComponent(componentName));
++                }
++            } catch (GenericEntityException e) {
++                Debug.logError(e, module);
++            }
++        }
++        
+         // load specify components
+         List<String> loadComponents = FastList.newInstance();
+         if (UtilValidate.isNotEmpty(delegator.getDelegatorTenantId()) && "Y".equals(UtilProperties.getPropertyValue("general.properties", "multitenant"))) {
+@@ -564,6 +584,8 @@
                  }
              }
          }
@@ -66,7 +93,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.
       * @see org.ofbiz.base.container.Container#stop()
 Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1296030)
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1296110)
 +++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(working copy)
 @@ -407,6 +407,8 @@
          // step 8 - checkdb
@@ -77,9 +104,128 @@ Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java
  
          Map<String, Object> result = ServiceUtil.returnSuccess();
          result.put("messages", messages);
+Index: framework/service/src/org/ofbiz/service/DispatchContext.java
+===================================================================
+--- framework/service/src/org/ofbiz/service/DispatchContext.java	(revision 1296110)
++++ framework/service/src/org/ofbiz/service/DispatchContext.java	(working copy)
+@@ -35,14 +35,21 @@
+ import javolution.util.FastMap;
+ 
+ import org.ofbiz.base.component.ComponentConfig;
++import org.ofbiz.base.component.ComponentConfig.ServiceResourceInfo;
+ import org.ofbiz.base.concurrent.ExecutionPool;
+ import org.ofbiz.base.config.GenericConfigException;
+ import org.ofbiz.base.config.MainResourceHandler;
+ import org.ofbiz.base.config.ResourceHandler;
+ import org.ofbiz.base.util.Debug;
++import org.ofbiz.base.util.UtilMisc;
++import org.ofbiz.base.util.UtilProperties;
++import org.ofbiz.base.util.UtilValidate;
+ import org.ofbiz.base.util.UtilXml;
+ import org.ofbiz.base.util.cache.UtilCache;
+ import org.ofbiz.entity.Delegator;
++import org.ofbiz.entity.GenericEntityException;
++import org.ofbiz.entity.GenericValue;
++import org.ofbiz.entity.util.EntityUtil;
+ import org.ofbiz.security.Security;
+ import org.ofbiz.security.authz.Authorization;
+ import org.ofbiz.service.config.ServiceConfigUtil;
+@@ -81,8 +88,12 @@
+     }
+ 
+     public void loadReaders() {
+-        this.getLocalServiceMap();
+-        this.getGlobalServiceMap();
++        try {
++            this.getLocalServiceMap();
++            this.getGlobalServiceMap(getTenantComponentNames());
++        } catch (GenericServiceException e) {
++            Debug.logError(e, module);
++        }
+     }
+ 
+     /**
+@@ -215,7 +226,7 @@
+     }
+ 
+     private ModelService getGlobalModelService(String serviceName) throws GenericServiceException {
+-        Map<String, ModelService> serviceMap = this.getGlobalServiceMap();
++        Map<String, ModelService> serviceMap = this.getGlobalServiceMap(getTenantComponentNames());
+ 
+         ModelService retVal = null;
+         if (serviceMap != null) {
+@@ -303,7 +314,7 @@
+         };
+     }
+ 
+-    private Map<String, ModelService> getGlobalServiceMap() {
++    private Map<String, ModelService> getGlobalServiceMap(List<String> componentNames) {
+         Map<String, ModelService> serviceMap = modelServiceMapByDispatcher.get(GLOBAL_KEY);
+         if (serviceMap == null) {
+             synchronized (this) {
+@@ -327,9 +338,37 @@
+ 
+                         futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createServiceReaderCallable(handler)));
+                     }
++                    
++                    Collection<ComponentConfig> components = FastList.newInstance();
+ 
+                     // get all of the component resource model stuff, ie specified in each ofbiz-component.xml file
+-                    for (ComponentConfig.ServiceResourceInfo componentResourceInfo: ComponentConfig.getAllServiceResourceInfos("model")) {
++                    if (UtilValidate.isEmpty(componentNames)) {
++                        components.addAll(ComponentConfig.getFrameworkComponents());
++                        components.addAll(ComponentConfig.getApplicationsComponents());
++                        components.addAll(ComponentConfig.getSpecialpurposeComponents());
++                        components.addAll(ComponentConfig.getThemesComponents());
++                        if (!"Y".equals(UtilProperties.getPropertyValue("general", "multitenant"))) {
++                            components.addAll(ComponentConfig.getHotDeployComponents());
++                        }
++                    } else {
++                        components.addAll(ComponentConfig.getFrameworkComponents());
++                        components.addAll(ComponentConfig.getApplicationsComponents());
++                        components.addAll(ComponentConfig.getSpecialpurposeComponents());
++                        components.addAll(ComponentConfig.getThemesComponents());
++                        for (String componentName : componentNames) {
++                            components.add(ComponentConfig.getHotDeployComponent(componentName));
++                        }
++                    }
++                    
++                    // get service resource infos
++                    List<ServiceResourceInfo> serviceResourceInfos = FastList.newInstance();
++                    for (ComponentConfig component : components) {
++                        List<ServiceResourceInfo> componentServiceResourceInfos = ComponentConfig.getAllServiceResourceInfos("model", component.getComponentName());
++                        serviceResourceInfos.addAll(componentServiceResourceInfos);
++                    }
++                    
++                    // create resource handler
++                    for (ComponentConfig.ServiceResourceInfo componentResourceInfo: serviceResourceInfos) {
+                         futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createServiceReaderCallable(componentResourceInfo.createResourceHandler())));
+                     }
+                     for (Map<String, ModelService> servicesMap: ExecutionPool.getAllFutures(futures)) {
+@@ -367,4 +406,20 @@
+         ModelService model = this.getModelService(serviceName);
+         return model.toWSDL(locationURI);
+     }
++    
++    private List<String> getTenantComponentNames() throws GenericServiceException {
++        List<String> componentNames = null;
++        Delegator delegator = getDelegator();
++        String tenantId = delegator.getDelegatorTenantId();
++        if (UtilValidate.isNotEmpty(tenantId)) {
++            // get tenant components
++            try {
++                List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", tenantId), UtilMisc.toList("sequenceNum"));
++                componentNames = EntityUtil.getFieldListFromEntityList(tenantComponents, "componentName", true);
++            } catch (GenericEntityException e) {
++                throw new GenericServiceException(e);
++            }
++        }
++        return componentNames;
++    }
+ }
 Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
 ===================================================================
---- framework/base/src/org/ofbiz/base/component/ComponentConfig.java	(revision 1296030)
+--- framework/base/src/org/ofbiz/base/component/ComponentConfig.java	(revision 1296110)
 +++ framework/base/src/org/ofbiz/base/component/ComponentConfig.java	(working copy)
 @@ -54,6 +54,11 @@
  
@@ -190,7 +336,7 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
      }
 Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1296030)
+--- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1296110)
 +++ framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(working copy)
 @@ -1212,11 +1212,14 @@
      public void checkDb(Map<String, ModelEntity> modelEntities, List<String> messages, boolean addMissing) {
@@ -210,7 +356,7 @@ Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
  }
 Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1296030)
+--- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1296110)
 +++ framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(working copy)
 @@ -18,6 +18,16 @@
   *******************************************************************************/
@@ -284,7 +430,7 @@ Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.ja
  }
 Index: framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java	(revision 1296030)
+--- framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java	(revision 1296110)
 +++ framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java	(working copy)
 @@ -19,6 +19,7 @@
  package org.ofbiz.entity.model;
@@ -403,7 +549,7 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java
              }
 Index: framework/entity/src/org/ofbiz/entity/model/ModelReader.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(revision 1296030)
+--- framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(revision 1296110)
 +++ framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(working copy)
 @@ -32,10 +32,12 @@
  import javolution.util.FastSet;
@@ -513,7 +659,7 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelReader.java
              }
 Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1296030)
+--- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1296110)
 +++ framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(working copy)
 @@ -83,6 +83,7 @@
  
@@ -554,7 +700,7 @@ Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
      /* ====================================================================== */
 Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1296030)
+--- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1296110)
 +++ framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(working copy)
 @@ -56,4 +56,8 @@
              delegatorCache.putIfAbsent(delegatorName, delegator);
@@ -567,7 +713,7 @@ Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
  }
 Index: framework/entity/src/org/ofbiz/entity/GenericDelegator.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/GenericDelegator.java	(revision 1296030)
+--- framework/entity/src/org/ofbiz/entity/GenericDelegator.java	(revision 1296110)
 +++ framework/entity/src/org/ofbiz/entity/GenericDelegator.java	(working copy)
 @@ -75,6 +75,7 @@
  import org.ofbiz.entity.util.EntityCrypto;
@@ -605,7 +751,7 @@ Index: framework/entity/src/org/ofbiz/entity/GenericDelegator.java
  
 Index: framework/entity/entitydef/entitygroup.xml
 ===================================================================
---- framework/entity/entitydef/entitygroup.xml	(revision 1296030)
+--- framework/entity/entitydef/entitygroup.xml	(revision 1296110)
 +++ framework/entity/entitydef/entitygroup.xml	(working copy)
 @@ -29,4 +29,5 @@
  <!--     <entity-group group="org.ofbiz.tenant" entity="TenantUserLogin"/> -->
@@ -615,7 +761,7 @@ Index: framework/entity/entitydef/entitygroup.xml
  </entitygroup>
 Index: framework/entity/entitydef/entitymodel.xml
 ===================================================================
---- framework/entity/entitydef/entitymodel.xml	(revision 1296030)
+--- framework/entity/entitydef/entitymodel.xml	(revision 1296110)
 +++ framework/entity/entitydef/entitymodel.xml	(working copy)
 @@ -66,8 +66,6 @@
      <entity entity-name="Tenant" package-name="org.ofbiz.entity.tenant">
@@ -643,7 +789,7 @@ Index: framework/entity/entitydef/entitymodel.xml
  </entitymodel>
 Index: framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java
 ===================================================================
---- framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(revision 1296030)
+--- framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(revision 1296110)
 +++ framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(working copy)
 @@ -645,9 +645,11 @@
          if (currCatalog != null) session.setAttribute("CURRENT_CATALOG_ID", currCatalog);
@@ -659,7 +805,7 @@ Index: framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java
              delegator = DelegatorFactory.getDelegator(delegatorName);
 Index: framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java
 ===================================================================
---- framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(revision 1296030)
+--- framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(revision 1296110)
 +++ framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(working copy)
 @@ -280,16 +280,28 @@
              // get tenant delegator by domain name
