@@ -1,6 +1,6 @@
 Index: framework/common/src/org/ofbiz/common/UrlServletHelper.java
 ===================================================================
---- framework/common/src/org/ofbiz/common/UrlServletHelper.java	(revision 1236115)
+--- framework/common/src/org/ofbiz/common/UrlServletHelper.java	(revision 1296030)
 +++ framework/common/src/org/ofbiz/common/UrlServletHelper.java	(working copy)
 @@ -55,20 +55,31 @@
              // get tenant delegator by domain name
@@ -53,7 +53,7 @@ Index: framework/common/src/org/ofbiz/common/UrlServletHelper.java
          if (UtilValidate.isEmpty(httpRequest.getSession().getAttribute("webSiteId"))){
 Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(revision 1236115)
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(revision 1296030)
 +++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(working copy)
 @@ -564,6 +564,8 @@
                  }
@@ -66,7 +66,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.
       * @see org.ofbiz.base.container.Container#stop()
 Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1236115)
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1296030)
 +++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(working copy)
 @@ -407,6 +407,8 @@
          // step 8 - checkdb
@@ -77,9 +77,120 @@ Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java
  
          Map<String, Object> result = ServiceUtil.returnSuccess();
          result.put("messages", messages);
+Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
+===================================================================
+--- framework/base/src/org/ofbiz/base/component/ComponentConfig.java	(revision 1296030)
++++ framework/base/src/org/ofbiz/base/component/ComponentConfig.java	(working copy)
+@@ -54,6 +54,11 @@
+ 
+     // this is not a UtilCache because reloading may cause problems
+     protected static Map<String, ComponentConfig> componentConfigs = FastMap.newInstance();
++    protected static Map<String, ComponentConfig> frameworkComponentConfigs = FastMap.newInstance();
++    protected static Map<String, ComponentConfig> applicationsComponentConfigs = FastMap.newInstance();
++    protected static Map<String, ComponentConfig> specialpurposeComponentConfigs = FastMap.newInstance();
++    protected static Map<String, ComponentConfig> themesComponentConfigs = FastMap.newInstance();
++    protected static Map<String, ComponentConfig> hotDeployComponentConfigs = FastMap.newInstance();
+     protected static Map<String, List<WebappInfo>> serverWebApps = FastMap.newInstance();
+ 
+     public static ComponentConfig getComponentConfig(String globalName) throws ComponentException {
+@@ -62,6 +67,7 @@
+     }
+ 
+     public static ComponentConfig getComponentConfig(String globalName, String rootLocation) throws ComponentException {
++        String ofbizHome = System.getProperty("ofbiz.home");
+         ComponentConfig componentConfig = null;
+         if (UtilValidate.isNotEmpty(globalName)) {
+             componentConfig = componentConfigs.get(globalName);
+@@ -78,6 +84,18 @@
+                             Debug.logWarning("WARNING: Loading ofbiz-component using a global name that already exists, will over-write: " + componentConfig.getGlobalName(), module);
+                         }
+                         if (componentConfig.enabled()) {
++                            String componentLocation = rootLocation.substring(rootLocation.indexOf(ofbizHome) + ofbizHome.length() + 1, rootLocation.length());
++                            if (componentLocation.startsWith("framework")) {
++                                frameworkComponentConfigs.put(componentConfig.getComponentName(),componentConfig);
++                            } else if (componentLocation.startsWith("applications")) {
++                                applicationsComponentConfigs.put(componentConfig.getComponentName(), componentConfig);
++                            } else if (componentLocation.startsWith("specialpurpose")) {
++                                specialpurposeComponentConfigs.put(componentConfig.getComponentName(), componentConfig);
++                            } else if (componentLocation.startsWith("themes")) {
++                                themesComponentConfigs.put(componentConfig.getComponentName(), componentConfig);
++                            } else if (componentLocation.startsWith("hot-deploy")) {
++                                hotDeployComponentConfigs.put(componentConfig.getComponentName(), componentConfig);
++                            }
+                             componentConfigs.put(componentConfig.getGlobalName(), componentConfig);
+                         }
+                     }
+@@ -107,7 +125,67 @@
+             return FastList.newInstance();
+         }
+     }
++    
++    public static Collection<ComponentConfig> getFrameworkComponents() {
++        Collection<ComponentConfig> values = frameworkComponentConfigs.values();
++        if (values != null) {
++            return values;
++        } else {
++            Debug.logWarning("No framework components were found, something is probably missing or incorrect in the component-load setup.", module);
++            return FastList.newInstance();
++        }
++    }
+ 
++    public static Collection<ComponentConfig> getApplicationsComponents() {
++        Collection<ComponentConfig> values = applicationsComponentConfigs.values();
++        if (values != null) {
++            return values;
++        } else {
++            Debug.logWarning("No applications components were found, something is probably missing or incorrect in the component-load setup.", module);
++            return FastList.newInstance();
++        }
++    }
++
++    public static Collection<ComponentConfig> getSpecialpurposeComponents() {
++        Collection<ComponentConfig> values = specialpurposeComponentConfigs.values();
++        if (values != null) {
++            return values;
++        } else {
++            Debug.logWarning("No specialpurpose components were found, something is probably missing or incorrect in the component-load setup.", module);
++            return FastList.newInstance();
++        }
++    }
++
++    public static Collection<ComponentConfig> getThemesComponents() {
++        Collection<ComponentConfig> values = themesComponentConfigs.values();
++        if (values != null) {
++            return values;
++        } else {
++            Debug.logWarning("No themes components were found, something is probably missing or incorrect in the component-load setup.", module);
++            return FastList.newInstance();
++        }
++    }
++
++    public static Collection<ComponentConfig> getHotDeployComponents() {
++        Collection<ComponentConfig> values = hotDeployComponentConfigs.values();
++        if (values != null) {
++            return values;
++        } else {
++            Debug.logWarning("No hot-deploy components were found, something is probably missing or incorrect in the component-load setup.", module);
++            return FastList.newInstance();
++        }
++    }
++
++    public static ComponentConfig getHotDeployComponent(String componentName) {
++        ComponentConfig value = hotDeployComponentConfigs.get(componentName);
++        if (value != null) {
++            return value;
++        } else {
++            Debug.logWarning("No hot-deploy component[" + componentName + "] were found, something is probably missing or incorrect in the component-load setup.", module);
++            return null;
++        }
++    }
++
+     public static List<ClasspathInfo> getAllClasspathInfos() {
+         return getAllClasspathInfos(null);
+     }
 Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1236115)
+--- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1296030)
 +++ framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(working copy)
 @@ -1212,11 +1212,14 @@
      public void checkDb(Map<String, ModelEntity> modelEntities, List<String> messages, boolean addMissing) {
@@ -99,7 +210,7 @@ Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
  }
 Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1236115)
+--- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1296030)
 +++ framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(working copy)
 @@ -18,6 +18,16 @@
   *******************************************************************************/
@@ -171,9 +282,238 @@ Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.ja
 +        return gopCache.get(helperInfo.getHelperFullName());
 +    }
  }
+Index: framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java
+===================================================================
+--- framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java	(revision 1296030)
++++ framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java	(working copy)
+@@ -19,6 +19,7 @@
+ package org.ofbiz.entity.model;
+ 
+ import java.io.Serializable;
++import java.util.Collection;
+ import java.util.HashMap;
+ import java.util.LinkedList;
+ import java.util.List;
+@@ -26,13 +27,16 @@
+ import java.util.Set;
+ import java.util.TreeSet;
+ 
++import javolution.util.FastList;
+ import javolution.util.FastSet;
+ 
+ import org.ofbiz.base.component.ComponentConfig;
++import org.ofbiz.base.component.ComponentConfig.EntityResourceInfo;
+ import org.ofbiz.base.config.GenericConfigException;
+ import org.ofbiz.base.config.MainResourceHandler;
+ import org.ofbiz.base.config.ResourceHandler;
+ import org.ofbiz.base.util.Debug;
++import org.ofbiz.base.util.UtilProperties;
+ import org.ofbiz.base.util.UtilTimer;
+ import org.ofbiz.base.util.UtilValidate;
+ import org.ofbiz.base.util.UtilXml;
+@@ -62,22 +66,34 @@
+     public List<ResourceHandler> entityGroupResourceHandlers = new LinkedList<ResourceHandler>();
+ 
+     public static ModelGroupReader getModelGroupReader(String delegatorName) throws GenericEntityConfException {
+-        DelegatorInfo delegatorInfo = EntityConfigUtil.getDelegatorInfo(delegatorName);
++        return getModelGroupReader(delegatorName, null, null);
++    }
++    
++    public static ModelGroupReader getModelGroupReader(String delegatorBaseName, String tenantId, List<String> componentNames) throws GenericEntityConfException {
++        DelegatorInfo delegatorInfo = EntityConfigUtil.getDelegatorInfo(delegatorBaseName);
+ 
+         if (delegatorInfo == null) {
+-            throw new GenericEntityConfException("Could not find a delegator with the name " + delegatorName);
++            throw new GenericEntityConfException("Could not find a delegator with the name " + delegatorBaseName);
+         }
+ 
+         String tempModelName = delegatorInfo.entityGroupReader;
+-        ModelGroupReader reader = readers.get(tempModelName);
++        String delegatorName = delegatorBaseName;
++        if (UtilValidate.isNotEmpty(tenantId)) {
++            delegatorName += "#" + tenantId;
++        }
++        ModelGroupReader reader = readers.get(delegatorName);
+ 
+         if (reader == null) { // don't want to block here
+             synchronized (ModelGroupReader.class) {
+                 // must check if null again as one of the blocked threads can still enter
+-                reader = readers.get(tempModelName);
++                reader = readers.get(delegatorName);
+                 if (reader == null) {
+-                    reader = new ModelGroupReader(tempModelName);
+-                    readers.put(tempModelName, reader);
++                    if (UtilValidate.isEmpty(componentNames)) {
++                        reader = new ModelGroupReader(tempModelName);
++                    } else {
++                        reader = new ModelGroupReader(tempModelName, componentNames);
++                    }
++                    readers.put(delegatorName, reader);
+                 }
+             }
+         }
+@@ -85,6 +101,10 @@
+     }
+ 
+     public ModelGroupReader(String modelName) throws GenericEntityConfException {
++        this(modelName, null);
++    }
++
++    public ModelGroupReader(String modelName, List<String> componentNames) throws GenericEntityConfException {
+         this.modelName = modelName;
+         EntityGroupReaderInfo entityGroupReaderInfo = EntityConfigUtil.getEntityGroupReaderInfo(modelName);
+ 
+@@ -95,8 +115,36 @@
+             this.entityGroupResourceHandlers.add(new MainResourceHandler(EntityConfigUtil.ENTITY_ENGINE_XML_FILENAME, resourceElement));
+         }
+ 
++        Collection<ComponentConfig> components = FastList.newInstance();
++        
+         // get all of the component resource group stuff, ie specified in each ofbiz-component.xml file
+-        for (ComponentConfig.EntityResourceInfo componentResourceInfo: ComponentConfig.getAllEntityResourceInfos("group")) {
++        if (UtilValidate.isEmpty(componentNames)) {
++            components.addAll(ComponentConfig.getFrameworkComponents());
++            components.addAll(ComponentConfig.getApplicationsComponents());
++            components.addAll(ComponentConfig.getSpecialpurposeComponents());
++            components.addAll(ComponentConfig.getThemesComponents());
++            if (!"Y".equals(UtilProperties.getPropertyValue("general", "multitenant"))) {
++                components.addAll(ComponentConfig.getHotDeployComponents());
++            }
++        } else {
++            components.addAll(ComponentConfig.getFrameworkComponents());
++            components.addAll(ComponentConfig.getApplicationsComponents());
++            components.addAll(ComponentConfig.getSpecialpurposeComponents());
++            components.addAll(ComponentConfig.getThemesComponents());
++            for (String componentName : componentNames) {
++                components.add(ComponentConfig.getHotDeployComponent(componentName));
++            }
++        }
++
++        // get entity resource infos
++        List<EntityResourceInfo> entityResourceInfos = FastList.newInstance();
++        for (ComponentConfig component : components) {
++            List<EntityResourceInfo> componentEntityResourceInfos = ComponentConfig.getAllEntityResourceInfos("group", component.getComponentName());
++            entityResourceInfos.addAll(componentEntityResourceInfos);
++        }
++
++        // create resource handlers
++        for (ComponentConfig.EntityResourceInfo componentResourceInfo: entityResourceInfos) {
+             if (modelName.equals(componentResourceInfo.readerName)) {
+                 this.entityGroupResourceHandlers.add(componentResourceInfo.createResourceHandler());
+             }
+Index: framework/entity/src/org/ofbiz/entity/model/ModelReader.java
+===================================================================
+--- framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(revision 1296030)
++++ framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(working copy)
+@@ -32,10 +32,12 @@
+ import javolution.util.FastSet;
+ 
+ import org.ofbiz.base.component.ComponentConfig;
++import org.ofbiz.base.component.ComponentConfig.EntityResourceInfo;
+ import org.ofbiz.base.config.GenericConfigException;
+ import org.ofbiz.base.config.MainResourceHandler;
+ import org.ofbiz.base.config.ResourceHandler;
+ import org.ofbiz.base.util.Debug;
++import org.ofbiz.base.util.UtilProperties;
+ import org.ofbiz.base.util.UtilTimer;
+ import org.ofbiz.base.util.UtilValidate;
+ import org.ofbiz.base.util.UtilXml;
+@@ -80,24 +82,36 @@
+     protected Map<String, ResourceHandler> entityResourceHandlerMap;
+ 
+     public static ModelReader getModelReader(String delegatorName) throws GenericEntityException {
+-        DelegatorInfo delegatorInfo = EntityConfigUtil.getDelegatorInfo(delegatorName);
++        return getModelReader(delegatorName, null, null);
++    }
++    
++    public static ModelReader getModelReader(String delegatorBaseName, String tenantId, List<String> componentNames) throws GenericEntityException {
++        DelegatorInfo delegatorInfo = EntityConfigUtil.getDelegatorInfo(delegatorBaseName);
+ 
+         if (delegatorInfo == null) {
+-            throw new GenericEntityConfException("Could not find a delegator with the name " + delegatorName);
++            throw new GenericEntityConfException("Could not find a delegator with the name " + delegatorBaseName);
+         }
+ 
+         String tempModelName = delegatorInfo.entityModelReader;
+-        ModelReader reader = readers.get(tempModelName);
++        String delegatorName = delegatorBaseName;
++        if (UtilValidate.isNotEmpty(tenantId)) {
++            delegatorName += "#" + tenantId;
++        }
++        ModelReader reader = readers.get(delegatorName);
+ 
+         if (reader == null) { // don't want to block here
+             synchronized (ModelReader.class) {
+                 // must check if null again as one of the blocked threads can still enter
+-                reader = readers.get(tempModelName);
++                reader = readers.get(delegatorName);
+                 if (reader == null) {
+-                    reader = new ModelReader(tempModelName);
++                    if (UtilValidate.isEmpty(componentNames)) {
++                        reader = new ModelReader(tempModelName);
++                    } else {
++                        reader = new ModelReader(tempModelName, componentNames);
++                    }
+                     // preload caches...
+                     reader.getEntityCache();
+-                    readers.put(tempModelName, reader);
++                    readers.put(delegatorName, reader);
+                 }
+             }
+         }
+@@ -105,6 +119,10 @@
+     }
+ 
+     public ModelReader(String modelName) throws GenericEntityException {
++        this(modelName, null);
++    }
++
++    public ModelReader(String modelName, List<String> componentNames) throws GenericEntityException {
+         this.modelName = modelName;
+         entityResourceHandlers = FastList.newInstance();
+         resourceHandlerEntities = FastMap.newInstance();
+@@ -121,9 +139,37 @@
+             ResourceHandler handler = new MainResourceHandler(EntityConfigUtil.ENTITY_ENGINE_XML_FILENAME, resourceElement);
+             entityResourceHandlers.add(handler);
+         }
++        
++        Collection<ComponentConfig> components = FastList.newInstance();
+ 
+         // get all of the component resource model stuff, ie specified in each ofbiz-component.xml file
+-        for (ComponentConfig.EntityResourceInfo componentResourceInfo: ComponentConfig.getAllEntityResourceInfos("model")) {
++        if (UtilValidate.isEmpty(componentNames)) {
++            components.addAll(ComponentConfig.getFrameworkComponents());
++            components.addAll(ComponentConfig.getApplicationsComponents());
++            components.addAll(ComponentConfig.getSpecialpurposeComponents());
++            components.addAll(ComponentConfig.getThemesComponents());
++            if (!"Y".equals(UtilProperties.getPropertyValue("general", "multitenant"))) {
++                components.addAll(ComponentConfig.getHotDeployComponents());
++            }
++        } else {
++            components.addAll(ComponentConfig.getFrameworkComponents());
++            components.addAll(ComponentConfig.getApplicationsComponents());
++            components.addAll(ComponentConfig.getSpecialpurposeComponents());
++            components.addAll(ComponentConfig.getThemesComponents());
++            for (String componentName : componentNames) {
++                components.add(ComponentConfig.getHotDeployComponent(componentName));
++            }
++        }
++
++        // get entity resource infos
++        List<EntityResourceInfo> entityResourceInfos = FastList.newInstance();
++        for (ComponentConfig component : components) {
++            List<EntityResourceInfo> componentEntityResourceInfos = ComponentConfig.getAllEntityResourceInfos("model", component.getComponentName());
++            entityResourceInfos.addAll(componentEntityResourceInfos);
++        }
++
++        // create resource handlers
++        for (ComponentConfig.EntityResourceInfo componentResourceInfo: entityResourceInfos) {
+             if (modelName.equals(componentResourceInfo.readerName)) {
+                 entityResourceHandlers.add(componentResourceInfo.createResourceHandler());
+             }
 Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1236115)
+--- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1296030)
 +++ framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(working copy)
 @@ -83,6 +83,7 @@
  
@@ -214,7 +554,7 @@ Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
      /* ====================================================================== */
 Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1236115)
+--- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1296030)
 +++ framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(working copy)
 @@ -56,4 +56,8 @@
              delegatorCache.putIfAbsent(delegatorName, delegator);
@@ -225,9 +565,47 @@ Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
 +        delegatorCache.remove(delegatorName);
 +    }
  }
+Index: framework/entity/src/org/ofbiz/entity/GenericDelegator.java
+===================================================================
+--- framework/entity/src/org/ofbiz/entity/GenericDelegator.java	(revision 1296030)
++++ framework/entity/src/org/ofbiz/entity/GenericDelegator.java	(working copy)
+@@ -75,6 +75,7 @@
+ import org.ofbiz.entity.util.EntityCrypto;
+ import org.ofbiz.entity.util.EntityFindOptions;
+ import org.ofbiz.entity.util.EntityListIterator;
++import org.ofbiz.entity.util.EntityUtil;
+ import org.ofbiz.entity.util.SequenceUtil;
+ //import org.ofbiz.service.ServiceDispatcher;
+ import org.w3c.dom.Document;
+@@ -212,6 +213,8 @@
+     protected GenericDelegator(String delegatorFullName) throws GenericEntityException {
+         //if (Debug.infoOn()) Debug.logInfo("Creating new Delegator with name \"" + delegatorFullName + "\".", module);
+         this.setDelegatorNames(delegatorFullName);
++        
++        List<String> componentNames = null;
+ 
+         // before continuing, if there is a tenantId use the base delegator to see if it is valid
+         if (UtilValidate.isNotEmpty(this.delegatorTenantId)) {
+@@ -222,10 +225,14 @@
+             } else if ("Y".equals(tenant.getString("disabled"))) {
+                 throw new GenericEntityException("No Tenant record found for delegator [" + this.delegatorFullName + "] with tenantId [" + this.delegatorTenantId + "]");
+             }
++            
++            // get tenant components
++            List<GenericValue> tenantComponents = baseDelegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", this.delegatorTenantId), UtilMisc.toList("sequenceNum"));
++            componentNames = EntityUtil.getFieldListFromEntityList(tenantComponents, "componentName", true);
+         }
+ 
+-        this.modelReader = ModelReader.getModelReader(delegatorBaseName);
+-        this.modelGroupReader = ModelGroupReader.getModelGroupReader(delegatorBaseName);
++        this.modelReader = ModelReader.getModelReader(delegatorBaseName, delegatorTenantId, componentNames);
++        this.modelGroupReader = ModelGroupReader.getModelGroupReader(delegatorBaseName, delegatorTenantId, componentNames);
+ 
+         cache = new Cache(delegatorFullName);
+ 
 Index: framework/entity/entitydef/entitygroup.xml
 ===================================================================
---- framework/entity/entitydef/entitygroup.xml	(revision 1236115)
+--- framework/entity/entitydef/entitygroup.xml	(revision 1296030)
 +++ framework/entity/entitydef/entitygroup.xml	(working copy)
 @@ -29,4 +29,5 @@
  <!--     <entity-group group="org.ofbiz.tenant" entity="TenantUserLogin"/> -->
@@ -237,7 +615,7 @@ Index: framework/entity/entitydef/entitygroup.xml
  </entitygroup>
 Index: framework/entity/entitydef/entitymodel.xml
 ===================================================================
---- framework/entity/entitydef/entitymodel.xml	(revision 1236115)
+--- framework/entity/entitydef/entitymodel.xml	(revision 1296030)
 +++ framework/entity/entitydef/entitymodel.xml	(working copy)
 @@ -66,8 +66,6 @@
      <entity entity-name="Tenant" package-name="org.ofbiz.entity.tenant">
@@ -265,7 +643,7 @@ Index: framework/entity/entitydef/entitymodel.xml
  </entitymodel>
 Index: framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java
 ===================================================================
---- framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(revision 1236115)
+--- framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(revision 1296030)
 +++ framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(working copy)
 @@ -645,9 +645,11 @@
          if (currCatalog != null) session.setAttribute("CURRENT_CATALOG_ID", currCatalog);
@@ -281,7 +659,7 @@ Index: framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java
              delegator = DelegatorFactory.getDelegator(delegatorName);
 Index: framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java
 ===================================================================
---- framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(revision 1236115)
+--- framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(revision 1296030)
 +++ framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(working copy)
 @@ -280,16 +280,28 @@
              // get tenant delegator by domain name

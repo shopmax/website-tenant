@@ -32,6 +32,7 @@ import javax.mail.search.FlagTerm;
 
 import org.ofbiz.base.util.Debug;
 import org.ofbiz.base.util.UtilMisc;
+import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.entity.GenericValue;
 import org.ofbiz.service.GenericServiceException;
 import org.ofbiz.service.LocalDispatcher;
@@ -60,16 +61,18 @@ public class TenantPollerTask extends TimerTask {
 
     @Override
     public void run() {
-        try {
-            checkMessages(store, session);
-        } catch (Exception e) {
-            // Catch all exceptions so the loop will continue running
-            Debug.logError("Mail service invocation error for mail store " + store + ": " + e, module);
-        }
-        if (store.isConnected()) {
+        if (UtilValidate.isNotEmpty(store)) {
             try {
-                store.close();
-            } catch (Exception e) {}
+                checkMessages(store, session);
+            } catch (Exception e) {
+                // Catch all exceptions so the loop will continue running
+                Debug.logError("Mail service invocation error for mail store " + store + ": " + e, module);
+            }
+            if (store.isConnected()) {
+                try {
+                    store.close();
+                } catch (Exception e) {}
+            }
         }
     }
 
