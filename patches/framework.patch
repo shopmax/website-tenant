@@ -55,7 +55,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
 ===================================================================
 --- framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java	(revision 1297362)
 +++ framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java	(working copy)
-@@ -33,9 +33,14 @@
+@@ -33,9 +33,15 @@
  import org.ofbiz.base.config.MainResourceHandler;
  import org.ofbiz.base.config.ResourceHandler;
  import org.ofbiz.base.util.Debug;
@@ -65,17 +65,29 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
  import org.ofbiz.base.util.UtilXml;
  import org.ofbiz.base.util.cache.UtilCache;
  import org.ofbiz.entity.Delegator;
++import org.ofbiz.entity.DelegatorFactory;
 +import org.ofbiz.entity.GenericEntityException;
 +import org.ofbiz.entity.GenericValue;
  import org.ofbiz.entity.config.DelegatorInfo;
  import org.ofbiz.entity.config.EntityConfigUtil;
  import org.ofbiz.entity.config.EntityEcaReaderInfo;
-@@ -50,14 +55,14 @@
+@@ -48,16 +54,24 @@
  
-     public static UtilCache<String, Map<String, Map<String, List<EntityEcaRule>>>> entityEcaReaders = UtilCache.createUtilCache("entity.EcaReaders", 0, 0, false);
+     public static final String module = EntityEcaUtil.class.getName();
+ 
+-    public static UtilCache<String, Map<String, Map<String, List<EntityEcaRule>>>> entityEcaReaders = UtilCache.createUtilCache("entity.EcaReaders", 0, 0, false);
++    public static UtilCache<String, Map<String, Map<String, Map<String, List<EntityEcaRule>>>>> tenantEntityEcaReaders = UtilCache.createUtilCache("entity.EcaReaders", 0, 0, false);
++    public static Map<String, Map<String, Map<String, List<EntityEcaRule>>>> entityEcaReaders = null;
  
 -    public static Map<String, Map<String, List<EntityEcaRule>>> getEntityEcaCache(String entityEcaReaderName) {
 +    public static Map<String, Map<String, List<EntityEcaRule>>> getEntityEcaCache(String entityEcaReaderName, Delegator delegator) {
++        
++        entityEcaReaders = tenantEntityEcaReaders.get(delegator.getDelegatorName());
++        if (UtilValidate.isEmpty(entityEcaReaders)) {
++            entityEcaReaders = FastMap.newInstance();
++            tenantEntityEcaReaders.put(delegator.getDelegatorName(), entityEcaReaders);
++        }
++        
          Map<String, Map<String, List<EntityEcaRule>>> ecaCache = entityEcaReaders.get(entityEcaReaderName);
          if (ecaCache == null) {
              synchronized (EntityEcaUtil.class) {
@@ -87,7 +99,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
                      entityEcaReaders.put(entityEcaReaderName, ecaCache);
                  }
              }
-@@ -74,7 +79,7 @@
+@@ -74,7 +88,7 @@
          return delegatorInfo.entityEcaReader;
      }
  
@@ -96,7 +108,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
          EntityEcaReaderInfo entityEcaReaderInfo = EntityConfigUtil.getEntityEcaReaderInfo(entityEcaReaderName);
          if (entityEcaReaderInfo == null) {
              Debug.logError("BAD ERROR: Could not find entity-eca-reader config with name: " + entityEcaReaderName, module);
-@@ -86,11 +91,41 @@
+@@ -86,11 +100,42 @@
              ResourceHandler handler = new MainResourceHandler(EntityConfigUtil.ENTITY_ENGINE_XML_FILENAME, eecaResourceElement);
              futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createEcaLoaderCallable(handler)));
          }
@@ -119,7 +131,8 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
 +            components.addAll(ComponentConfig.getThemesComponents());
 +            
 +            try {
-+                List<GenericValue> tennatComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", delegator.getDelegatorTenantId()));
++                Delegator baseDelegator = DelegatorFactory.getDelegator(delegator.getDelegatorBaseName());
++                List<GenericValue> tennatComponents = baseDelegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", delegator.getDelegatorTenantId()));
 +                for (GenericValue tenantComponent : tennatComponents) {
 +                    String componentName = tenantComponent.getString("componentName");
 +                    components.add(ComponentConfig.getHotDeployComponent(componentName));
@@ -141,7 +154,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
              }
          }
  
-@@ -146,7 +181,7 @@
+@@ -146,7 +191,7 @@
      }
  
      public static Collection<EntityEcaRule> getEntityEcaRules(Delegator delegator, String entityName, String event) {
