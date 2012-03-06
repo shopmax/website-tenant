@@ -1,6 +1,6 @@
 Index: framework/common/src/org/ofbiz/common/UrlServletHelper.java
 ===================================================================
---- framework/common/src/org/ofbiz/common/UrlServletHelper.java	(revision 1297337)
+--- framework/common/src/org/ofbiz/common/UrlServletHelper.java	(revision 1296988)
 +++ framework/common/src/org/ofbiz/common/UrlServletHelper.java	(working copy)
 @@ -55,20 +55,31 @@
              // get tenant delegator by domain name
@@ -53,7 +53,7 @@ Index: framework/common/src/org/ofbiz/common/UrlServletHelper.java
          if (UtilValidate.isEmpty(httpRequest.getSession().getAttribute("webSiteId"))){
 Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java	(revision 1297337)
+--- framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java	(revision 1296988)
 +++ framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java	(working copy)
 @@ -33,9 +33,14 @@
  import org.ofbiz.base.config.MainResourceHandler;
@@ -152,7 +152,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
              if (event != null) {
 Index: framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java	(revision 1297337)
+--- framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java	(revision 1296988)
 +++ framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java	(working copy)
 @@ -53,11 +53,11 @@
          this.dctx = EntityServiceFactory.getDispatchContext(delegator);
@@ -170,7 +170,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java
      }
 Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(revision 1297337)
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(revision 1296988)
 +++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(working copy)
 @@ -306,8 +306,20 @@
                  Debug.logError(e.getMessage(), module);
@@ -205,7 +205,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.
       * @see org.ofbiz.base.container.Container#stop()
 Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1297337)
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1296988)
 +++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(working copy)
 @@ -407,6 +407,8 @@
          // step 8 - checkdb
@@ -218,7 +218,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java
          result.put("messages", messages);
 Index: framework/webtools/src/org/ofbiz/webtools/artifactinfo/ArtifactInfoFactory.java
 ===================================================================
---- framework/webtools/src/org/ofbiz/webtools/artifactinfo/ArtifactInfoFactory.java	(revision 1297337)
+--- framework/webtools/src/org/ofbiz/webtools/artifactinfo/ArtifactInfoFactory.java	(revision 1296988)
 +++ framework/webtools/src/org/ofbiz/webtools/artifactinfo/ArtifactInfoFactory.java	(working copy)
 @@ -131,7 +131,7 @@
          this.delegatorName = delegatorName;
@@ -231,7 +231,7 @@ Index: framework/webtools/src/org/ofbiz/webtools/artifactinfo/ArtifactInfoFactor
          this.prepareAll();
 Index: framework/service/src/org/ofbiz/service/DispatchContext.java
 ===================================================================
---- framework/service/src/org/ofbiz/service/DispatchContext.java	(revision 1297337)
+--- framework/service/src/org/ofbiz/service/DispatchContext.java	(revision 1296988)
 +++ framework/service/src/org/ofbiz/service/DispatchContext.java	(working copy)
 @@ -35,14 +35,21 @@
  import javolution.util.FastMap;
@@ -374,7 +374,7 @@ Index: framework/service/src/org/ofbiz/service/DispatchContext.java
  }
 Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
 ===================================================================
---- framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java	(revision 1297337)
+--- framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java	(revision 1296988)
 +++ framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java	(working copy)
 @@ -35,8 +35,13 @@
  import org.ofbiz.base.config.MainResourceHandler;
@@ -473,7 +473,7 @@ Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
          }
 Index: framework/service/src/org/ofbiz/service/ServiceDispatcher.java
 ===================================================================
---- framework/service/src/org/ofbiz/service/ServiceDispatcher.java	(revision 1297337)
+--- framework/service/src/org/ofbiz/service/ServiceDispatcher.java	(revision 1296988)
 +++ framework/service/src/org/ofbiz/service/ServiceDispatcher.java	(working copy)
 @@ -89,7 +89,7 @@
          Debug.logInfo("[ServiceDispatcher] : Creating new instance.", module);
@@ -515,7 +515,7 @@ Index: framework/service/src/org/ofbiz/service/ServiceDispatcher.java
                  if (eventMap != null) ServiceEcaUtil.evalRules(service.name, eventMap, "auth", ctx, context, result, isError, isFailure);
 Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
 ===================================================================
---- framework/base/src/org/ofbiz/base/component/ComponentConfig.java	(revision 1297337)
+--- framework/base/src/org/ofbiz/base/component/ComponentConfig.java	(revision 1296988)
 +++ framework/base/src/org/ofbiz/base/component/ComponentConfig.java	(working copy)
 @@ -54,6 +54,11 @@
  
@@ -626,7 +626,7 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
      }
 Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1297337)
+--- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1296988)
 +++ framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(working copy)
 @@ -1212,11 +1212,14 @@
      public void checkDb(Map<String, ModelEntity> modelEntities, List<String> messages, boolean addMissing) {
@@ -646,7 +646,7 @@ Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
  }
 Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1297337)
+--- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1296988)
 +++ framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(working copy)
 @@ -18,6 +18,16 @@
   *******************************************************************************/
@@ -720,7 +720,7 @@ Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.ja
  }
 Index: framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java	(revision 1297337)
+--- framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java	(revision 1296988)
 +++ framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java	(working copy)
 @@ -19,6 +19,7 @@
  package org.ofbiz.entity.model;
@@ -839,7 +839,7 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java
              }
 Index: framework/entity/src/org/ofbiz/entity/model/ModelReader.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(revision 1297337)
+--- framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(revision 1296988)
 +++ framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(working copy)
 @@ -32,10 +32,12 @@
  import javolution.util.FastSet;
@@ -949,7 +949,7 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelReader.java
              }
 Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1297337)
+--- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1296988)
 +++ framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(working copy)
 @@ -83,6 +83,7 @@
  
@@ -990,7 +990,7 @@ Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
      /* ====================================================================== */
 Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1297337)
+--- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1296988)
 +++ framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(working copy)
 @@ -56,4 +56,8 @@
              delegatorCache.putIfAbsent(delegatorName, delegator);
@@ -1003,7 +1003,7 @@ Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
  }
 Index: framework/entity/src/org/ofbiz/entity/GenericDelegator.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/GenericDelegator.java	(revision 1297337)
+--- framework/entity/src/org/ofbiz/entity/GenericDelegator.java	(revision 1296988)
 +++ framework/entity/src/org/ofbiz/entity/GenericDelegator.java	(working copy)
 @@ -75,6 +75,7 @@
  import org.ofbiz.entity.util.EntityCrypto;
@@ -1041,7 +1041,7 @@ Index: framework/entity/src/org/ofbiz/entity/GenericDelegator.java
  
 Index: framework/entity/entitydef/entitygroup.xml
 ===================================================================
---- framework/entity/entitydef/entitygroup.xml	(revision 1297337)
+--- framework/entity/entitydef/entitygroup.xml	(revision 1296988)
 +++ framework/entity/entitydef/entitygroup.xml	(working copy)
 @@ -29,4 +29,5 @@
  <!--     <entity-group group="org.ofbiz.tenant" entity="TenantUserLogin"/> -->
@@ -1051,7 +1051,7 @@ Index: framework/entity/entitydef/entitygroup.xml
  </entitygroup>
 Index: framework/entity/entitydef/entitymodel.xml
 ===================================================================
---- framework/entity/entitydef/entitymodel.xml	(revision 1297337)
+--- framework/entity/entitydef/entitymodel.xml	(revision 1296988)
 +++ framework/entity/entitydef/entitymodel.xml	(working copy)
 @@ -66,8 +66,6 @@
      <entity entity-name="Tenant" package-name="org.ofbiz.entity.tenant">
@@ -1079,9 +1079,52 @@ Index: framework/entity/entitydef/entitymodel.xml
  </entitymodel>
 Index: framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java
 ===================================================================
---- framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(revision 1297337)
+--- framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(revision 1296988)
 +++ framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(working copy)
-@@ -645,9 +645,11 @@
+@@ -62,6 +62,7 @@
+ import org.ofbiz.entity.serialize.XmlSerializer;
+ import org.ofbiz.entity.transaction.GenericTransactionException;
+ import org.ofbiz.entity.transaction.TransactionUtil;
++import org.ofbiz.entity.util.EntityUtil;
+ import org.ofbiz.security.Security;
+ import org.ofbiz.security.SecurityConfigurationException;
+ import org.ofbiz.security.SecurityFactory;
+@@ -294,6 +295,7 @@
+     public static String login(HttpServletRequest request, HttpServletResponse response) {
+         HttpSession session = request.getSession();
+ 
++        String sessionId = session.getId();
+         String username = request.getParameter("USERNAME");
+         String password = request.getParameter("PASSWORD");
+ 
+@@ -405,6 +407,26 @@
+ 
+         if (ModelService.RESPOND_SUCCESS.equals(result.get(ModelService.RESPONSE_MESSAGE))) {
+             GenericValue userLogin = (GenericValue) result.get("userLogin");
++            //check user login from instance browser
++            if (userLogin != null) {
++                try {
++                    List<GenericValue> visitList = delegator.findByAnd("Visit", UtilMisc.toMap("userLoginId", userLogin.getString("userLoginId")
++                            ,"thruDate",null), UtilMisc.toList("-fromDate"));
++                    if (UtilValidate.isNotEmpty(visitList)) {
++                        GenericValue visitMap = EntityUtil.getFirst(visitList);
++                        GenericValue chechLoggedOutMap = delegator.findByPrimaryKey("UserLogin", UtilMisc.toMap("userLoginId", username));
++                        String hasLoggedOut = chechLoggedOutMap.getString("hasLoggedOut");
++                        if (hasLoggedOut != null && "N".equals(hasLoggedOut) && !sessionId.equals(visitMap.getString("sessionId"))) {
++                            request.setAttribute("_ERROR_MESSAGE_", "User has Log on into the application Now.");
++                            return "error";
++                        }
++                    }
++                } catch (Exception e) {
++                    Debug.logInfo("error :" + e.getMessage(), module);
++                    request.setAttribute("_ERROR_MESSAGE_", e.getMessage());
++                    return "error";
++                }
++            }
+ 
+             if ("Y".equals(request.getParameter("requirePasswordChange"))) {
+                 Map<String, Object> inMap = UtilMisc.<String, Object>toMap("login.username", username, "login.password", password, "locale", UtilHttp.getLocale(request));
+@@ -645,9 +667,11 @@
          if (currCatalog != null) session.setAttribute("CURRENT_CATALOG_ID", currCatalog);
          if (delegatorName != null) {
              // if there is a tenantId in the delegatorName remove it now so that tenant selection doesn't last beyond logout
@@ -1093,9 +1136,26 @@ Index: framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java
              session.setAttribute("delegatorName", delegatorName);
  
              delegator = DelegatorFactory.getDelegator(delegatorName);
+Index: framework/webapp/src/org/ofbiz/webapp/control/ControlEventListener.java
+===================================================================
+--- framework/webapp/src/org/ofbiz/webapp/control/ControlEventListener.java	(revision 1296988)
++++ framework/webapp/src/org/ofbiz/webapp/control/ControlEventListener.java	(working copy)
+@@ -81,6 +81,12 @@
+                 if (visit != null) {
+                     visit.set("thruDate", new Timestamp(session.getLastAccessedTime()));
+                     visit.store();
++                    //also set hasLoggedOut as "Y"
++                    GenericValue userLoginMap = delegator.findOne("UserLogin", UtilMisc.toMap("userLoginId", visit.get("userLoginId")), false);
++                    if (UtilValidate.isNotEmpty(userLoginMap)) {
++                        userLoginMap.set("hasLoggedOut", "Y");
++                        userLoginMap.store();
++                    }
+                 }
+             } else {
+                 Debug.logWarning("Could not find visit value object in session [" + session.getId() + "] that is being destroyed", module);
 Index: framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java
 ===================================================================
---- framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(revision 1297337)
+--- framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(revision 1296988)
 +++ framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(working copy)
 @@ -280,16 +280,28 @@
              // get tenant delegator by domain name
