@@ -79,6 +79,18 @@ public class TenantSeedGenerator {
             tenantElement.setAttribute("tenantName", tenantName);
             entityEngineXmlElement.appendChild(tenantElement);
             
+            // Tenant Component
+            String[] componentNames = components.split(",");
+            int componentNameCount = 10;
+            for (String componentName : componentNames) {
+                Element tenantComponentElement = document.createElement("TenantComponent");
+                tenantComponentElement.setAttribute("tenantId", tenantId);
+                tenantComponentElement.setAttribute("componentName", componentName);
+                tenantComponentElement.setAttribute("sequenceNum", String.valueOf(componentNameCount));
+                entityEngineXmlElement.appendChild(tenantComponentElement);
+                componentNameCount += 10;
+            }
+            
             // Tenant Data Source
             
             /* org.ofbiz */
@@ -98,18 +110,6 @@ public class TenantSeedGenerator {
             olapDataSourceElement.setAttribute("jdbcUsername", jdbcUsername);
             olapDataSourceElement.setAttribute("jdbcPassword", jdbcPassword);
             entityEngineXmlElement.appendChild(olapDataSourceElement);
-            
-            // Tenant Component
-            String[] componentNames = components.split(",");
-            int componentNameCount = 10;
-            for (String componentName : componentNames) {
-                Element tenantComponentElement = document.createElement("TenantComponent");
-                tenantComponentElement.setAttribute("tenantId", tenantId);
-                tenantComponentElement.setAttribute("componentName", componentName);
-                tenantComponentElement.setAttribute("sequenceNum", String.valueOf(componentNameCount));
-                entityEngineXmlElement.appendChild(tenantComponentElement);
-                componentNameCount += 10;
-            }
             
             // Tenant Domain Name
             String[] domainNameTokens = domainNames.split(",");
