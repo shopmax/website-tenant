@@ -1421,11 +1421,12 @@ Index: framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java
          String username = request.getParameter("USERNAME");
          String password = request.getParameter("PASSWORD");
  
-@@ -405,6 +407,26 @@
+@@ -405,6 +407,28 @@
  
          if (ModelService.RESPOND_SUCCESS.equals(result.get(ModelService.RESPONSE_MESSAGE))) {
              GenericValue userLogin = (GenericValue) result.get("userLogin");
 +            //check user login from instance browser
++            /*
 +            if (userLogin != null) {
 +                try {
 +                    List<GenericValue> visitList = delegator.findByAnd("Visit", UtilMisc.toMap("userLoginId", userLogin.getString("userLoginId")
@@ -1445,10 +1446,11 @@ Index: framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java
 +                    return "error";
 +                }
 +            }
++            */
  
              if ("Y".equals(request.getParameter("requirePasswordChange"))) {
                  Map<String, Object> inMap = UtilMisc.<String, Object>toMap("login.username", username, "login.password", password, "locale", UtilHttp.getLocale(request));
-@@ -645,9 +667,11 @@
+@@ -645,9 +669,11 @@
          if (currCatalog != null) session.setAttribute("CURRENT_CATALOG_ID", currCatalog);
          if (delegatorName != null) {
              // if there is a tenantId in the delegatorName remove it now so that tenant selection doesn't last beyond logout
