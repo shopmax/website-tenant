@@ -38,6 +38,10 @@
         <fileset dir="../../framework/webapp/build/lib" includes="*.jar"/>
     </path>
 
+    <path id="runtime.class.path">
+        <fileset dir="${build.dir}/lib" includes="*.jar"/>
+    </path>
+
     <!-- ================================================================= -->
     <!-- Targets to create  patch files                                    -->
     <!-- ================================================================= -->
@@ -134,18 +138,21 @@
                 <filesmatch file1="${hot-deploy.home.dir}/${component}/config/demo.properties" file2=" "/>
             </condition>
         </fail>
-        <copy file="${tenant.home.dir}/templates/data/TenantData.xml" tofile="${hot-deploy.home.dir}/${component}/data/TenantData.xml" overwrite="true">
-            <filterset>
-                <filter token="tenantId" value="${tenantId}"/>
-                <filter token="tenantName" value="${tenantName}"/>
-                <filter token="serverName" value="${serverName}"/>
-                <filter token="initialPath" value="${initialPath}"/>
-                <filter token="subdomain" value="${subdomain}"/>
-                <filter token="componentName" value="${component}"/>
-                <filter token="jdbcServerName" value="${jdbcServerName}"/>
-                <filter token="jdbcUsername" value="${jdbcUsername}"/>
-                <filter token="jdbcPassword" value="${jdbcPassword}"/>
-            </filterset>
-        </copy>
+        <java classname="org.ofbiz.tenant.tenant.TenantSeedGenerator" fork="true">
+            <arg value="file=${hot-deploy.home.dir}/${component}/data/TenantData.xml"/>
+            <arg value="tenantId=${tenantId}"/>
+            <arg value="tenantName=${tenantName}"/>
+            <arg value="components=${components}"/>
+            <arg value="domainNames=${domainNames}"/>
+            <arg value="jdbcUriPrefix=${jdbcUriPrefix}"/>
+            <arg value="jdbcServerName=${jdbcServerName}"/>
+            <arg value="jdbcUsername=${jdbcUsername}"/>
+            <arg value="jdbcPassword=${jdbcPassword}"/>
+            <classpath>
+                <path refid="runtime.class.path"/>
+                <path refid="local.class.path"/>
+                <dirset dir="../../framework/base/config"/>
+            </classpath>
+        </java>
     </target>
 </project>
