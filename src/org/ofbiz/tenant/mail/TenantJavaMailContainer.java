@@ -31,9 +31,11 @@ import org.ofbiz.base.util.UtilMisc;
 import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.DelegatorFactory;
+import org.ofbiz.entity.GenericEntityException;
 import org.ofbiz.entity.GenericValue;
 import org.ofbiz.entity.util.EntityUtilProperties;
 import org.ofbiz.service.GenericDispatcher;
+import org.ofbiz.service.GenericServiceException;
 import org.ofbiz.service.LocalDispatcher;
 import org.ofbiz.tenant.util.TenantUtil;
 
@@ -86,32 +88,36 @@ public class TenantJavaMailContainer implements Container {
                             && UtilValidate.isNotEmpty(mailUser) && UtilValidate.isNotEmpty(mailPass)) {
                         
                         // create a JavaMail listener
-                        Map<String, Object> createTenantJavaMailListenerInMap = FastMap.newInstance();
-                        createTenantJavaMailListenerInMap.put("tenantId", tenantId);
-                        createTenantJavaMailListenerInMap.put("mailStoreProtocol", mailStoreProtocol);
-                        createTenantJavaMailListenerInMap.put("mailHost", mailHost);
-                        createTenantJavaMailListenerInMap.put("mailUser", mailUser);
-                        createTenantJavaMailListenerInMap.put("mailPass", mailPass);
-                        createTenantJavaMailListenerInMap.put("userLogin", systemUserLogin);
-                        dispatcher.runSync("createTenantJavaMailListener", createTenantJavaMailListenerInMap);
-                        
-                        // schedule java mail poller task
-                        Map<String, Object> scheduleTenantJavaMailPollerTaskInMap = FastMap.newInstance();
-                        scheduleTenantJavaMailPollerTaskInMap.put("tenantId", tenantId);
-                        scheduleTenantJavaMailPollerTaskInMap.put("maxSize", 1000000L);
-                        scheduleTenantJavaMailPollerTaskInMap.put("timerDelay", 300000L);
-                        scheduleTenantJavaMailPollerTaskInMap.put("userLogin", systemUserLogin);
-                        Map<String, Object> runTenantServiceInMap = FastMap.newInstance();
-                        runTenantServiceInMap.put("tenantId", tenantId);
-                        runTenantServiceInMap.put("serviceName", "scheduleTenantJavaMailPollerTask");
-                        runTenantServiceInMap.put("serviceParameters", scheduleTenantJavaMailPollerTaskInMap);
-                        runTenantServiceInMap.put("isAsync", Boolean.FALSE);
-                        runTenantServiceInMap.put("userLogin", systemUserLogin);
-                        dispatcher.runSync("runTenantService", runTenantServiceInMap);
+                        try {
+                            Map<String, Object> createTenantJavaMailListenerInMap = FastMap.newInstance();
+                            createTenantJavaMailListenerInMap.put("tenantId", tenantId);
+                            createTenantJavaMailListenerInMap.put("mailStoreProtocol", mailStoreProtocol);
+                            createTenantJavaMailListenerInMap.put("mailHost", mailHost);
+                            createTenantJavaMailListenerInMap.put("mailUser", mailUser);
+                            createTenantJavaMailListenerInMap.put("mailPass", mailPass);
+                            createTenantJavaMailListenerInMap.put("userLogin", systemUserLogin);
+                            dispatcher.runSync("createTenantJavaMailListener", createTenantJavaMailListenerInMap);
+                            
+                            // schedule java mail poller task
+                            Map<String, Object> scheduleTenantJavaMailPollerTaskInMap = FastMap.newInstance();
+                            scheduleTenantJavaMailPollerTaskInMap.put("tenantId", tenantId);
+                            scheduleTenantJavaMailPollerTaskInMap.put("maxSize", 1000000L);
+                            scheduleTenantJavaMailPollerTaskInMap.put("timerDelay", 300000L);
+                            scheduleTenantJavaMailPollerTaskInMap.put("userLogin", systemUserLogin);
+                            Map<String, Object> runTenantServiceInMap = FastMap.newInstance();
+                            runTenantServiceInMap.put("tenantId", tenantId);
+                            runTenantServiceInMap.put("serviceName", "scheduleTenantJavaMailPollerTask");
+                            runTenantServiceInMap.put("serviceParameters", scheduleTenantJavaMailPollerTaskInMap);
+                            runTenantServiceInMap.put("isAsync", Boolean.FALSE);
+                            runTenantServiceInMap.put("userLogin", systemUserLogin);
+                            dispatcher.runSync("runTenantService", runTenantServiceInMap);
+                        } catch (GenericServiceException e) {
+                            Debug.logError(e, module);
+                        }
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (GenericEntityException e) {
             Debug.logError(e, module);
         }
         return false;

@@ -55,12 +55,11 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
 ===================================================================
 --- framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java	(revision 1299520)
 +++ framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java	(working copy)
-@@ -33,9 +33,15 @@
+@@ -33,12 +33,18 @@
  import org.ofbiz.base.config.MainResourceHandler;
  import org.ofbiz.base.config.ResourceHandler;
  import org.ofbiz.base.util.Debug;
 +import org.ofbiz.base.util.UtilMisc;
-+import org.ofbiz.base.util.UtilProperties;
 +import org.ofbiz.base.util.UtilValidate;
  import org.ofbiz.base.util.UtilXml;
  import org.ofbiz.base.util.cache.UtilCache;
@@ -71,6 +70,10 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
  import org.ofbiz.entity.config.DelegatorInfo;
  import org.ofbiz.entity.config.EntityConfigUtil;
  import org.ofbiz.entity.config.EntityEcaReaderInfo;
++import org.ofbiz.entity.util.EntityUtil;
+ import org.w3c.dom.Element;
+ 
+ /**
 @@ -48,17 +54,24 @@
  
      public static final String module = EntityEcaUtil.class.getName();
@@ -111,56 +114,39 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
          EntityEcaReaderInfo entityEcaReaderInfo = EntityConfigUtil.getEntityEcaReaderInfo(entityEcaReaderName);
          if (entityEcaReaderInfo == null) {
              Debug.logError("BAD ERROR: Could not find entity-eca-reader config with name: " + entityEcaReaderName, module);
-@@ -84,13 +97,44 @@
+@@ -84,14 +97,27 @@
          List<Future<List<EntityEcaRule>>> futures = FastList.newInstance();
          for (Element eecaResourceElement: entityEcaReaderInfo.resourceElements) {
              ResourceHandler handler = new MainResourceHandler(EntityConfigUtil.ENTITY_ENGINE_XML_FILENAME, eecaResourceElement);
 -            futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createEcaLoaderCallable(handler)));
 +            futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createEcaLoaderCallable(handler, delegator)));
          }
-+        
-+        Collection<ComponentConfig> components = FastList.newInstance();
  
-+        // get all of the component resource model stuff, ie specified in each ofbiz-component.xml file
-+        if (UtilValidate.isEmpty(delegator.getDelegatorTenantId())) {
-+            components.addAll(ComponentConfig.getFrameworkComponents());
-+            components.addAll(ComponentConfig.getApplicationsComponents());
-+            components.addAll(ComponentConfig.getSpecialpurposeComponents());
-+            components.addAll(ComponentConfig.getThemesComponents());
-+            if (!"Y".equals(UtilProperties.getPropertyValue("general", "multitenant"))) {
-+                components.addAll(ComponentConfig.getHotDeployComponents());
-+            }
-+        } else {
-+            components.addAll(ComponentConfig.getFrameworkComponents());
-+            components.addAll(ComponentConfig.getApplicationsComponents());
-+            components.addAll(ComponentConfig.getSpecialpurposeComponents());
-+            components.addAll(ComponentConfig.getThemesComponents());
-+            
-+            try {
-+                Delegator baseDelegator = DelegatorFactory.getDelegator(delegator.getDelegatorBaseName());
-+                List<GenericValue> tennatComponents = baseDelegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", delegator.getDelegatorTenantId()));
-+                for (GenericValue tenantComponent : tennatComponents) {
-+                    String componentName = tenantComponent.getString("componentName");
-+                    components.add(ComponentConfig.getHotDeployComponent(componentName));
-+                }
-+            } catch (GenericEntityException e) {
-+                Debug.logError(e, module);
-+            }
-+        }
-+
          // get all of the component resource eca stuff, ie specified in each ofbiz-component.xml file
 -        for (ComponentConfig.EntityResourceInfo componentResourceInfo: ComponentConfig.getAllEntityResourceInfos("eca")) {
 -            if (entityEcaReaderName.equals(componentResourceInfo.readerName)) {
 -                futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createEcaLoaderCallable(componentResourceInfo.createResourceHandler())));
-+        for (ComponentConfig component : components) {
-+            for (ComponentConfig.EntityResourceInfo componentResourceInfo: ComponentConfig.getAllEntityResourceInfos("eca", component.getComponentName())) {
-+                if (entityEcaReaderName.equals(componentResourceInfo.readerName)) {
-+                    futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createEcaLoaderCallable(componentResourceInfo.createResourceHandler(), delegator)));
-+                }
++        try {
++            List<String> componentNames = null;
++            if (UtilValidate.isNotEmpty(delegator.getDelegatorTenantId())) {
++                Delegator baseDelegator = DelegatorFactory.getDelegator(delegator.getDelegatorBaseName());
++                List<GenericValue> tenantComponents = baseDelegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", delegator.getDelegatorTenantId()));
++                componentNames = EntityUtil.getFieldListFromEntityList(tenantComponents, "componentName", true);
              }
++            Collection<ComponentConfig> components = ComponentConfig.getTenantComponents(componentNames);
++            for (ComponentConfig component : components) {
++                for (ComponentConfig.EntityResourceInfo componentResourceInfo: ComponentConfig.getAllEntityResourceInfos("eca", component.getComponentName())) {
++                    if (entityEcaReaderName.equals(componentResourceInfo.readerName)) {
++                        futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createEcaLoaderCallable(componentResourceInfo.createResourceHandler(), delegator)));
++                    }
++                }
++            }
++        } catch (GenericEntityException e) {
++            Debug.logError(e, module);
          }
  
-@@ -117,7 +161,7 @@
+         for (List<EntityEcaRule> oneFileRules: ExecutionPool.getAllFutures(futures)) {
+@@ -117,7 +143,7 @@
          }
      }
  
@@ -169,7 +155,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
          List<EntityEcaRule> rules = FastList.newInstance();
          Element rootElement = null;
          try {
-@@ -130,23 +174,23 @@
+@@ -130,23 +156,23 @@
              rules.add(new EntityEcaRule(e));
          }
          try {
@@ -443,35 +429,17 @@ Index: framework/service/src/org/ofbiz/service/DispatchContext.java
          Map<String, ModelService> serviceMap = modelServiceMapByDispatcher.get(GLOBAL_KEY);
          if (serviceMap == null) {
              synchronized (this) {
-@@ -327,9 +344,37 @@
+@@ -327,9 +344,17 @@
  
                          futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createServiceReaderCallable(handler)));
                      }
-+                    
-+                    Collection<ComponentConfig> components = FastList.newInstance();
- 
-                     // get all of the component resource model stuff, ie specified in each ofbiz-component.xml file
+-
+-                    // get all of the component resource model stuff, ie specified in each ofbiz-component.xml file
 -                    for (ComponentConfig.ServiceResourceInfo componentResourceInfo: ComponentConfig.getAllServiceResourceInfos("model")) {
-+                    if (UtilValidate.isEmpty(componentNames)) {
-+                        components.addAll(ComponentConfig.getFrameworkComponents());
-+                        components.addAll(ComponentConfig.getApplicationsComponents());
-+                        components.addAll(ComponentConfig.getSpecialpurposeComponents());
-+                        components.addAll(ComponentConfig.getThemesComponents());
-+                        if (!"Y".equals(UtilProperties.getPropertyValue("general", "multitenant"))) {
-+                            components.addAll(ComponentConfig.getHotDeployComponents());
-+                        }
-+                    } else {
-+                        components.addAll(ComponentConfig.getFrameworkComponents());
-+                        components.addAll(ComponentConfig.getApplicationsComponents());
-+                        components.addAll(ComponentConfig.getSpecialpurposeComponents());
-+                        components.addAll(ComponentConfig.getThemesComponents());
-+                        for (String componentName : componentNames) {
-+                            components.add(ComponentConfig.getHotDeployComponent(componentName));
-+                        }
-+                    }
 +                    
 +                    // get service resource infos
 +                    List<ServiceResourceInfo> serviceResourceInfos = FastList.newInstance();
++                    Collection<ComponentConfig> components = ComponentConfig.getTenantComponents(componentNames);
 +                    for (ComponentConfig component : components) {
 +                        List<ServiceResourceInfo> componentServiceResourceInfos = ComponentConfig.getAllServiceResourceInfos("model", component.getComponentName());
 +                        serviceResourceInfos.addAll(componentServiceResourceInfos);
@@ -482,7 +450,7 @@ Index: framework/service/src/org/ofbiz/service/DispatchContext.java
                          futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createServiceReaderCallable(componentResourceInfo.createResourceHandler())));
                      }
                      for (Map<String, ModelService> servicesMap: ExecutionPool.getAllFutures(futures)) {
-@@ -340,7 +385,7 @@
+@@ -340,7 +365,7 @@
  
                      if (serviceMap != null) {
                          modelServiceMapByDispatcher.put(GLOBAL_KEY, serviceMap);
@@ -491,7 +459,7 @@ Index: framework/service/src/org/ofbiz/service/DispatchContext.java
                      }
                  }
              }
-@@ -367,4 +412,20 @@
+@@ -367,4 +392,20 @@
          ModelService model = this.getModelService(serviceName);
          return model.toWSDL(locationURI);
      }
@@ -516,7 +484,7 @@ Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
 ===================================================================
 --- framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java	(revision 1299520)
 +++ framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java	(working copy)
-@@ -35,8 +35,13 @@
+@@ -35,8 +35,14 @@
  import org.ofbiz.base.config.MainResourceHandler;
  import org.ofbiz.base.config.ResourceHandler;
  import org.ofbiz.base.util.Debug;
@@ -527,10 +495,11 @@ Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
 +import org.ofbiz.entity.Delegator;
 +import org.ofbiz.entity.GenericEntityException;
 +import org.ofbiz.entity.GenericValue;
++import org.ofbiz.entity.util.EntityUtil;
  import org.ofbiz.service.DispatchContext;
  import org.ofbiz.service.GenericServiceException;
  import org.ofbiz.service.config.ServiceConfigUtil;
-@@ -52,14 +57,21 @@
+@@ -52,14 +58,21 @@
      public static final String module = ServiceEcaUtil.class.getName();
  
      // using a cache is dangerous here because if someone clears it the ECAs won't run: public static UtilCache ecaCache = new UtilCache("service.ServiceECAs", 0, 0, false);
@@ -556,51 +525,28 @@ Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
          // Only proceed if the cache hasn't already been populated, caller should be using reloadConfig() in that situation
          if (UtilValidate.isNotEmpty(ecaCache)) {
              return;
-@@ -75,33 +87,65 @@
+@@ -75,33 +88,42 @@
          List<Future<List<ServiceEcaRule>>> futures = FastList.newInstance();
          for (Element serviceEcasElement: UtilXml.childElementList(rootElement, "service-ecas")) {
              ResourceHandler handler = new MainResourceHandler(ServiceConfigUtil.SERVICE_ENGINE_XML_FILENAME, serviceEcasElement);
 -            futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createEcaLoaderCallable(handler)));
 +            futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createEcaLoaderCallable(handler, delegator)));
          }
-+        
-+        Collection<ComponentConfig> components = FastList.newInstance();
  
-+        // get all of the component resource model stuff, ie specified in each ofbiz-component.xml file
-+        if (UtilValidate.isEmpty(delegator) || UtilValidate.isEmpty(delegator.getDelegatorTenantId())) {
-+            components.addAll(ComponentConfig.getFrameworkComponents());
-+            components.addAll(ComponentConfig.getApplicationsComponents());
-+            components.addAll(ComponentConfig.getSpecialpurposeComponents());
-+            components.addAll(ComponentConfig.getThemesComponents());
-+            if (!"Y".equals(UtilProperties.getPropertyValue("general", "multitenant"))) {
-+                components.addAll(ComponentConfig.getHotDeployComponents());
-+            }
-+        } else {
-+            components.addAll(ComponentConfig.getFrameworkComponents());
-+            components.addAll(ComponentConfig.getApplicationsComponents());
-+            components.addAll(ComponentConfig.getSpecialpurposeComponents());
-+            components.addAll(ComponentConfig.getThemesComponents());
-+            
-+            if (UtilValidate.isNotEmpty(delegator)) {
-+                try {
-+                    List<GenericValue> tennatComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", delegator.getDelegatorTenantId()));
-+                    for (GenericValue tenantComponent : tennatComponents) {
-+                        String componentName = tenantComponent.getString("componentName");
-+                        components.add(ComponentConfig.getHotDeployComponent(componentName));
-+                    }
-+                } catch (GenericEntityException e) {
-+                    Debug.logError(e, module);
-+                }
-+            }
-+        }
-+
          // get all of the component resource eca stuff, ie specified in each ofbiz-component.xml file
 -        for (ComponentConfig.ServiceResourceInfo componentResourceInfo: ComponentConfig.getAllServiceResourceInfos("eca")) {
 -            futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createEcaLoaderCallable(componentResourceInfo.createResourceHandler())));
-+        for (ComponentConfig component : components) {
-+            for (ComponentConfig.ServiceResourceInfo componentResourceInfo: ComponentConfig.getAllServiceResourceInfos("eca", component.getComponentName())) {
-+                futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createEcaLoaderCallable(componentResourceInfo.createResourceHandler(), delegator)));
++        try {
++            List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", delegator.getDelegatorTenantId()));
++            List<String> componentNames = EntityUtil.getFieldListFromEntityList(tenantComponents, "componentName", true);
++            Collection<ComponentConfig> components = ComponentConfig.getTenantComponents(componentNames);
++            for (ComponentConfig component : components) {
++                for (ComponentConfig.ServiceResourceInfo componentResourceInfo: ComponentConfig.getAllServiceResourceInfos("eca", component.getComponentName())) {
++                    futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createEcaLoaderCallable(componentResourceInfo.createResourceHandler(), delegator)));
++                }
 +            }
++        } catch (GenericEntityException e) {
++            Debug.logError(e, module);
          }
  
          for (List<ServiceEcaRule> handlerRules: ExecutionPool.getAllFutures(futures)) {
@@ -632,7 +578,7 @@ Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
          List<ServiceEcaRule> handlerRules = FastList.newInstance();
          Element rootElement = null;
          try {
-@@ -121,12 +165,13 @@
+@@ -121,12 +143,13 @@
              handlerRules.add(new ServiceEcaRule(e, resourceLocation));
          }
          if (Debug.importantOn()) {
@@ -648,7 +594,7 @@ Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
          for (ServiceEcaRule rule: handlerRules) {
              String serviceName = rule.getServiceName();
              String eventName = rule.getEventName();
-@@ -149,13 +194,18 @@
+@@ -149,13 +172,18 @@
          }
      }
  
@@ -672,7 +618,7 @@ Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
          if (eventMap != null) {
              if (event != null) {
                  return eventMap.get(event);
-@@ -172,7 +222,7 @@
+@@ -172,7 +200,7 @@
  
      public static void evalRules(String serviceName, Map<String, List<ServiceEcaRule>> eventMap, String event, DispatchContext dctx, Map<String, Object> context, Map<String, Object> result, boolean isError, boolean isFailure) throws GenericServiceException {
          // if the eventMap is passed we save a Map lookup, but if not that's okay we'll just look it up now
@@ -681,7 +627,7 @@ Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
          if (UtilValidate.isEmpty(eventMap)) {
              return;
          }
-@@ -188,4 +238,8 @@
+@@ -188,4 +216,8 @@
              eca.eval(serviceName, dctx, context, result, isError, isFailure, actionsRun);
          }
      }
@@ -746,52 +692,31 @@ Index: framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java
          Element rootElement = null;
  
          try {
-@@ -53,16 +76,49 @@
+@@ -53,16 +76,26 @@
  
          for (Element serviceGroupElement: UtilXml.childElementList(rootElement, "service-groups")) {
              ResourceHandler handler = new MainResourceHandler(ServiceConfigUtil.SERVICE_ENGINE_XML_FILENAME, serviceGroupElement);
 -            addGroupDefinitions(handler);
 +            addGroupDefinitions(handler, delegator);
          }
-+        
-+        Collection<ComponentConfig> components = FastList.newInstance();
- 
-         // get all of the component resource group stuff, ie specified in each ofbiz-component.xml file
+-
+-        // get all of the component resource group stuff, ie specified in each ofbiz-component.xml file
 -        for (ComponentConfig.ServiceResourceInfo componentResourceInfo: ComponentConfig.getAllServiceResourceInfos("group")) {
 -            addGroupDefinitions(componentResourceInfo.createResourceHandler());
-+        if (UtilValidate.isNotEmpty(delegator)) {
-+            if (UtilValidate.isEmpty(delegator.getDelegatorTenantId())) {
-+                components.addAll(ComponentConfig.getFrameworkComponents());
-+                components.addAll(ComponentConfig.getApplicationsComponents());
-+                components.addAll(ComponentConfig.getSpecialpurposeComponents());
-+                components.addAll(ComponentConfig.getThemesComponents());
-+                if (!"Y".equals(UtilProperties.getPropertyValue("general", "multitenant"))) {
-+                    components.addAll(ComponentConfig.getHotDeployComponents());
-+                }
-+            } else {
-+                components.addAll(ComponentConfig.getFrameworkComponents());
-+                components.addAll(ComponentConfig.getApplicationsComponents());
-+                components.addAll(ComponentConfig.getSpecialpurposeComponents());
-+                components.addAll(ComponentConfig.getThemesComponents());
-+                
-+                // get tenant components
-+                try {
-+                    List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", delegator.getDelegatorTenantId()), UtilMisc.toList("sequenceNum"));
-+                    List<String> componentNames = EntityUtil.getFieldListFromEntityList(tenantComponents, "componentName", true);
-+                    for (String componentName : componentNames) {
-+                        components.add(ComponentConfig.getHotDeployComponent(componentName));
-+                    }
-+                } catch (GenericEntityException e) {
-+                    Debug.logError(e, module);
-+                }
-+            }
-         }
 +        
-+        for (ComponentConfig component : components) {
-+            for (ComponentConfig.ServiceResourceInfo componentResourceInfo: ComponentConfig.getAllServiceResourceInfos("group", component.getComponentName())) {
-+                addGroupDefinitions(componentResourceInfo.createResourceHandler(), delegator);
++        try {
++            List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", delegator.getDelegatorTenantId()), UtilMisc.toList("sequenceNum"));
++            List<String> componentNames = EntityUtil.getFieldListFromEntityList(tenantComponents, "componentName", true);
++            Collection<ComponentConfig> components = ComponentConfig.getTenantComponents(componentNames);
++            
++            for (ComponentConfig component : components) {
++                for (ComponentConfig.ServiceResourceInfo componentResourceInfo: ComponentConfig.getAllServiceResourceInfos("group", component.getComponentName())) {
++                    addGroupDefinitions(componentResourceInfo.createResourceHandler(), delegator);
++                }
 +            }
-+        }
++        } catch (GenericEntityException e) {
++            Debug.logError(e, module);
+         }
      }
  
 -    public static void addGroupDefinitions(ResourceHandler handler) {
@@ -800,7 +725,7 @@ Index: framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java
          Element rootElement = null;
  
          try {
-@@ -85,13 +141,19 @@
+@@ -85,13 +118,19 @@
              } catch (GenericConfigException e) {
                  Debug.logError(e, "Could not get resource URL", module);
              }
@@ -934,7 +859,15 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
 ===================================================================
 --- framework/base/src/org/ofbiz/base/component/ComponentConfig.java	(revision 1299520)
 +++ framework/base/src/org/ofbiz/base/component/ComponentConfig.java	(working copy)
-@@ -54,6 +54,11 @@
+@@ -36,6 +36,7 @@
+ import org.ofbiz.base.location.FlexibleLocation;
+ import org.ofbiz.base.util.Debug;
+ import org.ofbiz.base.util.KeyStoreUtil;
++import org.ofbiz.base.util.UtilProperties;
+ import org.ofbiz.base.util.UtilURL;
+ import org.ofbiz.base.util.UtilValidate;
+ import org.ofbiz.base.util.UtilXml;
+@@ -54,6 +55,11 @@
  
      // this is not a UtilCache because reloading may cause problems
      protected static Map<String, ComponentConfig> componentConfigs = FastMap.newInstance();
@@ -946,7 +879,7 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
      protected static Map<String, List<WebappInfo>> serverWebApps = FastMap.newInstance();
  
      public static ComponentConfig getComponentConfig(String globalName) throws ComponentException {
-@@ -62,6 +67,7 @@
+@@ -62,6 +68,7 @@
      }
  
      public static ComponentConfig getComponentConfig(String globalName, String rootLocation) throws ComponentException {
@@ -954,7 +887,7 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
          ComponentConfig componentConfig = null;
          if (UtilValidate.isNotEmpty(globalName)) {
              componentConfig = componentConfigs.get(globalName);
-@@ -78,6 +84,18 @@
+@@ -78,6 +85,18 @@
                              Debug.logWarning("WARNING: Loading ofbiz-component using a global name that already exists, will over-write: " + componentConfig.getGlobalName(), module);
                          }
                          if (componentConfig.enabled()) {
@@ -973,7 +906,7 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
                              componentConfigs.put(componentConfig.getGlobalName(), componentConfig);
                          }
                      }
-@@ -107,7 +125,67 @@
+@@ -107,7 +126,92 @@
              return FastList.newInstance();
          }
      }
@@ -1036,6 +969,31 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
 +            Debug.logWarning("No hot-deploy component[" + componentName + "] were found, something is probably missing or incorrect in the component-load setup.", module);
 +            return null;
 +        }
++    }
++    
++    public static Collection<ComponentConfig> getTenantComponents(List<String> componentNames) {
++        Collection<ComponentConfig> components = FastList.newInstance();
++        if (UtilValidate.isEmpty(componentNames)) {
++            components.addAll(ComponentConfig.getFrameworkComponents());
++            components.addAll(ComponentConfig.getApplicationsComponents());
++            components.addAll(ComponentConfig.getSpecialpurposeComponents());
++            components.addAll(ComponentConfig.getThemesComponents());
++            if (!"Y".equals(UtilProperties.getPropertyValue("general", "multitenant"))) {
++                components.addAll(ComponentConfig.getHotDeployComponents());
++            }
++        } else {
++            components.addAll(ComponentConfig.getFrameworkComponents());
++            components.addAll(ComponentConfig.getApplicationsComponents());
++            components.addAll(ComponentConfig.getSpecialpurposeComponents());
++            components.addAll(ComponentConfig.getThemesComponents());
++            for (String componentName : componentNames) {
++                ComponentConfig component = ComponentConfig.getHotDeployComponent(componentName);
++                if (UtilValidate.isNotEmpty(component)) {
++                    components.add(ComponentConfig.getHotDeployComponent(componentName));
++                }
++            }
++        }
++        return components;
 +    }
 +
      public static List<ClasspathInfo> getAllClasspathInfos() {
@@ -1216,34 +1174,15 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java
          this.modelName = modelName;
          EntityGroupReaderInfo entityGroupReaderInfo = EntityConfigUtil.getEntityGroupReaderInfo(modelName);
  
-@@ -95,8 +115,36 @@
+@@ -95,8 +115,16 @@
              this.entityGroupResourceHandlers.add(new MainResourceHandler(EntityConfigUtil.ENTITY_ENGINE_XML_FILENAME, resourceElement));
          }
  
-+        Collection<ComponentConfig> components = FastList.newInstance();
-+        
-         // get all of the component resource group stuff, ie specified in each ofbiz-component.xml file
+-        // get all of the component resource group stuff, ie specified in each ofbiz-component.xml file
 -        for (ComponentConfig.EntityResourceInfo componentResourceInfo: ComponentConfig.getAllEntityResourceInfos("group")) {
-+        if (UtilValidate.isEmpty(componentNames)) {
-+            components.addAll(ComponentConfig.getFrameworkComponents());
-+            components.addAll(ComponentConfig.getApplicationsComponents());
-+            components.addAll(ComponentConfig.getSpecialpurposeComponents());
-+            components.addAll(ComponentConfig.getThemesComponents());
-+            if (!"Y".equals(UtilProperties.getPropertyValue("general", "multitenant"))) {
-+                components.addAll(ComponentConfig.getHotDeployComponents());
-+            }
-+        } else {
-+            components.addAll(ComponentConfig.getFrameworkComponents());
-+            components.addAll(ComponentConfig.getApplicationsComponents());
-+            components.addAll(ComponentConfig.getSpecialpurposeComponents());
-+            components.addAll(ComponentConfig.getThemesComponents());
-+            for (String componentName : componentNames) {
-+                components.add(ComponentConfig.getHotDeployComponent(componentName));
-+            }
-+        }
-+
 +        // get entity resource infos
 +        List<EntityResourceInfo> entityResourceInfos = FastList.newInstance();
++        Collection<ComponentConfig> components = ComponentConfig.getTenantComponents(componentNames);
 +        for (ComponentConfig component : components) {
 +            List<EntityResourceInfo> componentEntityResourceInfos = ComponentConfig.getAllEntityResourceInfos("group", component.getComponentName());
 +            entityResourceInfos.addAll(componentEntityResourceInfos);
@@ -1325,35 +1264,15 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelReader.java
          this.modelName = modelName;
          entityResourceHandlers = FastList.newInstance();
          resourceHandlerEntities = FastMap.newInstance();
-@@ -121,9 +139,37 @@
-             ResourceHandler handler = new MainResourceHandler(EntityConfigUtil.ENTITY_ENGINE_XML_FILENAME, resourceElement);
+@@ -122,8 +140,16 @@
              entityResourceHandlers.add(handler);
          }
-+        
-+        Collection<ComponentConfig> components = FastList.newInstance();
  
-         // get all of the component resource model stuff, ie specified in each ofbiz-component.xml file
+-        // get all of the component resource model stuff, ie specified in each ofbiz-component.xml file
 -        for (ComponentConfig.EntityResourceInfo componentResourceInfo: ComponentConfig.getAllEntityResourceInfos("model")) {
-+        if (UtilValidate.isEmpty(componentNames)) {
-+            components.addAll(ComponentConfig.getFrameworkComponents());
-+            components.addAll(ComponentConfig.getApplicationsComponents());
-+            components.addAll(ComponentConfig.getSpecialpurposeComponents());
-+            components.addAll(ComponentConfig.getThemesComponents());
-+            if (!"Y".equals(UtilProperties.getPropertyValue("general", "multitenant"))) {
-+                components.addAll(ComponentConfig.getHotDeployComponents());
-+            }
-+        } else {
-+            components.addAll(ComponentConfig.getFrameworkComponents());
-+            components.addAll(ComponentConfig.getApplicationsComponents());
-+            components.addAll(ComponentConfig.getSpecialpurposeComponents());
-+            components.addAll(ComponentConfig.getThemesComponents());
-+            for (String componentName : componentNames) {
-+                components.add(ComponentConfig.getHotDeployComponent(componentName));
-+            }
-+        }
-+
 +        // get entity resource infos
 +        List<EntityResourceInfo> entityResourceInfos = FastList.newInstance();
++        Collection<ComponentConfig> components = ComponentConfig.getTenantComponents(componentNames);
 +        for (ComponentConfig component : components) {
 +            List<EntityResourceInfo> componentEntityResourceInfos = ComponentConfig.getAllEntityResourceInfos("model", component.getComponentName());
 +            entityResourceInfos.addAll(componentEntityResourceInfos);
