@@ -42,6 +42,7 @@ import org.ofbiz.entity.condition.EntityFunction;
 import org.ofbiz.entity.condition.EntityJoinOperator;
 import org.ofbiz.entity.transaction.TransactionUtil;
 import org.ofbiz.entity.util.EntityUtil;
+import org.ofbiz.entity.util.EntityUtilProperties;
 import org.ofbiz.entityext.data.EntityDataLoadContainer;
 import org.ofbiz.service.DispatchContext;
 import org.ofbiz.service.GenericDispatcher;
@@ -105,24 +106,27 @@ public class TenantServices {
         String files = (String) context.get("files");
         
         try {
-        
-            // if readers and files are empty then get readers from /data/DemoLoadData.txt file 
-            if (UtilValidate.isEmpty(readers) && UtilValidate.isEmpty(files)) {
-                // get a reader from file
-                List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", tenantId), UtilMisc.toList("sequenceNum"));
-                if (UtilValidate.isNotEmpty(tenantComponents)) {
-                    GenericValue tenantComponent = EntityUtil.getFirst(tenantComponents);
-                    String componentName = tenantComponent.getString("componentName");
-                    String demoLoadDataPath = "component://" + componentName + "/data/DemoLoadData.txt";
-                    try {
-                        File demoLoadDataFile = FileUtil.getFile(demoLoadDataPath);
-                        Scanner scanner = new Scanner(demoLoadDataFile);
-                        while (scanner.hasNext()) {
-                            readers = scanner.nextLine();
-                            break;
+            // check if the tenant is used as demo
+            String isDemo = EntityUtilProperties.getPropertyValue("tenant", "isDemo", "Y", delegator);
+            if ("Y".equals(isDemo)) {
+                // if readers and files are empty then get readers from /data/DemoLoadData.txt file
+                if (UtilValidate.isEmpty(readers) && UtilValidate.isEmpty(files)) {
+                    // get a reader from file
+                    List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", tenantId), UtilMisc.toList("sequenceNum"));
+                    if (UtilValidate.isNotEmpty(tenantComponents)) {
+                        GenericValue tenantComponent = EntityUtil.getFirst(tenantComponents);
+                        String componentName = tenantComponent.getString("componentName");
+                        String demoLoadDataPath = "component://" + componentName + "/data/DemoLoadData.txt";
+                        try {
+                            File demoLoadDataFile = FileUtil.getFile(demoLoadDataPath);
+                            Scanner scanner = new Scanner(demoLoadDataFile);
+                            while (scanner.hasNext()) {
+                                readers = scanner.nextLine();
+                                break;
+                            }
+                        } catch (Exception e) {
+                            Debug.logWarning(e, "Could not read the " + demoLoadDataPath + " file", module);
                         }
-                    } catch (Exception e) {
-                        Debug.logWarning(e, "Could not read the " + demoLoadDataPath + " file", module);
                     }
                 }
             }
