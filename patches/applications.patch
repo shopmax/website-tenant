@@ -1,1 +1,156 @@
-
+Index: applications/product/src/org/ofbiz/product/product/ProductServices.java
+===================================================================
+--- applications/product/src/org/ofbiz/product/product/ProductServices.java	(revision 1300859)
++++ applications/product/src/org/ofbiz/product/product/ProductServices.java	(working copy)
+@@ -984,8 +984,13 @@
+ 
+         if (UtilValidate.isNotEmpty(context.get("_uploadedFile_fileName"))) {
+             String imageFilenameFormat = UtilProperties.getPropertyValue("catalog", "image.filename.additionalviewsize.format");
+-            String imageServerPath = FlexibleStringExpander.expandString(UtilProperties.getPropertyValue("catalog", "image.server.path"), context);
+             String imageUrlPrefix = UtilProperties.getPropertyValue("catalog", "image.url.prefix");
++            String imageServerPath = null;
++            if (UtilValidate.isNotEmpty(delegator.getDelegatorTenantId())) {
++                imageServerPath = System.getProperty("ofbiz.home") + File.separatorChar + "runtime" + File.separatorChar + "tenants" + File.separatorChar + delegator.getDelegatorTenantId() + File.separatorChar + "images";
++            } else {
++                imageServerPath = FlexibleStringExpander.expandString(UtilProperties.getPropertyValue("catalog", "image.server.path"), context);
++            }
+ 
+             FlexibleStringExpander filenameExpander = FlexibleStringExpander.getInstance(imageFilenameFormat);
+             String viewNumber = String.valueOf(productContentTypeId.charAt(productContentTypeId.length() - 1));
+@@ -1076,7 +1081,7 @@
+             /* scale Image in different sizes */
+             Map<String, Object> resultResize = FastMap.newInstance();
+             try {
+-                resultResize.putAll(ScaleImage.scaleImageInAllSize(context, filenameToUse, "additional", viewNumber));
++                resultResize.putAll(ScaleImage.scaleImageInAllSize(context, imageServerPath, filenameToUse, "additional", viewNumber));
+             } catch (IOException e) {
+                 Debug.logError(e, "Scale additional image in all different sizes is impossible : " + e.toString(), module);
+                 return ServiceUtil.returnError(UtilProperties.getMessage(resource, 
+Index: applications/product/src/org/ofbiz/product/image/ScaleImage.java
+===================================================================
+--- applications/product/src/org/ofbiz/product/image/ScaleImage.java	(revision 1300859)
++++ applications/product/src/org/ofbiz/product/image/ScaleImage.java	(working copy)
+@@ -75,7 +75,7 @@
+      * @throws  IOException                 Error prevents the document from being fully parsed
+      * @throws  JDOMException               Errors occur in parsing
+      */
+-    public static Map<String, Object> scaleImageInAllSize(Map<String, ? extends Object> context, String filenameToUse, String viewType, String viewNumber)
++    public static Map<String, Object> scaleImageInAllSize(Map<String, ? extends Object> context, String imageServerPath, String filenameToUse, String viewType, String viewNumber)
+         throws IllegalArgumentException, ImagingOpException, IOException, JDOMException {
+ 
+         /* VARIABLES */
+@@ -108,7 +108,9 @@
+         index = filenameToUse.lastIndexOf(".");
+         String imgExtension = filenameToUse.substring(index + 1);
+         // paths
+-        String imageServerPath = FlexibleStringExpander.expandString(UtilProperties.getPropertyValue("catalog", "image.server.path"), context);
++        if (UtilValidate.isEmpty(imageServerPath)) {
++            imageServerPath = FlexibleStringExpander.expandString(UtilProperties.getPropertyValue("catalog", "image.server.path"), context);
++        }
+         String imageUrlPrefix = UtilProperties.getPropertyValue("catalog", "image.url.prefix");
+         
+         FlexibleStringExpander filenameExpander;
+@@ -244,7 +246,7 @@
+         }
+     }
+ 
+-    public static Map<String, Object> scaleImageManageInAllSize(Map<String, ? extends Object> context, String filenameToUse, String viewType, String viewNumber , String imageType)
++    public static Map<String, Object> scaleImageManageInAllSize(Map<String, ? extends Object> context, String imageServerPath, String filenameToUse, String viewType, String viewNumber , String imageType)
+         throws IllegalArgumentException, ImagingOpException, IOException, JDOMException {
+ 
+         /* VARIABLES */
+@@ -285,7 +287,9 @@
+         String imgExtension = filenameToUse.substring(index + 1);
+         // paths
+         String mainFilenameFormat = UtilProperties.getPropertyValue("catalog", "image.filename.format");
+-        String imageServerPath = FlexibleStringExpander.expandString(UtilProperties.getPropertyValue("catalog", "image.server.path"), context);
++        if (UtilValidate.isEmpty(imageServerPath)) {
++            imageServerPath = FlexibleStringExpander.expandString(UtilProperties.getPropertyValue("catalog", "image.server.path"), context);
++        }
+         String imageUrlPrefix = UtilProperties.getPropertyValue("catalog", "image.url.prefix");
+ 
+         String id = null;
+Index: applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/SetDefaultImage.groovy
+===================================================================
+--- applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/SetDefaultImage.groovy	(revision 1300859)
++++ applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/SetDefaultImage.groovy	(working copy)
+@@ -44,8 +44,13 @@
+ 
+ // make the image file formats
+ imageFilenameFormat = UtilProperties.getPropertyValue('catalog', 'image.filename.format');
+-imageServerPath = FlexibleStringExpander.expandString(UtilProperties.getPropertyValue("catalog", "image.server.path"), context);
+ imageUrlPrefix = UtilProperties.getPropertyValue('catalog', 'image.url.prefix');
++imageServerPath = null;
++if (UtilValidate.isNotEmpty(delegator.getDelegatorTenantId())) {
++    imageServerPath = System.getProperty("ofbiz.home") + File.separatorChar + "runtime" + File.separatorChar + "tenants" + File.separatorChar + delegator.getDelegatorTenantId() + File.separatorChar + "images";
++} else {
++    imageServerPath = FlexibleStringExpander.expandString(UtilProperties.getPropertyValue("catalog", "image.server.path"), context);
++}
+ context.imageFilenameFormat = imageFilenameFormat;
+ context.imageServerPath = imageServerPath;
+ context.imageUrlPrefix = imageUrlPrefix;
+@@ -164,7 +169,7 @@
+ 
+             // call scaleImageInAllSize
+             if (fileType.equals("original")) {
+-                result = ScaleImage.scaleImageInAllSize(context, filenameToUse, "main", "0");
++                result = ScaleImage.scaleImageInAllSize(context, imageServerPath, filenameToUse, "main", "0");
+ 
+                 if (result.containsKey("responseMessage") && result.get("responseMessage").equals("success")) {
+                     imgMap = result.get("imageUrlMap");
+Index: applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/ImageUpload.groovy
+===================================================================
+--- applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/ImageUpload.groovy	(revision 1300859)
++++ applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/ImageUpload.groovy	(working copy)
+@@ -27,8 +27,13 @@
+ 
+ // make the image file formats
+ imageFilenameFormat = UtilProperties.getPropertyValue('catalog', 'image.filename.format');
+-imageServerPath = FlexibleStringExpander.expandString(UtilProperties.getPropertyValue("catalog", "image.server.path"), context);
+ imageUrlPrefix = UtilProperties.getPropertyValue('catalog', 'image.url.prefix');
++imageServerPath = null;
++if (UtilValidate.isNotEmpty(delegator.getDelegatorTenantId())) {
++    imageServerPath = System.getProperty("ofbiz.home") + File.separatorChar + "runtime" + File.separatorChar + "tenants" + File.separatorChar + delegator.getDelegatorTenantId() + File.separatorChar + "images";
++} else {
++    imageServerPath = FlexibleStringExpander.expandString(UtilProperties.getPropertyValue("catalog", "image.server.path"), context);
++}
+ context.imageFilenameFormat = imageFilenameFormat;
+ context.imageServerPath = imageServerPath;
+ context.imageUrlPrefix = imageUrlPrefix;
+@@ -126,7 +131,7 @@
+ 
+             // call scaleImageInAllSize
+             if (fileType.equals("original")) {
+-                result = ScaleImage.scaleImageInAllSize(context, filenameToUse, "main", "0");
++                result = ScaleImage.scaleImageInAllSize(context, imageServerPath, filenameToUse, "main", "0");
+ 
+                 if (result.containsKey("responseMessage") && result.get("responseMessage").equals("success")) {
+                     imgMap = result.get("imageUrlMap");
+Index: applications/product/webapp/catalog/WEB-INF/actions/product/EditProductContent.groovy
+===================================================================
+--- applications/product/webapp/catalog/WEB-INF/actions/product/EditProductContent.groovy	(revision 1300859)
++++ applications/product/webapp/catalog/WEB-INF/actions/product/EditProductContent.groovy	(working copy)
+@@ -26,8 +26,13 @@
+ 
+ // make the image file formats
+ imageFilenameFormat = UtilProperties.getPropertyValue('catalog', 'image.filename.format');
+-imageServerPath = FlexibleStringExpander.expandString(UtilProperties.getPropertyValue("catalog", "image.server.path"), context);
+ imageUrlPrefix = UtilProperties.getPropertyValue('catalog', 'image.url.prefix');
++imageServerPath = null;
++if (UtilValidate.isNotEmpty(delegator.getDelegatorTenantId())) {
++    imageServerPath = System.getProperty("ofbiz.home") + File.separatorChar + "runtime" + File.separatorChar + "tenants" + File.separatorChar + delegator.getDelegatorTenantId() + File.separatorChar + "images";
++} else {
++    imageServerPath = FlexibleStringExpander.expandString(UtilProperties.getPropertyValue("catalog", "image.server.path"), context);
++}
+ context.imageFilenameFormat = imageFilenameFormat;
+ context.imageServerPath = imageServerPath;
+ context.imageUrlPrefix = imageUrlPrefix;
+@@ -139,7 +144,7 @@
+ 
+             // call scaleImageInAllSize
+             if (fileType.equals("original")) {
+-                result = ScaleImage.scaleImageInAllSize(context, filenameToUse, "main", "0");
++                result = ScaleImage.scaleImageInAllSize(context, imageServerPath, filenameToUse, "main", "0");
+ 
+                 if (result.containsKey("responseMessage") && result.get("responseMessage").equals("success")) {
+                     imgMap = result.get("imageUrlMap");
