@@ -32,9 +32,11 @@ import org.ofbiz.base.util.Debug;
 import org.ofbiz.base.util.FileUtil;
 import org.ofbiz.base.util.UtilGenerics;
 import org.ofbiz.base.util.UtilMisc;
+import org.ofbiz.base.util.UtilProperties;
 import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.DelegatorFactory;
+import org.ofbiz.entity.GenericEntityException;
 import org.ofbiz.entity.GenericValue;
 import org.ofbiz.entity.condition.EntityComparisonOperator;
 import org.ofbiz.entity.condition.EntityCondition;
@@ -444,5 +446,68 @@ public class TenantServices {
             Debug.logError(e, errMsg, module);
             return ServiceUtil.returnError(errMsg);
         }
+    }
+    
+    /**
+     * Get Tenant By UserLogin
+     * @param ctx
+     * @param context
+     * @return String tenantId
+     */
+    public static Map<String, Object> getTenantIdByUserLoginId(DispatchContext ctx, Map<String, Object> context) {
+        Locale locale = (Locale) context.get("locale");
+        Delegator delegator = ctx.getDelegator();
+        String userLoginId = (String) context.get("userLoginId");
+        Map<String,Object> result = ServiceUtil.returnSuccess();
+        String tenantId = null;
+        
+        // retrieve Tenant data
+        try {
+            if (UtilValidate.isNotEmpty(userLoginId)) {
+                GenericValue userPreference = delegator.findByPrimaryKey("UserPreference", UtilMisc.toMap("userLoginId", userLoginId, "userPrefTypeId", "TENANT"));
+                if (UtilValidate.isNotEmpty(userPreference)) {
+                    tenantId = userPreference.getString("userPrefValue");
+                }
+            } else {
+                return ServiceUtil.returnError(UtilProperties.getMessage("PrefErrorUiLabels", "setPreference.invalidArgument", locale));
+            }
+        } catch (GenericEntityException e) {
+            return ServiceUtil.returnError(e.getMessage());
+        }
+        
+        result.put("tenantId", tenantId);
+        return result;
+    }
+    
+    /**
+     * Get UserLogin By Tenant
+     * @param ctx
+     * @param context
+     * @return String userLoginId
+     */
+    public static Map<String, Object> getUserLoginIdByTenantId(DispatchContext ctx, Map<String, Object> context) {
+        Locale locale = (Locale) context.get("locale");
+        Delegator delegator = ctx.getDelegator();
+        String tenantId = (String) context.get("tenantId");
+        Map<String,Object> result = ServiceUtil.returnSuccess();
+        String userLoginId = null;
+        
+        // retrieve userLogin data
+        try {
+            if (UtilValidate.isNotEmpty(tenantId)) {
+                List<GenericValue> userPreferenceList = delegator.findByAnd("UserPreference", UtilMisc.toMap("userPrefTypeId", "TENANT","tenantId", tenantId, "userPrefGroupTypeId", "GLOBAL_PREFERENCES"));
+                if (UtilValidate.isNotEmpty(userPreferenceList)) {
+                    GenericValue userPreference = EntityUtil.getFirst(userPreferenceList);
+                    userLoginId = userPreference.getString("userLoginId");
+                }
+            } else {
+                return ServiceUtil.returnError(UtilProperties.getMessage("PrefErrorUiLabels", "setPreference.invalidArgument", locale));
+            }
+        } catch (GenericEntityException e) {
+            return ServiceUtil.returnError(e.getMessage());
+        }
+        
+        result.put("userLoginId", userLoginId);
+        return result;
     }
 }

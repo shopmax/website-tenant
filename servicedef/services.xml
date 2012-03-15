@@ -218,4 +218,18 @@
         <attribute name="systemPropertyId" mode="IN" type="String" optional="false"/>
         <attribute name="systemPropertyValue" mode="IN" type="String" optional="false"/>
     </service>
+    
+    <!-- tenant util service -->
+    <service name="getTenantIdByUserLoginId" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
+        invoke="getTenantIdByUserLoginId" auth="true">
+        <description>Get Tenant Id By UserLogin</description>
+        <attribute name="userLoginId" mode="IN" type="String" optional="false"/>
+        <attribute name="tenantId" mode="OUT" type="String" optional="true"/>
+    </service>
+    <service name="getUserLoginIdByTenantId" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
+        invoke="getTenantIdByUserLoginId" auth="true">
+        <description>Get User Login Id By Tenant</description>
+        <attribute name="tenantId" mode="IN" type="String" optional="false"/>
+        <attribute name="userLoginId" mode="OUT" type="String" optional="true"/>
+    </service>
 </services>
