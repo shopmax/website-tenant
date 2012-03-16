@@ -495,7 +495,7 @@ public class TenantServices {
         // retrieve userLogin data
         try {
             if (UtilValidate.isNotEmpty(tenantId)) {
-                List<GenericValue> userPreferenceList = delegator.findByAnd("UserPreference", UtilMisc.toMap("userPrefTypeId", "TENANT","tenantId", tenantId, "userPrefGroupTypeId", "GLOBAL_PREFERENCES"));
+                List<GenericValue> userPreferenceList = delegator.findByAnd("UserPreference", UtilMisc.toMap("userPrefTypeId", "TENANT","userPrefValue", tenantId, "userPrefGroupTypeId", "GLOBAL_PREFERENCES"));
                 if (UtilValidate.isNotEmpty(userPreferenceList)) {
                     GenericValue userPreference = EntityUtil.getFirst(userPreferenceList);
                     userLoginId = userPreference.getString("userLoginId");
