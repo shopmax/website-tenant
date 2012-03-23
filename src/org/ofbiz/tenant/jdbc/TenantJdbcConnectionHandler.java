@@ -36,6 +36,7 @@ import org.ofbiz.entity.config.EntityConfigUtil;
 import org.ofbiz.entity.connection.DBCPConnectionFactory;
 import org.ofbiz.entity.datasource.GenericHelperInfo;
 import org.ofbiz.entity.jdbc.ConnectionFactory;
+import org.ofbiz.entity.util.EntityUtilProperties;
 
 /**
  * Tenant JDBC connection handler
@@ -47,6 +48,8 @@ public abstract class TenantJdbcConnectionHandler {
     public final static String module = TenantJdbcConnectionHandler.class.getName();
     
     protected GenericValue tenantDataSource = null;
+    protected String superUsername = null;
+    protected String superPassword = null;
     
     /**
      * Constructor
@@ -54,7 +57,10 @@ public abstract class TenantJdbcConnectionHandler {
      * @param sqlProcessor
      */
     public TenantJdbcConnectionHandler(GenericValue tenantDataSource) {
+        Delegator delegator = tenantDataSource.getDelegator();
         this.tenantDataSource = tenantDataSource;
+        this.superUsername = EntityUtilProperties.getPropertyValue("tenant.properties", "superUsername", "postgres", delegator);
+        this.superPassword = EntityUtilProperties.getPropertyValue("tenant.properties", "superPassword", "postgres", delegator);
     }
     
     /**
@@ -79,6 +85,22 @@ public abstract class TenantJdbcConnectionHandler {
      */
     public String getEntityGroupName() {
         return tenantDataSource.getString("entityGroupName");
+    }
+    
+    /**
+     * get super username
+     * @return
+     */
+    public String getSuperUsername() {
+        return superUsername;
+    }
+    
+    /**
+     * get super password
+     * @return
+     */
+    public String getSuperPassword() {
+        return superPassword;
     }
     
     /**

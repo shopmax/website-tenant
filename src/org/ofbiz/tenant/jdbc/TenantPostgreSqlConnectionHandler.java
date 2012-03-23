@@ -19,11 +19,14 @@
 package org.ofbiz.tenant.jdbc;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.ofbiz.base.util.Debug;
+import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.GenericEntityException;
 import org.ofbiz.entity.GenericValue;
@@ -59,6 +62,16 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
                 sqlProcessor.close();
                 connection.close();
             } catch (Exception e) {
+                // create JDBC username
+                Connection userConnection = ConnectionFactory.getConnection(this.getPostgresJdbcUri(), this.getSuperUsername() , this.getSuperPassword());
+                Statement statement = userConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_UPDATABLE);
+                ResultSet resultSet = statement.executeQuery("SELECT * FROM pg_roles WHERE rolname='" + this.getJdbcUsername() + "';");
+                if (!resultSet.next()) {
+                    statement.executeUpdate("CREATE ROLE \"" + this.getJdbcUsername() + "\" PASSWORD '" + this.getJdbcPassword() +"' SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN;");
+                    statement.close();
+                    userConnection.close();
+                }
+                
                 // create a new database
                 Connection connection = ConnectionFactory.getConnection(this.getPostgresJdbcUri(), this.getJdbcUsername(), this.getJdbcPassword());
                 SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, connection);
