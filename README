@@ -36,13 +36,7 @@ ofbiz
 ofbizolap
 ofbiztenant
 
-8. run the following command to create a TenantData.xml file to the specific component:
-
-../../ant generate-demo-tenant-seed -Dcomponent=[component's name]
-
-Then enter a component's name
-
-9. run the following command to create all required databases and content:
+8. run the following command to create all required databases and content:
 ./ant run-install-readers -Ddata-readers=seed,seed-initial,tenant,demo,ext-demo
 
 the readers spec here is for the basic system only.
