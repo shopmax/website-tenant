@@ -63,7 +63,6 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
                 connection.close();
             } catch (Exception e) {
                 // create JDBC username
-                /*
                 Connection userConnection = ConnectionFactory.getConnection(this.getPostgresJdbcUri(), this.getSuperUsername() , this.getSuperPassword());
                 Statement statement = userConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_UPDATABLE);
                 ResultSet resultSet = statement.executeQuery("SELECT * FROM pg_roles WHERE rolname='" + this.getJdbcUsername() + "';");
@@ -72,7 +71,6 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
                     statement.close();
                     userConnection.close();
                 }
-                */
                 
                 // create a new database
                 Connection connection = ConnectionFactory.getConnection(this.getPostgresJdbcUri(), this.getJdbcUsername(), this.getJdbcPassword());
