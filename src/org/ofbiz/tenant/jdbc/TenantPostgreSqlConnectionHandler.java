@@ -62,20 +62,23 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
                 sqlProcessor.close();
                 connection.close();
             } catch (Exception e) {
-                // create JDBC username
-                Connection userConnection = ConnectionFactory.getConnection(this.getPostgresJdbcUri(), this.getSuperUsername() , this.getSuperPassword());
-                Statement statement = userConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_UPDATABLE);
+                // check if the user is not exist then create the user
+                Connection superConnection = ConnectionFactory.getConnection(this.getPostgresJdbcUri(), this.getSuperUsername(), this.getSuperPassword());
+                Statement statement = superConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
                 ResultSet resultSet = statement.executeQuery("SELECT * FROM pg_roles WHERE rolname='" + this.getJdbcUsername() + "';");
                 if (!resultSet.next()) {
-                    statement.executeUpdate("CREATE ROLE \"" + this.getJdbcUsername() + "\" PASSWORD '" + this.getJdbcPassword() +"' SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN;");
+                    // create JDBC username
+                    statement.executeUpdate("CREATE USER \"" + this.getJdbcUsername() + "\" WITH PASSWORD '" + this.getJdbcPassword() +"' LOGIN;");
                     statement.close();
-                    userConnection.close();
+                    superConnection.close();
                 }
                 
                 // create a new database
-                Connection connection = ConnectionFactory.getConnection(this.getPostgresJdbcUri(), this.getJdbcUsername(), this.getJdbcPassword());
+                Connection connection = ConnectionFactory.getConnection(this.getPostgresJdbcUri(), this.getSuperUsername(), this.getSuperPassword());
                 SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, connection);
                 sqlProcessor.executeUpdate("CREATE DATABASE \"" + this.getDatabaseName() + "\"");
+                sqlProcessor.executeUpdate("ALTER DATABASE \"" + this.getDatabaseName() + "\" OWNER TO \"" + this.getJdbcUsername() + "\"");
+                sqlProcessor.executeUpdate("GRANT ALL PRIVILEGES ON \"" + this.getDatabaseName() + "\" TO \"" + this.getJdbcUsername() + "\"");
                 sqlProcessor.close();
                 connection.close();
             }
