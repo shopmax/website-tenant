@@ -126,6 +126,6 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
     }
     
     protected String getPostgresJdbcUri() {
-        return "jdbc:postgresql://127.0.0.1/postgres";
+        return "jdbc:postgresql://" + this.getJdbcServerName() + "/postgres";
     }
 }
