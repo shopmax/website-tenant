@@ -1,6 +1,6 @@
 Index: applications/product/src/org/ofbiz/product/product/ProductServices.java
 ===================================================================
---- applications/product/src/org/ofbiz/product/product/ProductServices.java	(revision 1301321)
+--- applications/product/src/org/ofbiz/product/product/ProductServices.java	(revision 1307219)
 +++ applications/product/src/org/ofbiz/product/product/ProductServices.java	(working copy)
 @@ -984,8 +984,13 @@
  
@@ -28,9 +28,9 @@ Index: applications/product/src/org/ofbiz/product/product/ProductServices.java
                  return ServiceUtil.returnError(UtilProperties.getMessage(resource, 
 Index: applications/product/src/org/ofbiz/product/image/ScaleImage.java
 ===================================================================
---- applications/product/src/org/ofbiz/product/image/ScaleImage.java	(revision 1301321)
+--- applications/product/src/org/ofbiz/product/image/ScaleImage.java	(revision 1307219)
 +++ applications/product/src/org/ofbiz/product/image/ScaleImage.java	(working copy)
-@@ -75,7 +75,7 @@
+@@ -74,7 +74,7 @@
       * @throws  IOException                 Error prevents the document from being fully parsed
       * @throws  JDOMException               Errors occur in parsing
       */
@@ -39,7 +39,7 @@ Index: applications/product/src/org/ofbiz/product/image/ScaleImage.java
          throws IllegalArgumentException, ImagingOpException, IOException, JDOMException {
  
          /* VARIABLES */
-@@ -108,7 +108,9 @@
+@@ -107,7 +107,9 @@
          index = filenameToUse.lastIndexOf(".");
          String imgExtension = filenameToUse.substring(index + 1);
          // paths
@@ -50,7 +50,7 @@ Index: applications/product/src/org/ofbiz/product/image/ScaleImage.java
          String imageUrlPrefix = UtilProperties.getPropertyValue("catalog", "image.url.prefix");
          
          FlexibleStringExpander filenameExpander;
-@@ -244,7 +246,7 @@
+@@ -243,7 +245,7 @@
          }
      }
  
@@ -59,7 +59,7 @@ Index: applications/product/src/org/ofbiz/product/image/ScaleImage.java
          throws IllegalArgumentException, ImagingOpException, IOException, JDOMException {
  
          /* VARIABLES */
-@@ -285,7 +287,9 @@
+@@ -284,7 +286,9 @@
          String imgExtension = filenameToUse.substring(index + 1);
          // paths
          String mainFilenameFormat = UtilProperties.getPropertyValue("catalog", "image.filename.format");
@@ -72,7 +72,7 @@ Index: applications/product/src/org/ofbiz/product/image/ScaleImage.java
          String id = null;
 Index: applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/SetDefaultImage.groovy
 ===================================================================
---- applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/SetDefaultImage.groovy	(revision 1301321)
+--- applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/SetDefaultImage.groovy	(revision 1307219)
 +++ applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/SetDefaultImage.groovy	(working copy)
 @@ -44,8 +44,13 @@
  
@@ -100,7 +100,7 @@ Index: applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/SetDe
                      imgMap = result.get("imageUrlMap");
 Index: applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/ImageUpload.groovy
 ===================================================================
---- applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/ImageUpload.groovy	(revision 1301321)
+--- applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/ImageUpload.groovy	(revision 1307219)
 +++ applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/ImageUpload.groovy	(working copy)
 @@ -27,8 +27,13 @@
  
@@ -128,7 +128,7 @@ Index: applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/Image
                      imgMap = result.get("imageUrlMap");
 Index: applications/product/webapp/catalog/WEB-INF/actions/product/EditProductContent.groovy
 ===================================================================
---- applications/product/webapp/catalog/WEB-INF/actions/product/EditProductContent.groovy	(revision 1301321)
+--- applications/product/webapp/catalog/WEB-INF/actions/product/EditProductContent.groovy	(revision 1307219)
 +++ applications/product/webapp/catalog/WEB-INF/actions/product/EditProductContent.groovy	(working copy)
 @@ -26,8 +26,13 @@
  
