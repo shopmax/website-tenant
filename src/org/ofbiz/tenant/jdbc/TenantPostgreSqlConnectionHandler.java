@@ -57,12 +57,14 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
             Delegator delegator = tenantDataSource.getDelegator();
             GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
             try {
+                Debug.logInfo("Get a connection of " + this.getJdbcUsername() + "@" + this.getJdbcUri() + " with " + this.getJdbcPassword(), module);
                 Connection connection = ConnectionFactory.getConnection(this.getJdbcUri(), this.getJdbcUsername(), this.getJdbcPassword());
                 SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, connection);
                 sqlProcessor.close();
                 connection.close();
             } catch (Exception e) {
                 // check if the user is not exist then create the user
+                Debug.logInfo("Check a user[" + this.getJdbcUsername() + "] by " + this.getSuperUsername() + "@" + this.getPostgresJdbcUri() + " with " + this.getSuperPassword(), module);
                 Connection superConnection = ConnectionFactory.getConnection(this.getPostgresJdbcUri(), this.getSuperUsername(), this.getSuperPassword());
                 Statement statement = superConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
                 ResultSet resultSet = statement.executeQuery("SELECT * FROM pg_roles WHERE rolname='" + this.getJdbcUsername() + "';");
@@ -74,6 +76,7 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
                 }
                 
                 // create a new database
+                Debug.logInfo("Create a database[" + this.getDatabaseName() + "] by " + this.getSuperUsername() + "@" + this.getPostgresJdbcUri() + " with " + this.getSuperPassword(), module);
                 Connection connection = ConnectionFactory.getConnection(this.getPostgresJdbcUri(), this.getSuperUsername(), this.getSuperPassword());
                 SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, connection);
                 sqlProcessor.executeUpdate("CREATE DATABASE \"" + this.getDatabaseName() + "\"");
