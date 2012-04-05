@@ -26,8 +26,8 @@
     <TenantComponent tenantId="demotenant1" componentName="content" sequenceNum="05"/>
     <TenantComponent tenantId="demotenant1" componentName="party" sequenceNum="06"/>
     <TenantDataSource tenantId="demotenant1" entityGroupName="org.ofbiz"
-       jdbcUri="jdbc:postgresql://127.0.0.1/demotenant1" jdbcUsername="ofbiz" jdbcPassword="ofbiz"/>
+       jdbcUri="jdbc:derby:demotenant1ofbiz;create=true" jdbcUsername="ofbiz" jdbcPassword="ofbiz"/>
     <TenantDataSource tenantId="demotenant1" entityGroupName="org.ofbiz.olap"
-       jdbcUri="jdbc:postgresql://127.0.0.1/demotenant1olap" jdbcUsername="ofbiz" jdbcPassword="ofbiz"/>
+       jdbcUri="jdbc:derby:demotenant1olap" jdbcUsername="ofbiz" jdbcPassword="ofbiz"/>
    -->
 </entity-engine-xml>
