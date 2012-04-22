@@ -1,0 +1,19 @@
+Index: hot-deploy/tenant/config/tenant.properties
+===================================================================
+--- hot-deploy/tenant/config/tenant.properties	(revision 142)
++++ hot-deploy/tenant/config/tenant.properties	(working copy)
+@@ -20,10 +20,10 @@
+ serverName=localhost
+ 
+ # JDBC
+-jdbcUriPrefix=jdbc:derby:
+-jdbcUriSuffix=;create=true
+-superUsername=ofbiz
+-superPassword=ofbiz
++jdbcUriPrefix=jdbc:postgresql://10.118.91.187:5432/
++jdbcUriSuffix=
++superUsername=postgres
++superPassword=postgres
+ jdbcPassword=ofbiz
+ 
+ # -- Y if you want a tenant always include demo data and have message at the top
