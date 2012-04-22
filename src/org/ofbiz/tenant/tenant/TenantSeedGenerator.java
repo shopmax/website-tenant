@@ -47,7 +47,9 @@ public class TenantSeedGenerator {
             for (String arg: args) {
                 String[] nameValue = arg.split("=");
                 String name = nameValue[0];
-                String value = nameValue[1];
+                String value = "";
+                if (nameValue.length > 1)
+                	value = nameValue[1];
                 if ("tenantId".equals(name)) {
                     tenantId = value.trim();
                 } else if ("tenantName".equals(name)) {
