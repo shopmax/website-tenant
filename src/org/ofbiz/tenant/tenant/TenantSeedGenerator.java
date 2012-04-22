@@ -38,7 +38,7 @@ public class TenantSeedGenerator {
             String tenantId = null;
             String tenantName = null;
             String jdbcUriPrefix = null;
-            String jdbcServerName = null;
+            String jdbcUriSuffix = null;
             String jdbcUsername = null;
             String jdbcPassword = null;
             String components = null;
@@ -54,8 +54,8 @@ public class TenantSeedGenerator {
                     tenantName = value.trim();
                 } else if ("jdbcUriPrefix".equals(name)) {
                     jdbcUriPrefix = value.trim();
-                } else if ("jdbcServerName".equals(name)) {
-                    jdbcServerName = value.trim();
+                } else if ("jdbcUriSuffix".equals(name)) {
+                    jdbcUriSuffix = value.trim();
                 } else if ("jdbcUsername".equals(name)) {
                     jdbcUsername = value.trim();
                 } else if ("jdbcPassword".equals(name)) {
@@ -97,7 +97,7 @@ public class TenantSeedGenerator {
             Element ofbizDataSourceElement = document.createElement("TenantDataSource");
             ofbizDataSourceElement.setAttribute("tenantId", tenantId);
             ofbizDataSourceElement.setAttribute("entityGroupName", "org.ofbiz");
-            ofbizDataSourceElement.setAttribute("jdbcUri", jdbcUriPrefix + "://" + jdbcServerName + "/" + tenantId + "ofbiz");
+            ofbizDataSourceElement.setAttribute("jdbcUri", jdbcUriPrefix + tenantId + "ofbiz" + jdbcUriSuffix);
             ofbizDataSourceElement.setAttribute("jdbcUsername", jdbcUsername);
             ofbizDataSourceElement.setAttribute("jdbcPassword", jdbcPassword);
             entityEngineXmlElement.appendChild(ofbizDataSourceElement);
@@ -106,7 +106,7 @@ public class TenantSeedGenerator {
             Element olapDataSourceElement = document.createElement("TenantDataSource");
             olapDataSourceElement.setAttribute("tenantId", tenantId);
             olapDataSourceElement.setAttribute("entityGroupName", "org.ofbiz.olap");
-            olapDataSourceElement.setAttribute("jdbcUri", jdbcUriPrefix + "://" + jdbcServerName + "/" + tenantId + "olap");
+            olapDataSourceElement.setAttribute("jdbcUri", jdbcUriPrefix + tenantId + "olap" + jdbcUriSuffix);
             olapDataSourceElement.setAttribute("jdbcUsername", jdbcUsername);
             olapDataSourceElement.setAttribute("jdbcPassword", jdbcPassword);
             entityEngineXmlElement.appendChild(olapDataSourceElement);
