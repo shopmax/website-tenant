@@ -32,7 +32,7 @@ public class TenantSeedGenerator {
      */
     public static void main(String[] args) {
         if (args.length == 0) {
-            System.out.println("Please include a path for the selenium XML test file.");
+            System.out.println("Please enter the component name you want the system to update the TenantData.xml file from component://ofbizdemo/config");
         } else {
             String file = null;
             String tenantId = null;
@@ -43,6 +43,7 @@ public class TenantSeedGenerator {
             String jdbcPassword = null;
             String components = null;
             String domainNames = null;
+            String dbPrefix = "";
             
             for (String arg: args) {
                 String[] nameValue = arg.split("=");
@@ -67,6 +68,8 @@ public class TenantSeedGenerator {
                 } else if ("domainNames".equals(name)) {
                     domainNames = value.trim();
                 } else if ("file".equals(name)) {
+                    file = value.trim();
+                } else if ("dbPrefix".equals(name)) {
                     file = value.trim();
                 }
             }
@@ -99,7 +102,7 @@ public class TenantSeedGenerator {
             Element ofbizDataSourceElement = document.createElement("TenantDataSource");
             ofbizDataSourceElement.setAttribute("tenantId", tenantId);
             ofbizDataSourceElement.setAttribute("entityGroupName", "org.ofbiz");
-            ofbizDataSourceElement.setAttribute("jdbcUri", jdbcUriPrefix + tenantId + "ofbiz" + jdbcUriSuffix);
+            ofbizDataSourceElement.setAttribute("jdbcUri", jdbcUriPrefix + dbPrefix + tenantId + "ofbiz" + jdbcUriSuffix);
             ofbizDataSourceElement.setAttribute("jdbcUsername", jdbcUsername);
             ofbizDataSourceElement.setAttribute("jdbcPassword", jdbcPassword);
             entityEngineXmlElement.appendChild(ofbizDataSourceElement);
@@ -108,7 +111,7 @@ public class TenantSeedGenerator {
             Element olapDataSourceElement = document.createElement("TenantDataSource");
             olapDataSourceElement.setAttribute("tenantId", tenantId);
             olapDataSourceElement.setAttribute("entityGroupName", "org.ofbiz.olap");
-            olapDataSourceElement.setAttribute("jdbcUri", jdbcUriPrefix + tenantId + "olap" + jdbcUriSuffix);
+            olapDataSourceElement.setAttribute("jdbcUri", jdbcUriPrefix + dbPrefix +  tenantId + "olap" + jdbcUriSuffix);
             olapDataSourceElement.setAttribute("jdbcUsername", jdbcUsername);
             olapDataSourceElement.setAttribute("jdbcPassword", jdbcPassword);
             entityEngineXmlElement.appendChild(olapDataSourceElement);
@@ -141,6 +144,7 @@ public class TenantSeedGenerator {
             } catch (Exception e) {
                 Debug.logError(e, module);
             }
+                       
         }
     }
 
