@@ -70,10 +70,10 @@ public class TenantSeedGenerator {
                 } else if ("file".equals(name)) {
                     file = value.trim();
                 } else if ("dbPrefix".equals(name)) {
-                    file = value.trim();
+                    dbPrefix = value.trim();
                 }
             }
-            
+ 
             // create XML document
             Document document = UtilXml.makeEmptyXmlDocument();
             Element entityEngineXmlElement = document.createElement("entity-engine-xml");
