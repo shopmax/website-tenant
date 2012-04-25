@@ -53,6 +53,7 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
     public TenantDerbyConnectionHandler(GenericValue tenantDataSource) {
         super(tenantDataSource);
         try {
+            Debug.logInfo("Get a connection of " + this.getJdbcUsername() + "@" + this.getJdbcUri() + " with " + this.getJdbcPassword(), module);
             Delegator delegator = tenantDataSource.getDelegator();
             GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
             Connection connection = ConnectionFactory.getConnection(this.getJdbcUri(), this.getJdbcUsername(), this.getJdbcPassword());
