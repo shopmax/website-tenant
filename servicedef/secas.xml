@@ -24,6 +24,7 @@ under the License.
     <!-- To install tenant data sources if the entity group is org.ofbiz.olap -->
     <eca service="createTenantDataSourceDb" event="return">
         <condition field-name="entityGroupName" operator="equals" value="org.ofbiz.olap"/>
+        <condition field-name="isExist" operator="equals" value="false" type="Boolean"/>
         <action service="installTenantDataSources" mode="sync"/>
     </eca>
 </service-eca>

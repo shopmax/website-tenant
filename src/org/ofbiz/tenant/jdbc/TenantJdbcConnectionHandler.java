@@ -50,6 +50,7 @@ public abstract class TenantJdbcConnectionHandler {
     protected GenericValue tenantDataSource = null;
     protected String superUsername = null;
     protected String superPassword = null;
+    protected boolean isExist = false;
     
     /**
      * Constructor
@@ -165,6 +166,10 @@ public abstract class TenantJdbcConnectionHandler {
         
         // remove connection
         managedConnectionFactory.removeConnection(helperInfo);
+    }
+    
+    public boolean isExist() {
+        return isExist;
     }
     
     protected abstract void doDeleteDatabase(String databaseName, GenericHelperInfo helperInfo) throws GenericEntityException, SQLException;

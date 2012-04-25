@@ -62,6 +62,7 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
                 SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, connection);
                 sqlProcessor.close();
                 connection.close();
+                super.isExist = true;
             } catch (Exception e) {
                 // check if the user is not exist then create the user
                 Debug.logInfo("Check a user[" + this.getJdbcUsername() + "] by " + this.getSuperUsername() + "@" + this.getPostgresJdbcUri() + " with " + this.getSuperPassword(), module);

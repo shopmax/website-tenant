@@ -131,6 +131,7 @@
         <description>Create a tenant data source</description>
         <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
         <attribute name="entityGroupName" mode="IN" type="String" optional="false"></attribute>
+        <attribute name="isExist" mode="OUT" type="Boolean" optional="false"></attribute>
     </service>
     <!-- delete databases -->
     <service name="deleteTenantDataSourceDb" default-entity-name="Tenant" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"

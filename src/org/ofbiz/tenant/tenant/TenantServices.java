@@ -175,7 +175,9 @@ public class TenantServices {
         String entityGroupName = (String) context.get("entityGroupName");
         try {
             TenantJdbcConnectionHandler connectionHandler = TenantConnectionFactory.getTenantJdbcConnectionHandler(tenantId, entityGroupName, delegator);
-            return ServiceUtil.returnSuccess();
+            Map<String, Object> results = ServiceUtil.returnSuccess();
+            results.put("isExist", connectionHandler.isExist());
+            return results;
         } catch (Exception e) {
             String errMsg = "Could not install databases for tenant " + tenantId + " : " + e.getMessage();
             Debug.logError(e, errMsg, module);
