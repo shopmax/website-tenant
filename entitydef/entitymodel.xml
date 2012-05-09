@@ -9,4 +9,16 @@
     <copyright></copyright>
     <version></version>
 
+    <!-- to enable more than a single domainname per tenant -->
+    <entity entity-name="TenantDomainName" package-name="org.ofbiz.entity.tenant">
+        <field name="tenantId" type="id-ne"/>
+        <field name="domainName" type="long-varchar"/>
+        <field name="initialPath" type="value"/>
+        <prim-key field="tenantId"/>
+        <prim-key field="domainName"/>
+        <relation type="one" fk-name="TNTDMN_TNT" rel-entity-name="Tenant">
+            <key-map field-name="tenantId"/>
+        </relation>
+    </entity>
+
 </entitymodel>
