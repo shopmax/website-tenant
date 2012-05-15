@@ -95,7 +95,7 @@ public class TenantUtil {
      */
     public static boolean isConnectionAvailable(String tenantId, Delegator delegator) {
         try {
-            List<GenericValue> tenantDataSources = delegator.findByAnd("TenantDataSource", UtilMisc.toMap("tenantId", tenantId));
+            List<GenericValue> tenantDataSources = delegator.findByAnd("TenantDataSource", UtilMisc.toMap("tenantId", tenantId), null, false);
             for (GenericValue tenantDataSource : tenantDataSources) {
                 String entityGroupName = tenantDataSource.getString("entityGroupName");
                 String jdbcUri = tenantDataSource.getString("jdbcUri");

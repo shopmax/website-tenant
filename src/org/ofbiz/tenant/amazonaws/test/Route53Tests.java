@@ -52,7 +52,7 @@ public class Route53Tests extends OFBizTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        userLogin = delegator.findByPrimaryKey("UserLogin", UtilMisc.toMap("userLoginId", "system"));
+        userLogin = delegator.findOne("UserLogin", UtilMisc.toMap("userLoginId", "system"), false);
     }
 
     public void testGetAmazonRoute53HostedZones() throws Exception {

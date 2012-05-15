@@ -114,7 +114,7 @@ public class TenantServices {
                 // if readers and files are empty then get readers from /data/DemoLoadData.txt file
                 if (UtilValidate.isEmpty(readers) && UtilValidate.isEmpty(files)) {
                     // get a reader from file
-                    List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", tenantId), UtilMisc.toList("sequenceNum"));
+                    List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", tenantId), UtilMisc.toList("sequenceNum"), false);
                     if (UtilValidate.isNotEmpty(tenantComponents)) {
                         GenericValue tenantComponent = EntityUtil.getFirst(tenantComponents);
                         String componentName = tenantComponent.getString("componentName");
@@ -123,7 +123,7 @@ public class TenantServices {
                             File demoLoadDataFile = FileUtil.getFile(demoLoadDataPath);
                             Scanner scanner = new Scanner(demoLoadDataFile);
                             while (scanner.hasNext()) {
-                                readers = scanner.nextLine();
+                                readers = scanner.nextLine();  
                                 break;
                             }
                         } catch (Exception e) {
@@ -221,7 +221,7 @@ public class TenantServices {
         String tenantId = (String) context.get("tenantId");
         
         try {
-            List<GenericValue> tenantDataSources = delegator.findByAnd("TenantDataSource", UtilMisc.toMap("tenantId", tenantId));
+            List<GenericValue> tenantDataSources = delegator.findByAnd("TenantDataSource", UtilMisc.toMap("tenantId", tenantId), null, false);
             for (GenericValue tenantDataSource : tenantDataSources) {
                 String entityGroupName = tenantDataSource.getString("entityGroupName");
                 
@@ -466,7 +466,7 @@ public class TenantServices {
         // retrieve Tenant data
         try {
             if (UtilValidate.isNotEmpty(userLoginId)) {
-                GenericValue userPreference = delegator.findByPrimaryKey("UserPreference", UtilMisc.toMap("userLoginId", userLoginId, "userPrefTypeId", "TENANT"));
+                GenericValue userPreference = delegator.findOne("UserPreference", UtilMisc.toMap("userLoginId", userLoginId, "userPrefTypeId", "TENANT"), false);
                 if (UtilValidate.isNotEmpty(userPreference)) {
                     tenantId = userPreference.getString("userPrefValue");
                 }
@@ -497,7 +497,7 @@ public class TenantServices {
         // retrieve userLogin data
         try {
             if (UtilValidate.isNotEmpty(tenantId)) {
-                List<GenericValue> userPreferenceList = delegator.findByAnd("UserPreference", UtilMisc.toMap("userPrefTypeId", "TENANT","userPrefValue", tenantId, "userPrefGroupTypeId", "GLOBAL_PREFERENCES"));
+                List<GenericValue> userPreferenceList = delegator.findByAnd("UserPreference", UtilMisc.toMap("userPrefTypeId", "TENANT","userPrefValue", tenantId, "userPrefGroupTypeId", "GLOBAL_PREFERENCES"), null, false);
                 if (UtilValidate.isNotEmpty(userPreferenceList)) {
                     GenericValue userPreference = EntityUtil.getFirst(userPreferenceList);
                     userLoginId = userPreference.getString("userLoginId");
