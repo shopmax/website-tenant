@@ -591,7 +591,7 @@ Index: framework/service/src/org/ofbiz/service/DispatchContext.java
 +        if (UtilValidate.isNotEmpty(tenantId)) {
 +            // get tenant components
 +            try {
-+                List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", tenantId), UtilMisc.toList("sequenceNum"));
++                List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", tenantId), UtilMisc.toList("sequenceNum"), null, false);
 +                componentNames = EntityUtil.getFieldListFromEntityList(tenantComponents, "componentName", true);
 +            } catch (GenericEntityException e) {
 +                throw new GenericServiceException(e);
@@ -657,7 +657,7 @@ Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
 -        for (ComponentConfig.ServiceResourceInfo componentResourceInfo: ComponentConfig.getAllServiceResourceInfos("eca")) {
 -            futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createEcaLoaderCallable(componentResourceInfo.createResourceHandler())));
 +        try {
-+            List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", delegator.getDelegatorTenantId()));
++            List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", delegator.getDelegatorTenantId()), null, false);
 +            List<String> componentNames = EntityUtil.getFieldListFromEntityList(tenantComponents, "componentName", true);
 +            Collection<ComponentConfig> components = ComponentConfig.getTenantComponents(componentNames);
 +            for (ComponentConfig component : components) {
@@ -820,7 +820,7 @@ Index: framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java
 -            addGroupDefinitions(componentResourceInfo.createResourceHandler());
 +        
 +        try {
-+            List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", delegator.getDelegatorTenantId()), UtilMisc.toList("sequenceNum"));
++            List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", delegator.getDelegatorTenantId()), UtilMisc.toList("sequenceNum"), null, false);
 +            List<String> componentNames = EntityUtil.getFieldListFromEntityList(tenantComponents, "componentName", true);
 +            Collection<ComponentConfig> components = ComponentConfig.getTenantComponents(componentNames);
 +            
@@ -1360,7 +1360,7 @@ Index: framework/entity/src/org/ofbiz/entity/GenericDelegator.java
              }
 +
 +            // get tenant components
-+            List<GenericValue> tenantComponents = baseDelegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", this.delegatorTenantId), UtilMisc.toList("sequenceNum"));
++            List<GenericValue> tenantComponents = baseDelegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", this.delegatorTenantId), UtilMisc.toList("sequenceNum"), null, false);
 +            componentNames = EntityUtil.getFieldListFromEntityList(tenantComponents, "componentName", true);
 +
          } else {
@@ -1594,7 +1594,7 @@ Index: framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java
 +            if (userLogin != null) {
 +                try {
 +                    List<GenericValue> visitList = delegator.findByAnd("Visit", UtilMisc.toMap("userLoginId", userLogin.getString("userLoginId")
-+                            ,"thruDate",null), UtilMisc.toList("-fromDate"));
++                            ,"thruDate",null), UtilMisc.toList("-fromDate"), null, false);
 +                    if (UtilValidate.isNotEmpty(visitList)) {
 +                        GenericValue visitMap = EntityUtil.getFirst(visitList);
 +                        GenericValue chechLoggedOutMap = delegator.findByPrimaryKey("UserLogin", UtilMisc.toMap("userLoginId", username));
