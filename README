@@ -37,6 +37,6 @@ ofbizolap
 ofbiztenant
 
 8. run the following command to create all required databases and content:
-./ant run-install-readers -Ddata-readers=seed,seed-initial,tenant,demo,ext-demo
+./ant load-readers -Ddata-readers=seed,seed-initial,tenant,demo,ext-demo
 
 the readers spec here is for the basic system only.
