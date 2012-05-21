@@ -114,7 +114,7 @@ public class TenantServices {
                 // if readers and files are empty then get readers from /data/DemoLoadData.txt file
                 if (UtilValidate.isEmpty(readers) && UtilValidate.isEmpty(files)) {
                     // get a reader from file
-                    List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", tenantId), UtilMisc.toList("sequenceNum"), false);
+                    List<GenericValue> tenantComponents = delegator.findList("TenantComponent", EntityCondition.makeCondition("tenantId", tenantId), null, UtilMisc.toList("sequenceNum"), null, false);
                     if (UtilValidate.isNotEmpty(tenantComponents)) {
                         GenericValue tenantComponent = EntityUtil.getFirst(tenantComponents);
                         String componentName = tenantComponent.getString("componentName");
