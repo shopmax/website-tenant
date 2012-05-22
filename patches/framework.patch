@@ -1555,7 +1555,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.
          }
 +        
 +        // load tenant reader data from hot-deploy components if requested
-+        if (readerNames.contains("tenant")) {
++        if (UtilValidate.isNotEmpty(readerNames) && readerNames.contains("tenant")) {
 +            List<String> loadHotDeployComponents = FastList.newInstance();
 +            for (ComponentConfig component : ComponentConfig.getHotDeployComponents()) {
 +                loadHotDeployComponents.add(component.getComponentName());
