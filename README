@@ -29,14 +29,20 @@ initialPath=[tenant's initial path]
 
 5. change the server name to the config/tenant.properties file
 
-6. change and JDBC configurations to the config/tenant.properties file
+6. change and JDBC configurations to the config/tenant.properties file (make sure that superUsername and superPassword is a super user)
 
-7. create basic databases
+7. set "isDemo" property to "Y" in config/tenant.properties file for development and demo (Optional)
+
+8. create basic databases
 ofbiz
 ofbizolap
 ofbiztenant
 
-8. run the following command to create all required databases and content:
+9. make sure that the required tanant data is not in TenantDataSource entity
+
+10. make sure that an olap database of the required tenant does not exist if you want to re-create databases
+
+11. run the following command to create all required databases and content:
 ./ant load-readers -Ddata-readers=seed,seed-initial,tenant,demo,ext-demo
 
 the readers spec here is for the basic system only.
