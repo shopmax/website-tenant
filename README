@@ -1,3 +1,27 @@
+
+To start a tenant system from scratch:
+
+1. ./ant load-seed
+2. ./ant  load-admin-user-login -DuserLoginId=admin
+3. https://localhost:8443/tenantmgr >> UserName = admin Password = ofbiz
+4. change password after logging in.
+5. add now tenants in the tenant manager
+
+Todo: have an ant task which will only load the seed data of the framework and the components requested.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 to automatically create a tenant demo systems:
 
 In the component itself:
