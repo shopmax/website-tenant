@@ -18,11 +18,9 @@
  *******************************************************************************/
 package org.ofbiz.tenant.tenant;
 
-import java.io.File;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.TimeZone;
 
 import javolution.util.FastList;
@@ -105,29 +103,22 @@ public class TenantServices {
         Delegator delegator = ctx.getDelegator();
         String tenantId = (String) context.get("tenantId");
         String readers = (String) context.get("readers");
+        String newReaders = null;
         String files = (String) context.get("files");
         
         try {
             // check if the tenant is used as demo
             String isDemo = EntityUtilProperties.getPropertyValue("tenant", "isDemo", "Y", delegator);
             if ("Y".equals(isDemo)) {
-                // if readers and files are empty then get readers from /data/DemoLoadData.txt file
                 if (UtilValidate.isEmpty(readers) && UtilValidate.isEmpty(files)) {
                     // get a reader from file
                     List<GenericValue> tenantComponents = delegator.findList("TenantComponent", EntityCondition.makeCondition("tenantId", tenantId), null, UtilMisc.toList("sequenceNum"), null, false);
                     if (UtilValidate.isNotEmpty(tenantComponents)) {
                         GenericValue tenantComponent = EntityUtil.getFirst(tenantComponents);
                         String componentName = tenantComponent.getString("componentName");
-                        String demoLoadDataPath = "component://" + componentName + "/data/DemoLoadData.txt";
-                        try {
-                            File demoLoadDataFile = FileUtil.getFile(demoLoadDataPath);
-                            Scanner scanner = new Scanner(demoLoadDataFile);
-                            while (scanner.hasNext()) {
-                                readers = scanner.nextLine();  
-                                break;
-                            }
-                        } catch (Exception e) {
-                            Debug.logWarning(e, "Could not read the " + demoLoadDataPath + " file", module);
+                        newReaders = EntityUtilProperties.getPropertyValue(componentName + "Demo", "demoLoadData", delegator);
+                        if (UtilValidate.isNotEmpty(newReaders)) {
+                        	readers = newReaders;
                         }
                     }
                 }
