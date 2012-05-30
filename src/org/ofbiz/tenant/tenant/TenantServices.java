@@ -109,20 +109,18 @@ public class TenantServices {
         try {
             // check if the tenant is used as demo
             String isDemo = EntityUtilProperties.getPropertyValue("tenant", "isDemo", "Y", delegator);
-            if ("Y".equals(isDemo)) {
-                if (UtilValidate.isEmpty(readers) && UtilValidate.isEmpty(files)) {
-                    // get a reader from file
-                    List<GenericValue> tenantComponents = delegator.findList("TenantComponent", EntityCondition.makeCondition("tenantId", tenantId), null, UtilMisc.toList("sequenceNum"), null, false);
-                    if (UtilValidate.isNotEmpty(tenantComponents)) {
-                        GenericValue tenantComponent = EntityUtil.getFirst(tenantComponents);
-                        String componentName = tenantComponent.getString("componentName");
-                        newReaders = EntityUtilProperties.getPropertyValue(componentName + "Demo", "demoLoadData", delegator);
-                        if (UtilValidate.isNotEmpty(newReaders)) {
-                        	readers = newReaders;
-                        }
+            if ("Y".equals(isDemo) && UtilValidate.isEmpty(readers) && UtilValidate.isEmpty(files)) {
+                // get a readers from the first componentDemo.properties file
+                List<GenericValue> tenantComponents = delegator.findList("TenantComponent", EntityCondition.makeCondition("tenantId", tenantId), null, UtilMisc.toList("sequenceNum"), null, false);
+                if (UtilValidate.isNotEmpty(tenantComponents)) {
+                    GenericValue tenantComponent = EntityUtil.getFirst(tenantComponents);
+                    String componentName = tenantComponent.getString("componentName");
+                    readers = EntityUtilProperties.getPropertyValue(componentName + "Demo", "demoLoadData", delegator);
+                }
+                if (UtilValidate.isEmpty(readers)) {
+                    readers = "seed,seed-initial,demo,ext,ext-demo,ext-test";  // load everything when not specified
                     }
                 }
-            }
             
             // if the reader or files exists then install data
             if (UtilValidate.isNotEmpty(readers) || UtilValidate.isNotEmpty(files)) {
