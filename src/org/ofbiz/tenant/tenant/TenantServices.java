@@ -147,7 +147,8 @@ public class TenantServices {
         } catch (Exception e) {
             String errMsg = "Could not install databases for tenant " + tenantId + " : " + e.getMessage();
             Debug.logError(e, errMsg, module);
-            return ServiceUtil.returnError(errMsg);
+            // do not return an error because it will block other correct tenants
+            //return ServiceUtil.returnError(errMsg);
         }
         return ServiceUtil.returnSuccess();
     }
