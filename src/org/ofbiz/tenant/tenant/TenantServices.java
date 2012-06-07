@@ -118,7 +118,7 @@ public class TenantServices {
                     readers = EntityUtilProperties.getPropertyValue(componentName + "Demo", "demoLoadData", delegator);
                 }
                 if (UtilValidate.isEmpty(readers)) {
-                    readers = "seed,seed-initial,demo,ext,ext-demo,ext-test";  // load everything when not specified
+                    readers = "security,seed,seed-initial,demo,ext,ext-demo,ext-test";  // load everything when not specified
                     }
                 }
             
