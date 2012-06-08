@@ -3,4 +3,5 @@
     <Person firstName="THE" lastName="ADMINISTRATOR" middleName="PRIVILEGED" partyId="admin" personalTitle="Mr."/>
     <UserLogin  userLoginId="admin" currentPassword="$SHA$CO07pMLK5Z7ai0$SCQfRYqFre31NswZbrs9KONON88" enabled="Y" hasLoggedOut="Y" partyId="admin" requirePasswordChange="N"/>
     <!-- password = aws455 -->
+    <UserLoginSecurityGroup fromDate="2001-01-01 12:00:00.0" groupId="FULLADMIN" userLoginId="admin"/>
 </entity-engine-xml>
