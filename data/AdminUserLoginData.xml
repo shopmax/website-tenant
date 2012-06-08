@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?><entity-engine-xml>
-    <PartyType partyTypeId="Person"/>
+    <PartyType partyTypeId="PERSON"/>
     <Party partyId="admin" partyTypeId="PERSON" statusId="PARTY_ENABLED"/>
     <Person firstName="THE" lastName="ADMINISTRATOR" middleName="PRIVILEGED" partyId="admin" personalTitle="Mr."/>
     <UserLogin  userLoginId="admin" currentPassword="$SHA$CO07pMLK5Z7ai0$SCQfRYqFre31NswZbrs9KONON88" enabled="Y" hasLoggedOut="Y" partyId="admin" requirePasswordChange="N"/>
