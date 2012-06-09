@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><entity-engine-xml>
     <PartyType partyTypeId="PERSON"/>
+    <StatusType statusTypeId="PARTY_STATUS"/>
     <StatusItem statusId="PARTY_ENABLED" statusTypeId="PARTY_STATUS"/>
     <Party partyId="admin" partyTypeId="PERSON" statusId="PARTY_ENABLED"/>
     <Person firstName="THE" lastName="ADMINISTRATOR" middleName="PRIVILEGED" partyId="admin" personalTitle="Mr."/>
