@@ -1,3 +1,6 @@
 #!/bin/sh
-mkdir runtime/tenants
+
+if [ ! -d "runtime/tenants" ] ; then
+	mkdir runtime/tenants
+fi
 
