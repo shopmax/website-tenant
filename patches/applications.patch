@@ -1,6 +1,6 @@
 Index: applications/product/src/org/ofbiz/product/product/ProductServices.java
 ===================================================================
---- applications/product/src/org/ofbiz/product/product/ProductServices.java	(revision 1352447)
+--- applications/product/src/org/ofbiz/product/product/ProductServices.java	(revision 1358058)
 +++ applications/product/src/org/ofbiz/product/product/ProductServices.java	(working copy)
 @@ -983,8 +983,13 @@
  
@@ -28,7 +28,7 @@ Index: applications/product/src/org/ofbiz/product/product/ProductServices.java
                  return ServiceUtil.returnError(UtilProperties.getMessage(resource, 
 Index: applications/product/src/org/ofbiz/product/image/ScaleImage.java
 ===================================================================
---- applications/product/src/org/ofbiz/product/image/ScaleImage.java	(revision 1352447)
+--- applications/product/src/org/ofbiz/product/image/ScaleImage.java	(revision 1358058)
 +++ applications/product/src/org/ofbiz/product/image/ScaleImage.java	(working copy)
 @@ -74,7 +74,7 @@
       * @throws  IOException                 Error prevents the document from being fully parsed
@@ -70,37 +70,9 @@ Index: applications/product/src/org/ofbiz/product/image/ScaleImage.java
          String imageUrlPrefix = UtilProperties.getPropertyValue("catalog", "image.url.prefix");
  
          String id = null;
-Index: applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/ImageUpload.groovy
-===================================================================
---- applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/ImageUpload.groovy	(revision 1352447)
-+++ applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/ImageUpload.groovy	(working copy)
-@@ -27,8 +27,13 @@
- 
- // make the image file formats
- imageFilenameFormat = UtilProperties.getPropertyValue('catalog', 'image.filename.format');
--imageServerPath = FlexibleStringExpander.expandString(UtilProperties.getPropertyValue("catalog", "image.server.path"), context);
- imageUrlPrefix = UtilProperties.getPropertyValue('catalog', 'image.url.prefix');
-+imageServerPath = null;
-+if (UtilValidate.isNotEmpty(delegator.getDelegatorTenantId())) {
-+    imageServerPath = System.getProperty("ofbiz.home") + File.separatorChar + "runtime" + File.separatorChar + "tenants" + File.separatorChar + delegator.getDelegatorTenantId() + File.separatorChar + "images";
-+} else {
-+    imageServerPath = FlexibleStringExpander.expandString(UtilProperties.getPropertyValue("catalog", "image.server.path"), context);
-+}
- context.imageFilenameFormat = imageFilenameFormat;
- context.imageServerPath = imageServerPath;
- context.imageUrlPrefix = imageUrlPrefix;
-@@ -126,7 +131,7 @@
- 
-             // call scaleImageInAllSize
-             if (fileType.equals("original")) {
--                result = ScaleImage.scaleImageInAllSize(context, filenameToUse, "main", "0");
-+                result = ScaleImage.scaleImageInAllSize(context, imageServerPath, filenameToUse, "main", "0");
- 
-                 if (result.containsKey("responseMessage") && result.get("responseMessage").equals("success")) {
-                     imgMap = result.get("imageUrlMap");
 Index: applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/SetDefaultImage.groovy
 ===================================================================
---- applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/SetDefaultImage.groovy	(revision 1352447)
+--- applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/SetDefaultImage.groovy	(revision 1358058)
 +++ applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/SetDefaultImage.groovy	(working copy)
 @@ -44,8 +44,13 @@
  
@@ -126,9 +98,37 @@ Index: applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/SetDe
  
                  if (result.containsKey("responseMessage") && result.get("responseMessage").equals("success")) {
                      imgMap = result.get("imageUrlMap");
+Index: applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/ImageUpload.groovy
+===================================================================
+--- applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/ImageUpload.groovy	(revision 1358058)
++++ applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/ImageUpload.groovy	(working copy)
+@@ -27,8 +27,13 @@
+ 
+ // make the image file formats
+ imageFilenameFormat = UtilProperties.getPropertyValue('catalog', 'image.filename.format');
+-imageServerPath = FlexibleStringExpander.expandString(UtilProperties.getPropertyValue("catalog", "image.server.path"), context);
+ imageUrlPrefix = UtilProperties.getPropertyValue('catalog', 'image.url.prefix');
++imageServerPath = null;
++if (UtilValidate.isNotEmpty(delegator.getDelegatorTenantId())) {
++    imageServerPath = System.getProperty("ofbiz.home") + File.separatorChar + "runtime" + File.separatorChar + "tenants" + File.separatorChar + delegator.getDelegatorTenantId() + File.separatorChar + "images";
++} else {
++    imageServerPath = FlexibleStringExpander.expandString(UtilProperties.getPropertyValue("catalog", "image.server.path"), context);
++}
+ context.imageFilenameFormat = imageFilenameFormat;
+ context.imageServerPath = imageServerPath;
+ context.imageUrlPrefix = imageUrlPrefix;
+@@ -126,7 +131,7 @@
+ 
+             // call scaleImageInAllSize
+             if (fileType.equals("original")) {
+-                result = ScaleImage.scaleImageInAllSize(context, filenameToUse, "main", "0");
++                result = ScaleImage.scaleImageInAllSize(context, imageServerPath, filenameToUse, "main", "0");
+ 
+                 if (result.containsKey("responseMessage") && result.get("responseMessage").equals("success")) {
+                     imgMap = result.get("imageUrlMap");
 Index: applications/product/webapp/catalog/WEB-INF/actions/product/EditProductContent.groovy
 ===================================================================
---- applications/product/webapp/catalog/WEB-INF/actions/product/EditProductContent.groovy	(revision 1352447)
+--- applications/product/webapp/catalog/WEB-INF/actions/product/EditProductContent.groovy	(revision 1358058)
 +++ applications/product/webapp/catalog/WEB-INF/actions/product/EditProductContent.groovy	(working copy)
 @@ -26,8 +26,13 @@
  

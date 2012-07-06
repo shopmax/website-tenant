@@ -48,11 +48,13 @@ public class TenantJavaMailContainer implements Container {
     
     public final static String module = TenantJavaMailContainer.class.getName();
     
+    protected String name = null;
     protected String configFile = null;
 
     @Override
-    public void init(String[] args, String configFile)
+    public void init(String[] args, String name, String configFile)
             throws ContainerException {
+        this.name = name;
         this.configFile = configFile;
     }
 
@@ -128,4 +130,8 @@ public class TenantJavaMailContainer implements Container {
         
     }
 
+    @Override
+    public String getName() {
+        return name;
+    }
 }

@@ -43,4 +43,9 @@
         location="webapp/tenantmgr"
         base-permission="OFBTOOLS,TENANTMGR"
         mount-point="/tenantmgr"/>
+        
+    <container name="tenant-javamail-container" loaders="main" class="org.ofbiz.tenant.mail.TenantJavaMailContainer">
+        <property name="delegator-name" value="default"/>
+        <property name="dispatcher-name" value="TenantJavaMailDispatcher"/>
+    </container>
 </ofbiz-component>
