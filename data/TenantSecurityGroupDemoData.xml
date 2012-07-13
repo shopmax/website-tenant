@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <entity-engine-xml>
-    <SecurityPermission description="View operations in the Tenant Component." permissionId="TENANTMGR_VIEW"/>
-    <SecurityPermission description="Create operations in the Tenant Component." permissionId="TENANTMGR_CREATE"/>
-    <SecurityPermission description="Update operations in the Tenant Component." permissionId="TENANTMGR_UPDATE"/>
-    <SecurityPermission description="Delete operations in the Tenant Component." permissionId="TENANTMGR_DELETE"/>
-    <SecurityPermission description="ALL operations in the Tenant Component." permissionId="TENANTMGR_ADMIN"/>
     <SecurityGroupPermission groupId="FULLADMIN" permissionId="TENANTMGR_ADMIN"/>
     <SecurityGroupPermission groupId="FLEXADMIN" permissionId="TENANTMGR_CREATE"/>
     <SecurityGroupPermission groupId="FLEXADMIN" permissionId="TENANTMGR_DELETE"/>
