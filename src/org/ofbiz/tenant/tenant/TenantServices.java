@@ -129,7 +129,7 @@ public class TenantServices {
                 }
                 
                 // load data
-                String configFile = FileUtil.getFile("component://base/config/install-containers.xml").getAbsolutePath();
+                String configFile = FileUtil.getFile("component://base/config/ofbiz-containers.xml").getAbsolutePath();
                 String delegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
                 List<String> argList = FastList.newInstance();
                 argList.add("-delegator=" + delegatorName);
