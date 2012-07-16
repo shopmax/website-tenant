@@ -141,7 +141,7 @@ public class TenantServices {
                 }
                 String[] args = argList.toArray(new String[argList.size()]);
                 EntityDataLoadContainer entityDataLoadContainer = new EntityDataLoadContainer();
-                entityDataLoadContainer.init(args, entityDataLoadContainer.getName(), configFile);
+                entityDataLoadContainer.init(args, "dataload-container", configFile);
                 entityDataLoadContainer.start();
             }
         } catch (Exception e) {
