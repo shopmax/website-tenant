@@ -34,9 +34,9 @@ import org.ofbiz.entity.DelegatorFactory;
 import org.ofbiz.entity.GenericEntityException;
 import org.ofbiz.entity.GenericValue;
 import org.ofbiz.entity.util.EntityUtilProperties;
-import org.ofbiz.service.GenericDispatcher;
 import org.ofbiz.service.GenericServiceException;
 import org.ofbiz.service.LocalDispatcher;
+import org.ofbiz.service.ServiceContainer;
 import org.ofbiz.tenant.util.TenantUtil;
 
 /**
@@ -64,7 +64,7 @@ public class TenantJavaMailContainer implements Container {
         String delegatorName = ContainerConfig.getPropertyValue(cfg, "delegator-name", "default");
         String dispatcherName = ContainerConfig.getPropertyValue(cfg, "dispatcher-name", "TenantJavaMailDispatcher");
         Delegator delegator = DelegatorFactory.getDelegator(delegatorName);
-        LocalDispatcher dispatcher = GenericDispatcher.getLocalDispatcher(dispatcherName, delegator);
+        LocalDispatcher dispatcher = ServiceContainer.getLocalDispatcher(dispatcherName, delegator);
         
         try {
             GenericValue systemUserLogin = delegator.findOne("UserLogin", UtilMisc.toMap("userLoginId", "system"), false);

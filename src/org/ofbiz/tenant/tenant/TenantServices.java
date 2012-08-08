@@ -45,9 +45,9 @@ import org.ofbiz.entity.util.EntityUtil;
 import org.ofbiz.entity.util.EntityUtilProperties;
 import org.ofbiz.entityext.data.EntityDataLoadContainer;
 import org.ofbiz.service.DispatchContext;
-import org.ofbiz.service.GenericDispatcher;
 import org.ofbiz.service.GenericServiceException;
 import org.ofbiz.service.LocalDispatcher;
+import org.ofbiz.service.ServiceContainer;
 import org.ofbiz.service.ServiceUtil;
 import org.ofbiz.tenant.jdbc.TenantConnectionFactory;
 import org.ofbiz.tenant.jdbc.TenantJdbcConnectionHandler;
@@ -420,7 +420,7 @@ public class TenantServices {
             String tenantDelegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
             String tenantDispatcherName = dispatcher.getName() + "#" + tenantId;
             Delegator tenantDelegator = DelegatorFactory.getDelegator(tenantDelegatorName);
-            LocalDispatcher tenantDispatcher = GenericDispatcher.getLocalDispatcher(tenantDispatcherName, tenantDelegator);
+            LocalDispatcher tenantDispatcher = ServiceContainer.getLocalDispatcher(tenantDispatcherName, tenantDelegator);
             
             Map<String, Object> serviceResults = null;
             if (isAsync) {

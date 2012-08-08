@@ -1,6 +1,6 @@
 Index: applications/product/src/org/ofbiz/product/product/ProductServices.java
 ===================================================================
---- applications/product/src/org/ofbiz/product/product/ProductServices.java	(revision 1362889)
+--- applications/product/src/org/ofbiz/product/product/ProductServices.java	(revision 1370714)
 +++ applications/product/src/org/ofbiz/product/product/ProductServices.java	(working copy)
 @@ -983,8 +983,13 @@
  
@@ -28,7 +28,7 @@ Index: applications/product/src/org/ofbiz/product/product/ProductServices.java
                  return ServiceUtil.returnError(UtilProperties.getMessage(resource, 
 Index: applications/product/src/org/ofbiz/product/image/ScaleImage.java
 ===================================================================
---- applications/product/src/org/ofbiz/product/image/ScaleImage.java	(revision 1362889)
+--- applications/product/src/org/ofbiz/product/image/ScaleImage.java	(revision 1370714)
 +++ applications/product/src/org/ofbiz/product/image/ScaleImage.java	(working copy)
 @@ -74,7 +74,7 @@
       * @throws  IOException                 Error prevents the document from being fully parsed
@@ -72,7 +72,7 @@ Index: applications/product/src/org/ofbiz/product/image/ScaleImage.java
          String id = null;
 Index: applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/SetDefaultImage.groovy
 ===================================================================
---- applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/SetDefaultImage.groovy	(revision 1362889)
+--- applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/SetDefaultImage.groovy	(revision 1370714)
 +++ applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/SetDefaultImage.groovy	(working copy)
 @@ -44,8 +44,13 @@
  
@@ -100,7 +100,7 @@ Index: applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/SetDe
                      imgMap = result.get("imageUrlMap");
 Index: applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/ImageUpload.groovy
 ===================================================================
---- applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/ImageUpload.groovy	(revision 1362889)
+--- applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/ImageUpload.groovy	(revision 1370714)
 +++ applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/ImageUpload.groovy	(working copy)
 @@ -27,8 +27,13 @@
  
@@ -128,7 +128,7 @@ Index: applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/Image
                      imgMap = result.get("imageUrlMap");
 Index: applications/product/webapp/catalog/WEB-INF/actions/product/EditProductContent.groovy
 ===================================================================
---- applications/product/webapp/catalog/WEB-INF/actions/product/EditProductContent.groovy	(revision 1362889)
+--- applications/product/webapp/catalog/WEB-INF/actions/product/EditProductContent.groovy	(revision 1370714)
 +++ applications/product/webapp/catalog/WEB-INF/actions/product/EditProductContent.groovy	(working copy)
 @@ -26,8 +26,13 @@
  
