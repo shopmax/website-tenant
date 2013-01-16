@@ -109,7 +109,8 @@ public class TenantServices {
         try {
             // check if the tenant is used as demo
             String isDemo = EntityUtilProperties.getPropertyValue("tenant", "isDemo", "Y", delegator);
-            if ("Y".equals(isDemo) && UtilValidate.isEmpty(readers) && UtilValidate.isEmpty(files)) {
+            if ("Y".equals(isDemo) && UtilValidate.isEmpty(readers)
+                    && UtilValidate.isEmpty(files) && UtilValidate.isEmpty(delegator.getDelegatorTenantId())) {
                 // get a readers from the first componentDemo.properties file
                 List<GenericValue> tenantComponents = delegator.findList("TenantComponent", EntityCondition.makeCondition("tenantId", tenantId), null, UtilMisc.toList("sequenceNum"), null, false);
                 if (UtilValidate.isNotEmpty(tenantComponents)) {
@@ -119,8 +120,11 @@ public class TenantServices {
                 }
                 if (UtilValidate.isEmpty(readers)) {
                     readers = "security,seed,seed-initial,demo,ext,ext-demo,ext-test";  // load everything when not specified
-                    }
                 }
+            } else if (UtilValidate.isEmpty(readers)
+                    && UtilValidate.isNotEmpty(delegator.getDelegatorTenantId())) { // load only 'seed' if no readers but tenant exists
+                readers = "seed";
+            }
             
             // if the reader or files exists then install data
             if (UtilValidate.isNotEmpty(readers) || UtilValidate.isNotEmpty(files)) {
