@@ -152,12 +152,6 @@
         <implements service="createUserLogin"/>
         <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
     </service>
-    <service name="addUserLoginToSecurityGroupForTenant" default-entity-name="UserLoginSecurityGroup" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
-        invoke="addUserLoginToSecurityGroupForTenant" auth="true" use-transaction="false">
-        <description>Add user login to security group for tenant</description>
-        <implements service="addUserLoginToSecurityGroup"/>
-        <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
-    </service>
     <service name="updateUserLoginToSecurityGroupForTenant" default-entity-name="UserLoginSecurityGroup" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
         invoke="updateUserLoginToSecurityGroupForTenant" auth="true" use-transaction="false">
         <description>Update user login to security group for tenant</description>

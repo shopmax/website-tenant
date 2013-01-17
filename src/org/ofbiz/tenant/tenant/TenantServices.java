@@ -284,46 +284,6 @@ public class TenantServices {
     }
 
     /**
-     * add user login to security group for tenant
-     * @param ctx
-     * @param context
-     * @return
-     */
-    public static Map<String, Object> addUserLoginToSecurityGroupForTenant(DispatchContext ctx, Map<String, Object> context) {
-        LocalDispatcher dispatcher = ctx.getDispatcher();
-        Locale locale = (Locale) context.get("locale");
-        TimeZone timeZone = (TimeZone) context.get("timeZone");
-        GenericValue userLogin = (GenericValue) context.get("userLogin");
-        String tenantId = (String) context.get("tenantId");
-        
-        Map<String, Object> toContext = FastMap.newInstance();
-        
-        // set addUserLoginToSecurityGroup service fields
-        String serviceName = "addUserLoginToSecurityGroup";
-        Map<String, Object> setServiceFieldsResults = TenantUtil.setServiceFields(serviceName, context, toContext, timeZone, locale, dispatcher);
-        
-        if (!ServiceUtil.isError(setServiceFieldsResults)) {
-            // run addUserLoginToSecurityGroup service
-            try {
-                Map<String, Object> runTenantServiceInMap = FastMap.newInstance();
-                runTenantServiceInMap.put("tenantId", tenantId);
-                runTenantServiceInMap.put("serviceName", serviceName);
-                runTenantServiceInMap.put("serviceParameters", toContext);
-                runTenantServiceInMap.put("isAsync", Boolean.FALSE);
-                runTenantServiceInMap.put("userLogin", userLogin);
-                Map<String, Object> results = dispatcher.runSync("runTenantService", runTenantServiceInMap);
-                Map<String, Object> serviceResults = UtilGenerics.cast(results.get("serviceResults"));
-                return serviceResults;
-            } catch (Exception e) {
-                Debug.logError(e, module);
-                return ServiceUtil.returnError(e.getMessage());
-            }
-        } else {
-            return setServiceFieldsResults;
-        }
-    }
-
-    /**
      * remove user login to security group for tenant
      * @param ctx
      * @param context
