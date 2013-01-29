@@ -73,5 +73,11 @@
                 <parameter param-name="tenantId" from-field="tenant.tenantId"/>
             </link>
         </menu-item>
+        <menu-item name="recreateTenantDatabases" title="${uiLabelMap.TenantRecreateDatabases}">
+            <condition><not><if-empty field="tenant"/></not></condition>
+            <link target="recreateTenantDatabases" confirmation-message="${uiLabelMap.TenantRecreateDatabasesConfirmationMessage}">
+                <parameter param-name="tenantId" from-field="tenant.tenantId"/>
+            </link>
+        </menu-item>
     </menu>
 </menus>

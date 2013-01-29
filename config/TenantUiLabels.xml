@@ -76,4 +76,10 @@
     <property key="TenantMailListener">
         <value xml:lang="en">Mail Listener</value>
     </property>
+    <property key="TenantRecreateDatabases">
+        <value xml:lang="en">Recreate Databases</value>
+    </property>
+    <property key="TenantRecreateDatabasesConfirmationMessage">
+        <value xml:lang="en">Are you sure to recreate databases?</value>
+    </property>
 </resource>

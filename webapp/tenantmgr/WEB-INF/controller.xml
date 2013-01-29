@@ -31,6 +31,7 @@
     <request-map uri="EditTenantInstallation"><security https="true" auth="true"/><response name="success" type="view" value="EditTenantInstallation"/></request-map>
     <request-map uri="EditMailListener"><security https="true" auth="true"/><response name="success" type="view" value="EditMailListener"/></request-map>
     
+    <!-- Tenant -->
     <request-map uri="createTenant">
         <security https="true" auth="true"/>
         <event type="service" invoke="createTenant"/>
@@ -47,6 +48,12 @@
         <security https="true" auth="true"/>
         <event type="service" invoke="deleteTenant"/>
         <response name="success" type="request-redirect-noparam" value="FindTenant"/>
+        <response name="error" type="view-last" value="FindTenant"/>
+    </request-map>
+    <request-map uri="recreateTenantDatabases">
+        <security https="true" auth="true"/>
+        <event type="service" invoke="recreateTenantDatabases"/>
+        <response name="success" type="view-last" value="FindTenant"/>
         <response name="error" type="view-last" value="FindTenant"/>
     </request-map>
     
