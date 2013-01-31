@@ -127,11 +127,18 @@ public abstract class TenantJdbcConnectionHandler {
      */
     public abstract String getDatabaseName();
     
+    public void createDatabase() throws GenericEntityException, SQLException {
+        Delegator delegator = tenantDataSource.getDelegator();
+        GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
+        helperInfo.setTenantId(this.getTenantId());
+        doCreateDatabase(helperInfo);
+    }
+    
     /**
      * delete database
      * @return
      */
-    public void deleteDatabase(String databaseName) throws GenericEntityException, SQLException {
+    public void deleteDatabase() throws GenericEntityException, SQLException {
         Delegator delegator = tenantDataSource.getDelegator();
         GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
         helperInfo.setTenantId(this.getTenantId());
@@ -147,18 +154,20 @@ public abstract class TenantJdbcConnectionHandler {
         if (UtilValidate.isNotEmpty(xacf)) {
             TransactionRegistry transactionRegistry = xacf.getTransactionRegistry();
             TransactionContext transactionContext = transactionRegistry.getActiveTransactionContext();
-            PoolableConnection sharedConnection = (PoolableConnection) transactionContext.getSharedConnection();
-            
-            try {
-                pool.returnObject(sharedConnection);
-                pool.clear();
-            } catch (Exception e) {
-                Debug.logError(e, module);
+            if (UtilValidate.isNotEmpty(transactionContext)) {
+                PoolableConnection sharedConnection = (PoolableConnection) transactionContext.getSharedConnection();
+                
+                try {
+                    pool.returnObject(sharedConnection);
+                    pool.clear();
+                } catch (Exception e) {
+                    Debug.logError(e, module);
+                }
             }
         }
         
         // do delete database
-        doDeleteDatabase(databaseName, helperInfo);
+        doDeleteDatabase(helperInfo);
         
         // remove delegator
         String tenantDelegatorName = delegator.getDelegatorBaseName() + "#" + this.getTenantId();
@@ -168,11 +177,20 @@ public abstract class TenantJdbcConnectionHandler {
         managedConnectionFactory.removeConnection(helperInfo);
     }
     
+    public void copyDatabase(String newDatabaseName) throws GenericEntityException, SQLException {
+        Delegator delegator = tenantDataSource.getDelegator();
+        GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
+        helperInfo.setTenantId(this.getTenantId());
+        doCopyDatabase(newDatabaseName, helperInfo);
+    }
+    
     public boolean isExist() {
         return isExist;
     }
-    
-    protected abstract void doDeleteDatabase(String databaseName, GenericHelperInfo helperInfo) throws GenericEntityException, SQLException;
+
+    protected abstract void doCreateDatabase(GenericHelperInfo helperInfo) throws GenericEntityException, SQLException;
+    protected abstract void doDeleteDatabase(GenericHelperInfo helperInfo) throws GenericEntityException, SQLException;
+    protected abstract void doCopyDatabase(String newDatabaseName, GenericHelperInfo helperInfo) throws GenericEntityException, SQLException;
     
     protected abstract String getJdbcServerName();
 }

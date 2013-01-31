@@ -26,7 +26,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.ofbiz.base.util.Debug;
-import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.GenericEntityException;
 import org.ofbiz.entity.GenericValue;
@@ -119,14 +118,27 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
         }
         return databaseName;
     }
+    
+    @Override
+    protected void doCreateDatabase(GenericHelperInfo helperInfo)
+            throws GenericEntityException, SQLException {
+        
+    }
 
     @Override
-    protected void doDeleteDatabase(String databaseName, GenericHelperInfo helperInfo) throws GenericEntityException, SQLException {
+    protected void doDeleteDatabase(GenericHelperInfo helperInfo) throws GenericEntityException, SQLException {
         Connection conn = ConnectionFactory.getConnection(this.getPostgresJdbcUri(), this.getJdbcUsername(), this.getJdbcPassword());
         SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, conn);
         sqlProcessor.executeUpdate("DROP DATABASE \"" + this.getDatabaseName() + "\"");
         sqlProcessor.close();
         conn.close();
+    }
+    
+    @Override
+    protected void doCopyDatabase(String newDatabaseName,
+            GenericHelperInfo helperInfo) throws GenericEntityException,
+            SQLException {
+        
     }
     
     protected String getPostgresJdbcUri() {

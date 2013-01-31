@@ -47,9 +47,9 @@
         <description>Delete a Tenant</description>
         <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
     </service>
-    <service name="recreateTenantDatabases" default-entity-name="Tenant" engine="simple" location="component://tenant/script/org/ofbiz/tenant/tenant/TenantServices.xml"
-        invoke="recreateTenantDatabases" auth="true">
-        <description>Recreate tenant databases</description>
+    <service name="recreateTenantDataSourceDbs" default-entity-name="Tenant" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
+        invoke="recreateTenantDataSourceDbs" auth="true" use-transaction="false">
+        <description>Recreate tenant data source databases</description>
         <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
     </service>
     
@@ -148,7 +148,7 @@
         <attribute name="entityGroupName" mode="IN" type="String" optional="false"></attribute>
     </service>
     <service name="deleteTenantDataSourceDbs" default-entity-name="Tenant" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
-        invoke="deleteTenantDataSourcesDb" auth="true" use-transaction="false">
+        invoke="deleteTenantDataSourceDbs" auth="true" use-transaction="false">
         <description>Delete a tenant data sources</description>
         <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
     </service>

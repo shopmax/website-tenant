@@ -52,7 +52,7 @@
     </request-map>
     <request-map uri="recreateTenantDatabases">
         <security https="true" auth="true"/>
-        <event type="service" invoke="recreateTenantDatabases"/>
+        <event type="service" invoke="recreateTenantDataSourceDbs"/>
         <response name="success" type="view-last" value="FindTenant"/>
         <response name="error" type="view-last" value="FindTenant"/>
     </request-map>

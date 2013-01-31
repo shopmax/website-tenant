@@ -173,7 +173,7 @@ public class TenantServices {
             results.put("isExist", connectionHandler.isExist());
             return results;
         } catch (Exception e) {
-            String errMsg = "Could not install databases for tenant " + tenantId + " : " + e.getMessage();
+            String errMsg = "Could not install databases for tenant '" + tenantId + "' with entity group name '" + entityGroupName + "' : " + e.getMessage();
             Debug.logError(e, errMsg, module);
             return ServiceUtil.returnError(errMsg);
         }
@@ -192,8 +192,7 @@ public class TenantServices {
         
         try {
             TenantJdbcConnectionHandler connectionHandler = TenantConnectionFactory.getTenantJdbcConnectionHandler(tenantId, entityGroupName, delegator);
-            String databaseName = connectionHandler.getDatabaseName();
-            connectionHandler.deleteDatabase(databaseName);
+            connectionHandler.deleteDatabase();
         } catch (Exception e) {
             String errMsg = "Could not delete a database for tenant " + tenantId + " with entity group name : " + entityGroupName + " : " + e.getMessage();
             Debug.logError(e, errMsg, module);
@@ -241,6 +240,32 @@ public class TenantServices {
             return ServiceUtil.returnError(errMsg);
         }
         return ServiceUtil.returnSuccess();
+    }
+    
+    public static Map<String, Object> recreateTenantDataSourceDbs(DispatchContext ctx, Map<String, Object> context) {
+        Delegator delegator = ctx.getDelegator();
+        LocalDispatcher dispatcher = ctx.getDispatcher();
+        GenericValue userLogin = (GenericValue) context.get("userLogin");
+        String tenantId = (String) context.get("tenantId");
+
+        try {
+            TenantJdbcConnectionHandler orgOfbizConnectionHandler = TenantConnectionFactory.getTenantJdbcConnectionHandler(tenantId, "org.ofbiz", delegator);
+            TenantJdbcConnectionHandler orgOfbizOlapConnectionHandler = TenantConnectionFactory.getTenantJdbcConnectionHandler(tenantId, "org.ofbiz.olap", delegator);
+            
+            // delete databases
+            orgOfbizConnectionHandler.deleteDatabase();
+            orgOfbizOlapConnectionHandler.deleteDatabase();
+            
+            // create databases
+            orgOfbizConnectionHandler.createDatabase();
+            orgOfbizOlapConnectionHandler.createDatabase();
+
+            return ServiceUtil.returnSuccess();
+        } catch (Exception e) {
+            String errMsg = "Could not delete databases for tenant " + tenantId + " : " + e.getMessage();
+            Debug.logError(e, errMsg, module);
+            return ServiceUtil.returnError(errMsg);
+        }
     }
 
     /**

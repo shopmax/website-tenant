@@ -83,13 +83,30 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
         }
         return databaseName;
     }
+    
+    @Override
+    protected void doCreateDatabase(GenericHelperInfo helperInfo)
+            throws GenericEntityException, SQLException {
+        Debug.logInfo("Create database: " + this.getJdbcUri(), module);
+        Connection connection = ConnectionFactory.getConnection(this.getJdbcUri(), this.getJdbcUsername(), this.getJdbcPassword());
+        SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, connection);
+        sqlProcessor.close();
+    }
 
     @Override
-    public void doDeleteDatabase(String databaseName, GenericHelperInfo helperInfo) throws GenericEntityException, SQLException {
+    protected void doDeleteDatabase(GenericHelperInfo helperInfo) throws GenericEntityException, SQLException {
         File databaseDir = new File(System.getProperty("ofbiz.home") + File.separator + "runtime" + File.separator + "data"
             + File.separator + "derby" + File.separator + this.getDatabaseName());
         if (databaseDir.exists()) {
+            Debug.logInfo("Delete database dirctory: " + databaseDir, module);
             TenantUtil.deleteDirectory(databaseDir);
         }
+    }
+    
+    @Override
+    protected void doCopyDatabase(String newDatabaseName,
+            GenericHelperInfo helperInfo) throws GenericEntityException,
+            SQLException {
+        
     }
 }
