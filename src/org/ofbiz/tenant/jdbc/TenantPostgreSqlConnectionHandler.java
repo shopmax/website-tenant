@@ -141,6 +141,13 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
         
     }
     
+    @Override
+    protected String doExportAsTextFileContent() throws GenericEntityException,
+            SQLException {
+        String contentId = null;
+        return contentId;
+    }
+    
     protected String getPostgresJdbcUri() {
         return "jdbc:postgresql://" + this.getJdbcServerName() + "/postgres";
     }

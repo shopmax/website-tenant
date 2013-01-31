@@ -53,60 +53,6 @@ under the License.
         <!-- Delete a tenant -->
         <remove-value value-field="tenant"/>
     </simple-method>
-    <simple-method method-name="recreateTenantDatabases" short-description="Recreate tenant databases">
-        <!-- Find tenant data sources -->
-        <!-- org.ofbiz -->
-        <entity-one value-field="orgOfbizDataSource" entity-name="TenantDataSource">
-            <field-map field-name="tenantId" from-field="parameters.tenantId"/>
-            <field-map field-name="entityGroupName" value="org.ofbiz"/>
-        </entity-one>
-        <!-- org.ofbiz.olap -->
-        <entity-one value-field="orgOfbizOlapDataSource" entity-name="TenantDataSource">
-            <field-map field-name="tenantId" from-field="parameters.tenantId"/>
-            <field-map field-name="entityGroupName" value="org.ofbiz.olap"/>
-        </entity-one>
-        
-        <!-- Delete tenant data sources -->
-        <!-- org.ofbiz -->
-        <if-not-empty field="orgOfbizDataSource">
-            <set field="deleteOrgOfbizDataSourceInMap.tenantId" from-field="orgOfbizDataSource.tenantId"/>
-            <set field="deleteOrgOfbizDataSourceInMap.entityGroupName" from-field="orgOfbizDataSource.entityGroupName"/>
-            <call-service service-name="deleteTenantDataSource" in-map-name="deleteOrgOfbizDataSourceInMap"/>
-        </if-not-empty>
-        
-        <!-- wait for awhile -->
-        <script>groovy:
-            Thread.sleep(5000);
-        </script>
-        
-        <!-- org.ofbiz.olap -->
-        <if-not-empty field="orgOfbizOlapDataSource">
-            <set field="deleteOrgOfbizOlapDataSourceInMap.tenantId" from-field="orgOfbizOlapDataSource.tenantId"/>
-            <set field="deleteOrgOfbizOlapDataSourceInMap.entityGroupName" from-field="orgOfbizOlapDataSource.entityGroupName"/>
-            <call-service service-name="deleteTenantDataSource" in-map-name="deleteOrgOfbizOlapDataSourceInMap"/>
-        </if-not-empty>
-        
-        <!-- org.ofbiz -->
-        <set field="createOrgOfbizDataSourceInMap.tenantId" from-field="orgOfbizDataSource.tenantId"/>
-        <set field="createOrgOfbizDataSourceInMap.entityGroupName" from-field="orgOfbizDataSource.entityGroupName"/>
-        <set field="createOrgOfbizDataSourceInMap.jdbcUri" from-field="orgOfbizDataSource.jdbcUri"/>
-        <set field="createOrgOfbizDataSourceInMap.jdbcUsername" from-field="orgOfbizDataSource.jdbcUsername"/>
-        <set field="createOrgOfbizDataSourceInMap.jdbcPassword" from-field="orgOfbizDataSource.jdbcPassword"/>
-        <call-service service-name="createTenantDataSource" in-map-name="createOrgOfbizDataSourceInMap"/>
-        
-        <!-- wait for awhile -->
-        <script>groovy:
-            Thread.sleep(5000);
-        </script>
-        
-        <!-- org.ofbiz.olap -->
-        <set field="createOrgOfbizOlapDataSourceInMap.tenantId" from-field="orgOfbizOlapDataSource.tenantId"/>
-        <set field="createOrgOfbizOlapDataSourceInMap.entityGroupName" from-field="orgOfbizOlapDataSource.entityGroupName"/>
-        <set field="createOrgOfbizOlapDataSourceInMap.jdbcUri" from-field="orgOfbizOlapDataSource.jdbcUri"/>
-        <set field="createOrgOfbizOlapDataSourceInMap.jdbcUsername" from-field="orgOfbizOlapDataSource.jdbcUsername"/>
-        <set field="createOrgOfbizOlapDataSourceInMap.jdbcPassword" from-field="orgOfbizOlapDataSource.jdbcPassword"/>
-        <call-service service-name="createTenantDataSource" in-map-name="createOrgOfbizOlapDataSourceInMap"/>
-    </simple-method>
     
     <!-- Tenant Domain Name -->
     <simple-method method-name="createTenantDomainName" short-description="Create a Tenant Domain Name">

@@ -184,6 +184,10 @@ public abstract class TenantJdbcConnectionHandler {
         doCopyDatabase(newDatabaseName, helperInfo);
     }
     
+    public String exportAsTextFileContent() throws GenericEntityException, SQLException {
+        return doExportAsTextFileContent();
+    }
+    
     public boolean isExist() {
         return isExist;
     }
@@ -191,6 +195,7 @@ public abstract class TenantJdbcConnectionHandler {
     protected abstract void doCreateDatabase(GenericHelperInfo helperInfo) throws GenericEntityException, SQLException;
     protected abstract void doDeleteDatabase(GenericHelperInfo helperInfo) throws GenericEntityException, SQLException;
     protected abstract void doCopyDatabase(String newDatabaseName, GenericHelperInfo helperInfo) throws GenericEntityException, SQLException;
+    protected abstract String doExportAsTextFileContent() throws GenericEntityException, SQLException;
     
     protected abstract String getJdbcServerName();
 }

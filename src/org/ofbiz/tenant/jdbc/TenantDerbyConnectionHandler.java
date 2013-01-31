@@ -109,4 +109,11 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
             SQLException {
         
     }
+    
+    @Override
+    protected String doExportAsTextFileContent() throws GenericEntityException,
+            SQLException {
+        String contentId = null;
+        return contentId;
+    }
 }
