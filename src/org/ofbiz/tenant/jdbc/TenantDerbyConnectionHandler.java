@@ -31,7 +31,6 @@ import org.ofbiz.entity.GenericValue;
 import org.ofbiz.entity.datasource.GenericHelperInfo;
 import org.ofbiz.entity.jdbc.ConnectionFactory;
 import org.ofbiz.entity.jdbc.SQLProcessor;
-import org.ofbiz.tenant.jdbc.TenantJdbcConnectionHandler;
 import org.ofbiz.tenant.util.TenantUtil;
 
 /**
@@ -88,9 +87,6 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
     protected void doCreateDatabase(GenericHelperInfo helperInfo)
             throws GenericEntityException, SQLException {
         Debug.logInfo("Create database: " + this.getJdbcUri(), module);
-        Connection connection = ConnectionFactory.getConnection(this.getJdbcUri(), this.getJdbcUsername(), this.getJdbcPassword());
-        SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, connection);
-        sqlProcessor.close();
     }
 
     @Override

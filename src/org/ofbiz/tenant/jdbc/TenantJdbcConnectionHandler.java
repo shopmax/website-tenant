@@ -18,7 +18,10 @@
  *******************************************************************************/
 package org.ofbiz.tenant.jdbc;
 
+import java.sql.Connection;
 import java.sql.SQLException;
+
+import javax.transaction.xa.XAResource;
 
 import org.apache.commons.dbcp.PoolableConnection;
 import org.apache.commons.dbcp.managed.TransactionContext;
@@ -131,6 +134,19 @@ public abstract class TenantJdbcConnectionHandler {
         Delegator delegator = tenantDataSource.getDelegator();
         GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
         helperInfo.setTenantId(this.getTenantId());
+        DatasourceInfo datasourceInfo = EntityConfigUtil.getDatasourceInfo(helperInfo.getHelperBaseName());
+        datasourceInfo.inlineJdbcElement.setAttribute("jdbc-uri", this.getJdbcUri());
+
+        // register connection
+        DBCPConnectionFactory managedConnectionFactory = (DBCPConnectionFactory) ConnectionFactory.getManagedConnectionFactory();
+        XAConnectionFactory xacf = managedConnectionFactory.getXAConnectionFactory(helperInfo);
+        if (UtilValidate.isNotEmpty(xacf)) {
+            Connection connection = xacf.createConnection();
+            TransactionRegistry transactionRegistry = xacf.getTransactionRegistry();
+            XAResource xaResource = transactionRegistry.getXAResource(connection);
+            transactionRegistry.registerConnection(connection, xaResource);
+        }
+        
         doCreateDatabase(helperInfo);
     }
     

@@ -259,6 +259,17 @@ public class TenantServices {
             // create databases
             orgOfbizConnectionHandler.createDatabase();
             orgOfbizOlapConnectionHandler.createDatabase();
+            
+            // install database
+            String delegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
+            String configFile = FileUtil.getFile("component://base/config/ofbiz-containers.xml").getAbsolutePath();
+            List<String> argList = FastList.newInstance();
+            argList.add("-delegator=" + delegatorName);
+            argList.add("-readers=seed");
+            String[] args = argList.toArray(new String[argList.size()]);
+            EntityDataLoadContainer entityDataLoadContainer = new EntityDataLoadContainer();
+            entityDataLoadContainer.init(args, "dataload-container", configFile);
+            entityDataLoadContainer.start();
 
             return ServiceUtil.returnSuccess();
         } catch (Exception e) {
