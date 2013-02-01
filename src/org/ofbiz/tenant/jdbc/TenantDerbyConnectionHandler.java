@@ -116,4 +116,10 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
         String contentId = null;
         return contentId;
     }
+    
+    @Override
+    protected void doRestoreDatabase(String contentId)
+            throws GenericEntityException, SQLException {
+        
+    }
 }

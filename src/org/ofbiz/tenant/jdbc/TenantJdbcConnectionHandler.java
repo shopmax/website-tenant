@@ -188,6 +188,10 @@ public abstract class TenantJdbcConnectionHandler {
         return doExportAsTextFileContent();
     }
     
+    public void restoreDatabase(String contentId) throws GenericEntityException, SQLException {
+        doRestoreDatabase(contentId);
+    }
+    
     public boolean isExist() {
         return isExist;
     }
@@ -196,6 +200,7 @@ public abstract class TenantJdbcConnectionHandler {
     protected abstract void doDeleteDatabase(GenericHelperInfo helperInfo) throws GenericEntityException, SQLException;
     protected abstract void doCopyDatabase(String newDatabaseName, GenericHelperInfo helperInfo) throws GenericEntityException, SQLException;
     protected abstract String doExportAsTextFileContent() throws GenericEntityException, SQLException;
+    protected abstract void doRestoreDatabase(String contentId) throws GenericEntityException, SQLException;
     
     protected abstract String getJdbcServerName();
 }

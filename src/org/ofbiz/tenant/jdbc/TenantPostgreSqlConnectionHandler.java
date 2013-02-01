@@ -148,6 +148,12 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
         return contentId;
     }
     
+    @Override
+    protected void doRestoreDatabase(String contentId)
+            throws GenericEntityException, SQLException {
+        
+    }
+    
     protected String getPostgresJdbcUri() {
         return "jdbc:postgresql://" + this.getJdbcServerName() + "/postgres";
     }
