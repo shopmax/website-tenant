@@ -18,6 +18,7 @@
  *******************************************************************************/
 package org.ofbiz.tenant.tenant;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -88,6 +89,39 @@ public class TenantServices {
                 }
             }
             return ServiceUtil.returnSuccess();
+        } catch (Exception e) {
+            return ServiceUtil.returnError(e.getMessage());
+        }
+    }
+    
+    /**
+     * Export tenant all entities
+     * @param ctx
+     * @param context
+     * @return
+     */
+    public static Map<String, Object> exportTenantAllEntities(DispatchContext ctx, Map<String, Object> context) {
+        LocalDispatcher dispatcher = ctx.getDispatcher();
+        GenericValue userLogin = (GenericValue) context.get("userLogin");
+        String tenantId = (String) context.get("tenantId");
+        String outpath = (String) context.get("outpath");
+        Timestamp fromDate = (Timestamp) context.get("fromDate");
+        Integer txTimeout = (Integer) context.get("txTimeout");
+        
+        try {
+            Map<String, Object> serviceParameters = FastMap.newInstance();
+            serviceParameters.put("outpath", outpath);
+            serviceParameters.put("fromDate", fromDate);
+            serviceParameters.put("txTimeout", txTimeout);
+            serviceParameters.put("userLogin", userLogin);
+            Map<String, Object> runTenantServiceInMap = FastMap.newInstance();
+            runTenantServiceInMap.put("tenantId", tenantId);
+            runTenantServiceInMap.put("serviceName", "entityExportAll");
+            runTenantServiceInMap.put("serviceParameters", serviceParameters);
+            runTenantServiceInMap.put("userLogin", userLogin);
+            Map<String, Object> results = dispatcher.runSync("runTenantService", runTenantServiceInMap);
+            Map<String, Object> serviceResults = UtilGenerics.cast(results.get("serviceResults"));
+            return serviceResults;
         } catch (Exception e) {
             return ServiceUtil.returnError(e.getMessage());
         }

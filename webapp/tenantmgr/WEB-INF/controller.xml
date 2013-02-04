@@ -30,6 +30,7 @@
     <request-map uri="ListTenantComponents"><security https="true" auth="true"/><response name="success" type="view" value="ListTenantComponents"/></request-map>
     <request-map uri="EditTenantInstallation"><security https="true" auth="true"/><response name="success" type="view" value="EditTenantInstallation"/></request-map>
     <request-map uri="EditMailListener"><security https="true" auth="true"/><response name="success" type="view" value="EditMailListener"/></request-map>
+    <request-map uri="EditTenantExport"><security https="true" auth="true"/><response name="success" type="view" value="EditTenantExport"/></request-map>
     
     <!-- Tenant -->
     <request-map uri="createTenant">
@@ -139,6 +140,14 @@
         <response name="error" type="view-last" value="EditMailListener"/>
     </request-map>
     
+    <!-- Export -->
+    <request-map uri="exportTenantAllEntities">
+        <security https="true" auth="true"/>
+        <event type="service" invoke="exportTenantAllEntities"/>
+        <response name="success" type="view-last" value="EditTenantExport"/>
+        <response name="error" type="view-last" value="EditTenantExport"/>
+    </request-map>
+    
     <!-- View Mappings -->
     <view-map name="main" type="screen" page="component://tenant/widget/TenantScreens.xml#main"/>
     <view-map name="FindTenant" type="screen" page="component://tenant/widget/TenantScreens.xml#FindTenant"/>
@@ -149,4 +158,5 @@
     <view-map name="ListTenantComponents" type="screen" page="component://tenant/widget/TenantScreens.xml#ListTenantComponents"/>
     <view-map name="EditTenantInstallation" type="screen" page="component://tenant/widget/TenantScreens.xml#EditTenantInstallation"/>
     <view-map name="EditMailListener" type="screen" page="component://tenant/widget/TenantScreens.xml#EditMailListener"/>
+    <view-map name="EditTenantExport" type="screen" page="component://tenant/widget/TenantScreens.xml#EditTenantExport"/>
 </site-conf>

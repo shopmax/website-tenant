@@ -209,4 +209,12 @@
         <field name="mailPass" required-field="true"><password/></field>
         <field name="updateButton" title="${uiLabelMap.CommonUpdate}" widget-style="smallSubmit"><submit button-type="button"/></field>
     </form>
+    <form name="EditTenantExport" type="single" target="exportTenantAllEntities" title=""
+        header-row-style="header-row" default-table-style="basic-table">
+        <field name="tenantId"><hidden/></field>
+        <field name="outpath"><text/></field>
+        <field name="fromDate"><text/></field>
+        <field name="txTimeout"><text/></field>
+        <field name="exportButton" title="${uiLabelMap.CommonExport}" widget-style="smallSubmit"><submit button-type="button"/></field>
+    </form>
 </forms>
