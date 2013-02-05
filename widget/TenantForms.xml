@@ -217,4 +217,17 @@
         <field name="txTimeout"><text/></field>
         <field name="exportButton" title="${uiLabelMap.CommonExport}" widget-style="smallSubmit"><submit button-type="button"/></field>
     </form>
+    <form name="EditTenantImport" type="single" target="importTenantEntityDir" title=""
+        header-row-style="header-row" default-table-style="basic-table">
+        <field name="tenantId"><hidden/></field>
+        <field name="path"><text/></field>
+        <field name="mostlyInserts"><text/></field>
+        <field name="maintainTimeStamps"><text/></field>
+        <field name="createDummyFks"><text/></field>
+        <field name="checkDataOnly"><text/></field>
+        <field name="deleteFiles"><text/></field>
+        <field name="txTimeout"><text/></field>
+        <field name="filePause"><text/></field>
+        <field name="importButton" title="${uiLabelMap.WebtoolsImport}" widget-style="smallSubmit"><submit button-type="button"/></field>
+    </form>
 </forms>

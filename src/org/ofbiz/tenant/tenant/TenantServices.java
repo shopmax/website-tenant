@@ -128,6 +128,49 @@ public class TenantServices {
     }
     
     /**
+     * Import tenant entity directory
+     * @param ctx
+     * @param context
+     * @return
+     */
+    public static Map<String, Object> importTenantEntityDir(DispatchContext ctx, Map<String, Object> context) {
+        LocalDispatcher dispatcher = ctx.getDispatcher();
+        GenericValue userLogin = (GenericValue) context.get("userLogin");
+        String tenantId = (String) context.get("tenantId");
+        String path = (String) context.get("path");
+        String mostlyInserts = (String) context.get("mostlyInserts");
+        String maintainTimeStamps = (String) context.get("maintainTimeStamps");
+        String createDummyFks = (String) context.get("createDummyFks");
+        String checkDataOnly = (String) context.get("checkDataOnly");
+        String deleteFiles = (String) context.get("deleteFiles");
+        Integer txTimeout = (Integer) context.get("txTimeout");
+        Long filePause = (Long) context.get("filePause");
+        
+        try {
+            Map<String, Object> serviceParameters = FastMap.newInstance();
+            serviceParameters.put("path", path);
+            serviceParameters.put("mostlyInserts", mostlyInserts);
+            serviceParameters.put("maintainTimeStamps", maintainTimeStamps);
+            serviceParameters.put("createDummyFks", createDummyFks);
+            serviceParameters.put("checkDataOnly", checkDataOnly);
+            serviceParameters.put("deleteFiles", deleteFiles);
+            serviceParameters.put("txTimeout", txTimeout);
+            serviceParameters.put("filePause", filePause);
+            serviceParameters.put("userLogin", userLogin);
+            Map<String, Object> runTenantServiceInMap = FastMap.newInstance();
+            runTenantServiceInMap.put("tenantId", tenantId);
+            runTenantServiceInMap.put("serviceName", "entityImportDir");
+            runTenantServiceInMap.put("serviceParameters", serviceParameters);
+            runTenantServiceInMap.put("userLogin", userLogin);
+            Map<String, Object> results = dispatcher.runSync("runTenantService", runTenantServiceInMap);
+            Map<String, Object> serviceResults = UtilGenerics.cast(results.get("serviceResults"));
+            return serviceResults;
+        } catch (Exception e) {
+            return ServiceUtil.returnError(e.getMessage());
+        }
+    }
+    
+    /**
      * install tenant data sources
      * @param ctx
      * @param context
@@ -470,7 +513,10 @@ public class TenantServices {
         } catch (GenericServiceException e) {
             String errMsg = "Could not run service [" + serviceName + "] for tenant [" + tenantId + "]: " + e.toString();
             Debug.logError(e, errMsg, module);
-            return ServiceUtil.returnError(errMsg);
+            Map<String, Object> results = ServiceUtil.returnError(errMsg);
+            Map<String, Object> serviceResults = ServiceUtil.returnError(errMsg);
+            results.put("serviceResults", serviceResults);
+            return results;
         }
     }
     

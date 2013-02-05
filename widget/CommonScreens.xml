@@ -6,6 +6,7 @@
         <section>
             <actions>
                 <property-map resource="TenantUiLabels" map-name="uiLabelMap" global="true"/>
+                <property-map resource="WebtoolsUiLabels" map-name="uiLabelMap" global="true"/>
                 <property-map resource="CommonUiLabels" map-name="uiLabelMap" global="true"/>
 
                 <set field="layoutSettings.companyName" from-field="uiLabelMap.TenantCompanyName" global="true"/>

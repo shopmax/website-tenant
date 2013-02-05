@@ -198,7 +198,25 @@
             <widgets>
                 <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
                     <decorator-section name="body">
-                        <include-form name="EditTenantExport" location="component://tenant/widget/TenantForms.xml"/>
+                        <screenlet title="${uiLabelMap.CommonExport}">
+                            <include-form name="EditTenantExport" location="component://tenant/widget/TenantForms.xml"/>
+                        </screenlet>
+                    </decorator-section>
+                </decorator-screen>
+            </widgets>
+        </section>
+    </screen>
+    <screen name="EditTenantImport">
+        <section>
+            <actions>
+                <set field="tabButtonItem" value="import"/>
+            </actions>
+            <widgets>
+                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                    <decorator-section name="body">
+                        <screenlet title="${uiLabelMap.WebtoolsImport}">
+                            <include-form name="EditTenantImport" location="component://tenant/widget/TenantForms.xml"/>
+                        </screenlet>
                     </decorator-section>
                 </decorator-screen>
             </widgets>
