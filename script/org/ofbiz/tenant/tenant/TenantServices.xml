@@ -323,9 +323,14 @@ under the License.
     </simple-method>
     
     <simple-method method-name="callDisableTenantPartyService" short-description="Call disable tenant party service">
+        <entity-one value-field="sysUserLogin" entity-name="UserLogin">
+            <field-map field-name="userLoginId" value="system"/>
+        </entity-one>
+        <set field="serviceParameters.tenantId" from-field="parameters.tenantId"/>
+        <set field="serviceParameters.userLogin" from-field="sysUserLogin"/>
         <set field="runTenantServiceInMap.tenantId" from-field="parameters.tenantId"/>
         <set field="runTenantServiceInMap.serviceName" value="disableTenantParty"/>
-        <call-class-method ret-field="runTenantServiceInMap.serviceParameters" method-name="newInstance" class-name="javolution.util.FastMap"/>
+        <set field="runTenantServiceInMap.serviceParameters" from-field="serviceParameters"/>
         <call-service service-name="runTenantService" in-map-name="runTenantServiceInMap"/>
     </simple-method>
 </simple-methods>

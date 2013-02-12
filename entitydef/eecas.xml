@@ -35,7 +35,7 @@
     <eca entity="Tenant" operation="remove" event="return">
         <action service="callDisableTenantPartyService" mode="sync"/>
     </eca>
-    <eca entity="Tenant" operation="store" event="run">
+    <eca entity="Tenant" operation="store" event="return">
         <condition field-name="disabled" operator="equals" value="Y"/>
         <action service="callDisableTenantPartyService" mode="sync"/>
     </eca>
