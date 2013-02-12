@@ -31,12 +31,12 @@
         <action service="deleteTenantDataSourceDb" mode="sync"/>
     </eca>
     
-    <!-- Disable Tenant Party -->
+    <!-- Call handle disabled tenant service -->
     <eca entity="Tenant" operation="remove" event="return">
-        <action service="callDisableTenantPartyService" mode="sync"/>
+        <action service="callHandleDisabledTenantService" mode="sync"/>
     </eca>
     <eca entity="Tenant" operation="store" event="return">
         <condition field-name="disabled" operator="equals" value="Y"/>
-        <action service="callDisableTenantPartyService" mode="sync"/>
+        <action service="callHandleDisabledTenantService" mode="sync"/>
     </eca>
 </entity-eca>

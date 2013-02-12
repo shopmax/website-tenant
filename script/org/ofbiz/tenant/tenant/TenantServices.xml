@@ -322,14 +322,14 @@ under the License.
         </if-not-empty>
     </simple-method>
     
-    <simple-method method-name="callDisableTenantPartyService" short-description="Call disable tenant party service">
+    <simple-method method-name="callHandleDisabledTenantService" short-description="Call handle disabled tenant service">
         <entity-one value-field="sysUserLogin" entity-name="UserLogin">
             <field-map field-name="userLoginId" value="system"/>
         </entity-one>
         <set field="serviceParameters.tenantId" from-field="parameters.tenantId"/>
         <set field="serviceParameters.userLogin" from-field="sysUserLogin"/>
-        <set field="runTenantServiceInMap.tenantId" from-field="parameters.tenantId"/>
-        <set field="runTenantServiceInMap.serviceName" value="disableTenantParty"/>
+        <set field="runTenantServiceInMap.tenantId" value="growerp"/>
+        <set field="runTenantServiceInMap.serviceName" value="handleDisabledTenant"/>
         <set field="runTenantServiceInMap.serviceParameters" from-field="serviceParameters"/>
         <call-service service-name="runTenantService" in-map-name="runTenantServiceInMap"/>
     </simple-method>
