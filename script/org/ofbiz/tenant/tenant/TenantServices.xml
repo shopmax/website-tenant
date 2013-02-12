@@ -326,9 +326,10 @@ under the License.
         <entity-one value-field="sysUserLogin" entity-name="UserLogin">
             <field-map field-name="userLoginId" value="system"/>
         </entity-one>
+        <property-to-field resource="tenant" property="handler_tenant" field="handlerTenantId"/>
         <set field="serviceParameters.tenantId" from-field="parameters.tenantId"/>
         <set field="serviceParameters.userLogin" from-field="sysUserLogin"/>
-        <set field="runTenantServiceInMap.tenantId" value="growerp"/>
+        <set field="runTenantServiceInMap.tenantId" from-field="handlerTenantId"/>
         <set field="runTenantServiceInMap.serviceName" value="handleDisabledTenant"/>
         <set field="runTenantServiceInMap.serviceParameters" from-field="serviceParameters"/>
         <call-service service-name="runTenantService" in-map-name="runTenantServiceInMap"/>
