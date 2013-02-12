@@ -30,4 +30,13 @@
     <eca entity="TenantDataSource" operation="remove" event="run">
         <action service="deleteTenantDataSourceDb" mode="sync"/>
     </eca>
+    
+    <!-- Disable Tenant Party -->
+    <eca entity="Tenant" operation="remove" event="return">
+        <action service="callDisableTenantPartyService" mode="sync"/>
+    </eca>
+    <eca entity="Tenant" operation="store" event="run">
+        <condition field-name="disabled" operator="equals" value="Y"/>
+        <action service="callDisableTenantPartyService" mode="sync"/>
+    </eca>
 </entity-eca>

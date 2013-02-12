@@ -321,4 +321,11 @@ under the License.
             </else>
         </if-not-empty>
     </simple-method>
+    
+    <simple-method method-name="callDisableTenantPartyService" short-description="Call disable tenant party service">
+        <set field="runTenantServiceInMap.tenantId" from-field="parameters.tenantId"/>
+        <set field="runTenantServiceInMap.serviceName" value="disableTenantParty"/>
+        <call-class-method ret-field="runTenantServiceInMap.serviceParameters" method-name="newInstance" class-name="javolution.util.FastMap"/>
+        <call-service service-name="runTenantService" in-map-name="runTenantServiceInMap"/>
+    </simple-method>
 </simple-methods>
