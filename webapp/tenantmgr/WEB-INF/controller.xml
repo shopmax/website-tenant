@@ -32,6 +32,7 @@
     <request-map uri="EditMailListener"><security https="true" auth="true"/><response name="success" type="view" value="EditMailListener"/></request-map>
     <request-map uri="EditTenantExport"><security https="true" auth="true"/><response name="success" type="view" value="EditTenantExport"/></request-map>
     <request-map uri="EditTenantImport"><security https="true" auth="true"/><response name="success" type="view" value="EditTenantImport"/></request-map>
+    <request-map uri="ListTenantBackups"><security https="true" auth="true"/><response name="success" type="view" value="ListTenantBackups"/></request-map>
     
     <!-- Tenant -->
     <request-map uri="createTenant">
@@ -169,4 +170,5 @@
     <view-map name="EditMailListener" type="screen" page="component://tenant/widget/TenantScreens.xml#EditMailListener"/>
     <view-map name="EditTenantExport" type="screen" page="component://tenant/widget/TenantScreens.xml#EditTenantExport"/>
     <view-map name="EditTenantImport" type="screen" page="component://tenant/widget/TenantScreens.xml#EditTenantImport"/>
+    <view-map name="ListTenantBackups" type="screen" page="component://tenant/widget/TenantScreens.xml#ListTenantBackups"/>
 </site-conf>

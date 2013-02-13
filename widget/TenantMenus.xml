@@ -78,6 +78,14 @@
                 <parameter param-name="tenantId" from-field="tenant.tenantId"/>
             </link>
         </menu-item>
+        <menu-item name="backups" title="${uiLabelMap.TenantBackups}">
+            <condition>
+                <not><if-empty field="tenant.tenantId"/></not>
+            </condition>
+            <link target="ListTenantBackups">
+                <parameter param-name="tenantId" from-field="tenant.tenantId"/>
+            </link>
+        </menu-item>
     </menu>
     <menu name="TenantSubTabBar" menu-container-style="button-bar button-style-2" default-selected-style="selected">
         <menu-item name="createNew" title="${uiLabelMap.TenantCreateNew}" widget-style="buttontext create">

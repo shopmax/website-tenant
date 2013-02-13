@@ -82,4 +82,13 @@
     <property key="TenantRecreateDatabasesConfirmationMessage">
         <value xml:lang="en">Are you sure to recreate databases?</value>
     </property>
+    <property key="TenantBackups">
+        <value xml:lang="en">Backups</value>
+    </property>
+    <property key="TenantCreateBackup">
+        <value xml:lang="en">Create Backup</value>
+    </property>
+    <property key="TenantRestore">
+        <value xml:lang="en">Restore</value>
+    </property>
 </resource>

@@ -230,4 +230,28 @@
         <field name="filePause"><text/></field>
         <field name="importButton" title="${uiLabelMap.WebtoolsImport}" widget-style="smallSubmit"><submit button-type="button"/></field>
     </form>
+    <form name="EditTenantBackup" type="single" target="createTenantComponent" title="" default-map-name="tenant"
+        header-row-style="header-row" default-table-style="basic-table">
+        <field use-when="tenantDataSource!=null" name="tenantId" title="${uiLabelMap.TenantTenantId}"><display/></field>
+        <field use-when="tenantDataSource==null&amp;&amp;tenantId==null" name="tenantId" title="${uiLabelMap.TenantTenantId}"><text size="20" maxlength="20"/></field>
+        <field name="tenantId"><hidden/></field>
+        <field name="submitButton" title="${uiLabelMap.TenantBackup}" widget-style="smallSubmit"><submit button-type="button"/></field>
+    </form>
+    <form name="ListTenantBackups" type="list" list-name="listIt" use-row-submit="true"
+        odd-row-style="alternate-row" header-row-style="header-row-2" default-table-style="basic-table hover-bar" separate-columns="true">
+        <actions>
+            <set field="parameters.componentName" from-field="parameters.tenantComponentName"/>
+            <service service-name="performFind" result-map="result" result-map-list="listIt">
+                <field-map field-name="inputFields" from-field="parameters"/>
+                <field-map field-name="entityName" value="TenantComponent"/>
+                <field-map field-name="orderBy" value="sequenceNum"/>
+                <field-map field-name="viewIndex" from-field="viewIndex"/>
+                <field-map field-name="viewSize" from-field="viewSize"/>
+            </service>
+        </actions>
+        <field name="tenantId"><hidden/></field>
+        <field name="contentId"><display/></field>
+        <field name="restoreButton" title="${uiLabelMap.TenantRestore}" use-when="tenant!=null" widget-style="smallSubmit" event="onclick" action="javascript:document.ListTenantBackups.action='restoreTenantBackup';"><submit button-type="button"/></field>
+        <field name="deleteButton" title="${uiLabelMap.CommonDelete}" use-when="tenant!=null" widget-style="smallSubmit" event="onclick" action="javascript:document.ListTenantBackups.action='deleteTenantBackup';"><submit button-type="button"/></field>
+    </form>
 </forms>
