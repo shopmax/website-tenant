@@ -18,7 +18,6 @@
   under the License.
   -->
 <entity-engine-xml>
-    <!--
     <Tenant tenantId="demotenant1" tenantName="Demo Tenant 1"/>
     <TenantComponent tenantId="demotenant1" componentName="tenant" sequenceNum="02"/>
     <TenantComponent tenantId="demotenant1" componentName="common" sequenceNum="03"/>
@@ -29,5 +28,14 @@
        jdbcUri="jdbc:derby:demotenant1ofbiz;create=true" jdbcUsername="ofbiz" jdbcPassword="ofbiz"/>
     <TenantDataSource tenantId="demotenant1" entityGroupName="org.ofbiz.olap"
        jdbcUri="jdbc:derby:demotenant1olap" jdbcUsername="ofbiz" jdbcPassword="ofbiz"/>
-   -->
+       
+    <Party partyId="DemoTenant1"/>
+    <PartyContentType partyContentTypeId="TENANT_BACKUP" description="Tenant Backup Content "/>
+    <UserLogin userLoginId="demotenant1" partyId="DemoTenant1"/>
+    <DataResource dataResourceId="DemoTenantBackup1" dataResourceTypeId="URL_RESOURCE" isPublic="Y" mimeTypeId="application/zip" objectInfo="file:///home/test/Projects/ofbiz-growerpsaas/hot-deploy/tenant/webapp/tenantmgr/includes/backup/test.zip" />
+    <DataResource dataResourceId="DemoTenantBackup2" dataResourceTypeId="URL_RESOURCE" isPublic="Y" mimeTypeId="application/zip" objectInfo="file:///home/test/Projects/ofbiz-growerpsaas/hot-deploy/tenant/webapp/tenantmgr/includes/backup/test.zip" />
+    <Content contentId="DemoTenantBackup1" contentName="Demo Tenant Backup 1" dataResourceId="DemoTenantBackup1"/>
+    <Content contentId="DemoTenantBackup2" contentName="Demo Tenant Backup 2" dataResourceId="DemoTenantBackup2"/>
+    <PartyContent partyId="DemoTenant1" partyContentTypeId="TENANT_BACKUP" contentId="DemoTenantBackup1" fromDate="2000-01-01 00:00:00.0"/>
+    <PartyContent partyId="DemoTenant1" partyContentTypeId="TENANT_BACKUP" contentId="DemoTenantBackup2" fromDate="2000-01-01 00:00:00.0"/>
 </entity-engine-xml>

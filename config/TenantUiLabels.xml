@@ -85,6 +85,9 @@
     <property key="TenantBackups">
         <value xml:lang="en">Backups</value>
     </property>
+    <property key="TenantBackup">
+        <value xml:lang="en">Backup</value>
+    </property>
     <property key="TenantCreateBackup">
         <value xml:lang="en">Create Backup</value>
     </property>

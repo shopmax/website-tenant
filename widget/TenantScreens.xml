@@ -229,6 +229,10 @@
                 <set field="tabButtonItem" value="backups"/>
                 <set field="viewIndex" from-field="parameters.VIEW_INDEX" type="Integer" default-value="0"/>
                 <set field="viewSize" from-field="parameters.VIEW_SIZE" type="Integer" default-value="20"/>
+                <entity-one value-field="tenantUserLogin" entity-name="UserLogin">
+                    <field-map field-name="userLoginId" from-field="parameters.tenantId"/>
+                </entity-one>
+                <set field="partyId" from-field="tenantUserLogin.partyId"/>
             </actions>
             <widgets>
                 <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">

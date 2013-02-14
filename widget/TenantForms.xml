@@ -240,17 +240,23 @@
     <form name="ListTenantBackups" type="list" list-name="listIt" use-row-submit="true"
         odd-row-style="alternate-row" header-row-style="header-row-2" default-table-style="basic-table hover-bar" separate-columns="true">
         <actions>
-            <set field="parameters.componentName" from-field="parameters.tenantComponentName"/>
+            <set field="inputFields.partyId" from-field="partyId"/>
+            <set field="inputFields.partyContentTypeId" value="TENANT_BACKUP"/>
             <service service-name="performFind" result-map="result" result-map-list="listIt">
-                <field-map field-name="inputFields" from-field="parameters"/>
-                <field-map field-name="entityName" value="TenantComponent"/>
-                <field-map field-name="orderBy" value="sequenceNum"/>
+                <field-map field-name="inputFields" from-field="inputFields"/>
+                <field-map field-name="entityName" value="PartyContentDetail"/>
                 <field-map field-name="viewIndex" from-field="viewIndex"/>
                 <field-map field-name="viewSize" from-field="viewSize"/>
             </service>
         </actions>
         <field name="tenantId"><hidden/></field>
-        <field name="contentId"><display/></field>
+        <field name="contentId">
+            <display-entity entity-name="Content" description=" ">
+                <sub-hyperlink target="/content/control/stream" description="${contentName} [${contentId}]" target-type="inter-app">
+                    <parameter param-name="contentId" from-field="contentId"/>
+                </sub-hyperlink>
+            </display-entity>
+        </field>
         <field name="restoreButton" title="${uiLabelMap.TenantRestore}" use-when="tenant!=null" widget-style="smallSubmit" event="onclick" action="javascript:document.ListTenantBackups.action='restoreTenantBackup';"><submit button-type="button"/></field>
         <field name="deleteButton" title="${uiLabelMap.CommonDelete}" use-when="tenant!=null" widget-style="smallSubmit" event="onclick" action="javascript:document.ListTenantBackups.action='deleteTenantBackup';"><submit button-type="button"/></field>
     </form>
