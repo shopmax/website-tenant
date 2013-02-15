@@ -184,6 +184,13 @@
         <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
     </service>
     
+    <!-- Backup -->
+    <service name="createTenantBackup" default-entity-name="Content" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
+        invoke="createTenantBackup" auth="true" use-transaction="false">
+        <description>Create a tenant backup</description>
+        <attribute name="tenantId" mode="IN" type="String" optional="false"></attribute>
+    </service>
+    
     <!-- run tenant service -->
     <service name="runTenantService" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
         invoke="runTenantService" auth="true">

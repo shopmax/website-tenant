@@ -18,17 +18,26 @@
  *******************************************************************************/
 package org.ofbiz.tenant.tenant;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javolution.util.FastList;
 import javolution.util.FastMap;
 
+import org.apache.commons.io.FileUtils;
 import org.ofbiz.base.util.Debug;
 import org.ofbiz.base.util.FileUtil;
+import org.ofbiz.base.util.UtilDateTime;
 import org.ofbiz.base.util.UtilGenerics;
 import org.ofbiz.base.util.UtilMisc;
 import org.ofbiz.base.util.UtilProperties;
@@ -165,6 +174,94 @@ public class TenantServices {
             Map<String, Object> results = dispatcher.runSync("runTenantService", runTenantServiceInMap);
             Map<String, Object> serviceResults = UtilGenerics.cast(results.get("serviceResults"));
             return serviceResults;
+        } catch (Exception e) {
+            return ServiceUtil.returnError(e.getMessage());
+        }
+    }
+    
+    /**
+     * Create tenant backup
+     * @param ctx
+     * @param context
+     * @return
+     */
+    public static Map<String, Object> createTenantBackup(DispatchContext ctx, Map<String, Object> context) {
+        Delegator delegator = ctx.getDelegator();
+        LocalDispatcher dispatcher = ctx.getDispatcher();
+        GenericValue userLogin = (GenericValue) context.get("userLogin");
+        String tenantId = (String) context.get("tenantId");
+        
+        try {
+            Date nowDate = UtilDateTime.nowDate();
+            String suffix = new SimpleDateFormat("yyyyMMddhhmmssSSS").format(nowDate);
+            GenericValue sysUserLogin = delegator.findOne("UserLogin", UtilMisc.toMap("userLoginId", "system"), false);
+            String outpath = EntityUtilProperties.getPropertyValue("tenant", "backup.outpath", delegator);
+            File tempDir = new File(outpath, "tmp_" + tenantId + "_" + suffix);
+            tempDir.mkdir();
+            Map<String, Object> exportTenantAllEntitiesInMap = FastMap.newInstance();
+            exportTenantAllEntitiesInMap.put("tenantId", tenantId);
+            exportTenantAllEntitiesInMap.put("outpath", tempDir.getAbsolutePath());
+            exportTenantAllEntitiesInMap.put("userLogin", sysUserLogin);
+            Map<String, Object> exportTenantAllEntitiesResults = dispatcher.runSync("exportTenantAllEntities", exportTenantAllEntitiesInMap);
+            List<String> results = UtilGenerics.cast(exportTenantAllEntitiesResults.get("results"));
+            String firstResult = results.get(0);
+            if (firstResult.startsWith("[")) {
+                // create zip file
+                File outFile = new File(outpath + "/" + tenantId + "_" + suffix + ".zip");
+                ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(outFile));
+                String[] fileList = tempDir.list();
+                byte[] readBuffer = new byte[2156]; 
+                int bytesIn = 0;
+                for(int i = 0; i < fileList.length; i++) {
+                    File file = new File(tempDir, fileList[i]);
+                    FileInputStream fis = new FileInputStream(file);
+                    ZipEntry entry = new ZipEntry(file.getName());
+                    zout.putNextEntry(entry);
+                    while((bytesIn = fis.read(readBuffer)) != -1) { 
+                        zout.write(readBuffer, 0, bytesIn); 
+                    }
+                    fis.close();
+                }
+                zout.close();
+                FileUtils.deleteDirectory(tempDir);
+                
+                // create party content
+                String contentName = null;
+                GenericValue tenantUserLogin = delegator.findOne("UserLogin", UtilMisc.toMap("userLoginId", "system"), false);
+                if (UtilValidate.isNotEmpty(tenantUserLogin)) {
+                    String partyId = tenantUserLogin.getString("partyId");
+                    contentName = "Data of " + tenantId + " at " + nowDate.toString();
+                    String dataResourceName = contentName.replace(" ", "_").replace(":", "_") + ".zip";
+                    
+                    Map<String, Object> createDataResourceInMap = FastMap.newInstance();
+                    createDataResourceInMap.put("dataResourceName", dataResourceName);
+                    createDataResourceInMap.put("dataResourceTypeId", "URL_RESOURCE");
+                    createDataResourceInMap.put("isPublic", "Y");
+                    createDataResourceInMap.put("mimeTypeId", "application/zip");
+                    createDataResourceInMap.put("objectInfo", "file://" + outFile.getAbsolutePath());
+                    createDataResourceInMap.put("userLogin", sysUserLogin);
+                    Map<String, Object> createDataResourceResults = dispatcher.runSync("createDataResource", createDataResourceInMap);
+                    String dataResourceId = UtilGenerics.cast(createDataResourceResults.get("dataResourceId"));
+
+                    Map<String, Object> createContentInMap = FastMap.newInstance();
+                    createContentInMap.put("contentName", contentName);
+                    createContentInMap.put("dataResourceId", dataResourceId);
+                    createContentInMap.put("userLogin", sysUserLogin);
+                    Map<String, Object> createContentResults = dispatcher.runSync("createContent", createContentInMap);
+                    String contentId = UtilGenerics.cast(createContentResults.get("contentId"));
+                    
+                    Map<String, Object> createPartyContentInMap = FastMap.newInstance();
+                    createPartyContentInMap.put("partyId", partyId);
+                    createPartyContentInMap.put("contentId", contentId);
+                    createPartyContentInMap.put("partyContentTypeId", "TENANT_BACKUP");
+                    createPartyContentInMap.put("userLogin", sysUserLogin);
+                    dispatcher.runSync("createPartyContent", createPartyContentInMap);
+                }
+                
+                return ServiceUtil.returnSuccess(contentName + " has already been backed up.");
+            } else {
+                return ServiceUtil.returnError(firstResult);
+            }
         } catch (Exception e) {
             return ServiceUtil.returnError(e.getMessage());
         }
