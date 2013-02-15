@@ -257,7 +257,15 @@
             </display-entity>
         </field>
         <field name="createdDate" sort-field="true"><display/></field>
-        <field name="restoreButton" title="${uiLabelMap.TenantRestore}" use-when="tenant!=null" widget-style="smallSubmit" event="onclick" action="javascript:document.ListTenantBackups.action='restoreTenantBackup';"><submit button-type="button"/></field>
-        <field name="deleteButton" title="${uiLabelMap.CommonDelete}" use-when="tenant!=null" widget-style="smallSubmit" event="onclick" action="javascript:document.ListTenantBackups.action='deleteTenantBackup';"><submit button-type="button"/></field>
+        <field name="restoreButton" title="${uiLabelMap.TenantRestore}" use-when="tenant!=null" widget-style="smallSubmit">
+            <hyperlink target="restoreTenantBackup" description="${uiLabelMap.TenantRestore}">
+                <parameter param-name="contentId" from-field="tenantId"/>
+            </hyperlink>
+        </field>
+        <field name="deleteButton" title="${uiLabelMap.CommonDelete}" use-when="tenant!=null" widget-style="smallSubmit">
+            <hyperlink target="deleteTenantBackup" description="${uiLabelMap.CommonDelete}" confirmation-message="Are you sure to delete the backup?">
+                <parameter param-name="contentId" from-field="tenantId"/>
+            </hyperlink>
+        </field>
     </form>
 </forms>

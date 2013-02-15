@@ -21,6 +21,7 @@ package org.ofbiz.tenant.tenant;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.net.URI;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -263,6 +264,52 @@ public class TenantServices {
                 return ServiceUtil.returnError(firstResult);
             }
         } catch (Exception e) {
+            Debug.logError(e, module);
+            return ServiceUtil.returnError(e.getMessage());
+        }
+    }
+    
+    /**
+     * Create tenant backup
+     * @param ctx
+     * @param context
+     * @return
+     */
+    public static Map<String, Object> deleteTenantBackup(DispatchContext ctx, Map<String, Object> context) {
+        Delegator delegator = ctx.getDelegator();
+        LocalDispatcher dispatcher = ctx.getDispatcher();
+        GenericValue userLogin = (GenericValue) context.get("userLogin");
+        String contentId = (String) context.get("contentId");
+        
+        try {
+            List<EntityCondition> conds = FastList.newInstance();
+            conds.add(EntityCondition.makeCondition("contentId", contentId));
+            conds.add(EntityCondition.makeCondition("partyContentTypeId", "TENANT_BACKUP"));
+            conds.add(EntityUtil.getFilterByDateExpr());
+            List<GenericValue> partyContents = delegator.findList("PartyContent", EntityCondition.makeCondition(conds), null, null, null, false);
+            if (UtilValidate.isNotEmpty(partyContents)) {
+                GenericValue partyContent = EntityUtil.getFirst(partyContents);
+                partyContent.set("thruDate", UtilDateTime.nowTimestamp());
+                partyContent.store();
+                
+                // delete file
+                GenericValue content = partyContent.getRelatedOne("Content", false);
+                GenericValue dataResource = content.getRelatedOne("DataResource", false);
+                if (UtilValidate.isNotEmpty(dataResource)) {
+                    String contentName = content.getString("contentName");
+                    String objectInfo = dataResource.getString("objectInfo");
+                    URI uri = new URI(objectInfo);
+                    File file = new File(uri);
+                    file.delete();
+                    return ServiceUtil.returnSuccess(contentName + " has already been deleted.");
+                } else {
+                    return ServiceUtil.returnError("Cound not find data resource of content: " + contentId);
+                }
+            } else {
+                return ServiceUtil.returnError("Cound not find party content: " + contentId);
+            }
+        } catch (Exception e) {
+            Debug.logError(e, module);
             return ServiceUtil.returnError(e.getMessage());
         }
     }

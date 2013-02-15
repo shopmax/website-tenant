@@ -165,6 +165,12 @@
         <response name="success" type="view-last" value="ListTenantBackups"/>
         <response name="error" type="view-last" value="ListTenantBackups"/>
     </request-map>
+    <request-map uri="deleteTenantBackup">
+        <security https="true" auth="true"/>
+        <event type="service" invoke="deleteTenantBackup"/>
+        <response name="success" type="view-last" value="ListTenantBackups"/>
+        <response name="error" type="view-last" value="ListTenantBackups"/>
+    </request-map>
     
     <!-- View Mappings -->
     <view-map name="main" type="screen" page="component://tenant/widget/TenantScreens.xml#main"/>
