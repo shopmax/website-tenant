@@ -315,6 +315,55 @@ public class TenantServices {
     }
     
     /**
+     * Create tenant backup
+     * @param ctx
+     * @param context
+     * @return
+     */
+    public static Map<String, Object> restoreTenantBackup(DispatchContext ctx, Map<String, Object> context) {
+        Delegator delegator = ctx.getDelegator();
+        LocalDispatcher dispatcher = ctx.getDispatcher();
+        GenericValue userLogin = (GenericValue) context.get("userLogin");
+        String contentId = (String) context.get("contentId");
+        
+        try {
+            List<EntityCondition> conds = FastList.newInstance();
+            conds.add(EntityCondition.makeCondition("contentId", contentId));
+            conds.add(EntityCondition.makeCondition("partyContentTypeId", "TENANT_BACKUP"));
+            conds.add(EntityUtil.getFilterByDateExpr());
+            List<GenericValue> partyContents = delegator.findList("PartyContent", EntityCondition.makeCondition(conds), null, null, null, false);
+            if (UtilValidate.isNotEmpty(partyContents)) {
+                GenericValue content = delegator.findOne("Content", UtilMisc.toMap("contentId", contentId), false);
+                GenericValue dataResource = content.getRelatedOne("DataResource", false);
+                if (UtilValidate.isNotEmpty(dataResource)) {
+                    String contentName = content.getString("contentName");
+                    String dataResourceName = content.getString("dataResourceName");
+                    String objectInfo = dataResource.getString("objectInfo");
+                    URI uri = new URI(objectInfo);
+                    File file = new File(uri);
+                    
+                    File tempDir = new File(file.getParentFile(), "tmpext_" + dataResourceName);
+                    if(!tempDir.exists()){
+                        tempDir.mkdir();
+                    }
+                    
+                    //TODO:
+                    //http://www.mkyong.com/java/how-to-decompress-files-from-a-zip-file/
+                    
+                    return ServiceUtil.returnSuccess(contentName + " has already been deleted.");
+                } else {
+                    return ServiceUtil.returnError("Cound not find data resource of content: " + contentId);
+                }
+            } else {
+                return ServiceUtil.returnError("Cound not find party content: " + contentId);
+            }
+        } catch (Exception e) {
+            Debug.logError(e, module);
+            return ServiceUtil.returnError(e.getMessage());
+        }
+    }
+    
+    /**
      * install tenant data sources
      * @param ctx
      * @param context

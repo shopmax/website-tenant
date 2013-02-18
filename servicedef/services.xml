@@ -195,6 +195,11 @@
         <description>Delete a tenant backup</description>
         <attribute name="contentId" mode="IN" type="String" optional="false"></attribute>
     </service>
+    <service name="restoreTenantBackup" default-entity-name="Content" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
+        invoke="restoreTenantBackup" auth="true" use-transaction="false">
+        <description>Restore a tenant backup</description>
+        <attribute name="contentId" mode="IN" type="String" optional="false"></attribute>
+    </service>
     
     <!-- run tenant service -->
     <service name="runTenantService" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
