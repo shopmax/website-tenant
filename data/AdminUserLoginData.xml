@@ -2,9 +2,15 @@
     <PartyType partyTypeId="PERSON"/>
     <StatusType statusTypeId="PARTY_STATUS"/>
     <StatusItem statusId="PARTY_ENABLED" statusTypeId="PARTY_STATUS"/>
-    <Party partyId="admin" partyTypeId="PERSON" statusId="PARTY_ENABLED"/>
-    <Person firstName="THE" lastName="ADMINISTRATOR" middleName="PRIVILEGED" partyId="admin" personalTitle="Mr."/>
-    <UserLogin  userLoginId="admin" currentPassword="$SHA$CO07pMLK5Z7ai0$SCQfRYqFre31NswZbrs9KONON88" enabled="Y" hasLoggedOut="Y" partyId="admin" requirePasswordChange="N"/>
+    <Party partyId="tenantadmin" partyTypeId="PERSON" statusId="PARTY_ENABLED"/>
+    <Person firstName="THE" lastName="ADMINISTRATOR" middleName="PRIVILEGED" partyId="tenantadmin" personalTitle="Mr."/>
+    
+    <!--current password = ofbiz -->
+    <UserLogin  userLoginId="tenantadmin" currentPassword="{SHA}47ca69ebb4bdc9ae0adec130880165d2cc05db1a" enabled="Y" hasLoggedOut="Y" partyId="tenantadmin" requirePasswordChange="N"/>
+    
     <!-- password = aws455 -->
-    <UserLoginSecurityGroup fromDate="2001-01-01 12:00:00.0" groupId="SUPER" userLoginId="admin"/>
+    <!-- $SHA$CO07pMLK5Z7ai0$SCQfRYqFre31NswZbrs9KONON88 -->
+    
+    <UserLoginSecurityGroup fromDate="2001-01-01 12:00:00.0" groupId="TENANTMGRADMIN" userLoginId="tenantadmin"/>
+    <UserLoginSecurityGroup fromDate="2001-01-01 12:00:00.0" groupId="ACCTG_FUNCTNL_ADMIN" userLoginId="tenantadmin"/>
 </entity-engine-xml>

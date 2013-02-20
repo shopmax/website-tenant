@@ -6,6 +6,6 @@
     <SecurityPermission description="Delete operations in the Tenant Component." permissionId="TENANTMGR_DELETE"/>
     <SecurityPermission description="ALL operations in the Tenant Component." permissionId="TENANTMGR_ADMIN"/>
 
-    <SecurityGroup groupId="SUPER"/>
-    <SecurityGroupPermission groupId="SUPER" permissionId="TENANTMGR_ADMIN"/>
+    <SecurityGroup groupId="TENANTMGRADMIN"/>
+    <SecurityGroupPermission groupId="TENANTMGRADMIN" permissionId="TENANTMGR_ADMIN"/>
 </entity-engine-xml>
