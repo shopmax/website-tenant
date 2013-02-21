@@ -7,6 +7,8 @@
     <SecurityGroupPermission groupId="FLEXADMIN" permissionId="TENANTMGR_UPDATE"/>
     <SecurityGroupPermission groupId="BIZADMIN" permissionId="TENANTMGR_ADMIN"/>
     -->
+    <SecurityGroupPermission groupId="FULLADMIN" permissionId="TENANTMGR_VIEW"/>
     <SecurityGroupPermission groupId="FLEXADMIN" permissionId="TENANTMGR_VIEW"/>
     <SecurityGroupPermission groupId="VIEWADMIN" permissionId="TENANTMGR_VIEW"/>
+    <SecurityGroupPermission groupId="BIZADMIN" permissionId="TENANTMGR_VIEW"/>
 </entity-engine-xml>
