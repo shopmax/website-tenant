@@ -18,6 +18,5 @@
   under the License.
   -->
 <entity-engine-xml>
-    <SystemProperty systemResourceId="tenant" systemPropertyId="handler_tenant" systemPropertyValue="growerp"/>
     <SystemProperty systemResourceId="tenant" systemPropertyId="backup.outpath" systemPropertyValue="/home/ofbiz/backup"/>
 </entity-engine-xml>

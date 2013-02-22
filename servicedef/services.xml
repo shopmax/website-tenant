@@ -263,9 +263,4 @@
         <attribute name="tenantId" mode="IN" type="String" optional="false"/>
         <attribute name="userLoginId" mode="OUT" type="String" optional="true"/>
     </service>
-    <service name="callHandleDisabledTenantService" engine="simple" location="component://tenant/script/org/ofbiz/tenant/tenant/TenantServices.xml"
-        invoke="callHandleDisabledTenantService" auth="true">
-        <description>Call Handle Disabled Tenant Service</description>
-        <attribute name="tenantId" mode="IN" type="String" optional="false"/>
-    </service>
 </services>
