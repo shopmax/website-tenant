@@ -19,9 +19,6 @@
 package org.ofbiz.tenant.mail;
 
 import java.util.List;
-import java.util.Map;
-
-import javolution.util.FastMap;
 
 import org.ofbiz.base.container.Container;
 import org.ofbiz.base.container.ContainerConfig;
@@ -34,10 +31,8 @@ import org.ofbiz.entity.DelegatorFactory;
 import org.ofbiz.entity.GenericEntityException;
 import org.ofbiz.entity.GenericValue;
 import org.ofbiz.entity.util.EntityUtilProperties;
-import org.ofbiz.service.GenericServiceException;
 import org.ofbiz.service.LocalDispatcher;
 import org.ofbiz.service.ServiceContainer;
-import org.ofbiz.tenant.util.TenantUtil;
 
 /**
  * Tenant JavaMail Container
@@ -75,6 +70,7 @@ public class TenantJavaMailContainer implements Container {
                 List<GenericValue> tenants = delegator.findList("Tenant", null, null, null, null, false);
                 for (GenericValue tenant : tenants) {
                     String tenantId = tenant.getString("tenantId");
+                    /*
                     boolean isConnectionAvailable = TenantUtil.isConnectionAvailable(tenantId, delegator);
                     
                     if (isConnectionAvailable) {
@@ -125,6 +121,7 @@ public class TenantJavaMailContainer implements Container {
                             continue;
                         }
                     }
+                    */
                 }
             }
         } catch (GenericEntityException e) {

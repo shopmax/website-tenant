@@ -439,6 +439,7 @@ public class TenantServices {
         String entityGroupName = (String) context.get("entityGroupName");
         try {
             TenantJdbcConnectionHandler connectionHandler = TenantConnectionFactory.getTenantJdbcConnectionHandler(tenantId, entityGroupName, delegator);
+            connectionHandler.createDatabase();
             Map<String, Object> results = ServiceUtil.returnSuccess();
             results.put("isExist", connectionHandler.isExist());
             return results;
@@ -514,8 +515,6 @@ public class TenantServices {
     
     public static Map<String, Object> recreateTenantDataSourceDbs(DispatchContext ctx, Map<String, Object> context) {
         Delegator delegator = ctx.getDelegator();
-        LocalDispatcher dispatcher = ctx.getDispatcher();
-        GenericValue userLogin = (GenericValue) context.get("userLogin");
         String tenantId = (String) context.get("tenantId");
 
         try {
@@ -529,13 +528,12 @@ public class TenantServices {
             // create databases
             orgOfbizConnectionHandler.createDatabase();
             orgOfbizOlapConnectionHandler.createDatabase();
-            
-            // install database
-            String delegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
+
+            // load data
             String configFile = FileUtil.getFile("component://base/config/ofbiz-containers.xml").getAbsolutePath();
+            String delegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
             List<String> argList = FastList.newInstance();
             argList.add("-delegator=" + delegatorName);
-            argList.add("-readers=seed");
             String[] args = argList.toArray(new String[argList.size()]);
             EntityDataLoadContainer entityDataLoadContainer = new EntityDataLoadContainer();
             entityDataLoadContainer.init(args, "dataload-container", configFile);

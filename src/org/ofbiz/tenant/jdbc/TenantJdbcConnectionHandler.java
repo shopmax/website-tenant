@@ -18,10 +18,7 @@
  *******************************************************************************/
 package org.ofbiz.tenant.jdbc;
 
-import java.sql.Connection;
 import java.sql.SQLException;
-
-import javax.transaction.xa.XAResource;
 
 import org.apache.commons.dbcp.PoolableConnection;
 import org.apache.commons.dbcp.managed.TransactionContext;
@@ -53,7 +50,6 @@ public abstract class TenantJdbcConnectionHandler {
     protected GenericValue tenantDataSource = null;
     protected String superUsername = null;
     protected String superPassword = null;
-    protected boolean isExist = false;
     
     /**
      * Constructor
@@ -136,17 +132,6 @@ public abstract class TenantJdbcConnectionHandler {
         helperInfo.setTenantId(this.getTenantId());
         DatasourceInfo datasourceInfo = EntityConfigUtil.getDatasourceInfo(helperInfo.getHelperBaseName());
         datasourceInfo.inlineJdbcElement.setAttribute("jdbc-uri", this.getJdbcUri());
-
-        // register connection
-        DBCPConnectionFactory managedConnectionFactory = (DBCPConnectionFactory) ConnectionFactory.getManagedConnectionFactory();
-        XAConnectionFactory xacf = managedConnectionFactory.getXAConnectionFactory(helperInfo);
-        if (UtilValidate.isNotEmpty(xacf)) {
-            Connection connection = xacf.createConnection();
-            TransactionRegistry transactionRegistry = xacf.getTransactionRegistry();
-            XAResource xaResource = transactionRegistry.getXAResource(connection);
-            transactionRegistry.registerConnection(connection, xaResource);
-        }
-        
         doCreateDatabase(helperInfo);
     }
     
@@ -193,29 +178,13 @@ public abstract class TenantJdbcConnectionHandler {
         managedConnectionFactory.removeConnection(helperInfo);
     }
     
-    public void copyDatabase(String newDatabaseName) throws GenericEntityException, SQLException {
-        Delegator delegator = tenantDataSource.getDelegator();
-        GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
-        helperInfo.setTenantId(this.getTenantId());
-        doCopyDatabase(newDatabaseName, helperInfo);
-    }
-    
-    public String exportAsTextFileContent() throws GenericEntityException, SQLException {
-        return doExportAsTextFileContent();
-    }
-    
     public void restoreDatabase(String contentId) throws GenericEntityException, SQLException {
         doRestoreDatabase(contentId);
     }
     
-    public boolean isExist() {
-        return isExist;
-    }
-
+    public abstract boolean isExist() ;
     protected abstract void doCreateDatabase(GenericHelperInfo helperInfo) throws GenericEntityException, SQLException;
     protected abstract void doDeleteDatabase(GenericHelperInfo helperInfo) throws GenericEntityException, SQLException;
-    protected abstract void doCopyDatabase(String newDatabaseName, GenericHelperInfo helperInfo) throws GenericEntityException, SQLException;
-    protected abstract String doExportAsTextFileContent() throws GenericEntityException, SQLException;
     protected abstract void doRestoreDatabase(String contentId) throws GenericEntityException, SQLException;
     
     protected abstract String getJdbcServerName();

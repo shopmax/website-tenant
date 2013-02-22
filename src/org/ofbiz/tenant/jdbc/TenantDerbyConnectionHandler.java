@@ -19,18 +19,14 @@
 package org.ofbiz.tenant.jdbc;
 
 import java.io.File;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.ofbiz.base.util.Debug;
-import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.GenericEntityException;
 import org.ofbiz.entity.GenericValue;
 import org.ofbiz.entity.datasource.GenericHelperInfo;
-import org.ofbiz.entity.jdbc.ConnectionFactory;
-import org.ofbiz.entity.jdbc.SQLProcessor;
 import org.ofbiz.tenant.util.TenantUtil;
 
 /**
@@ -44,6 +40,8 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
     
     public final static String URI_PREFIX = "jdbc:derby:";
     
+    private File databaseDir = null;
+    
     /**
      * Constructor
      * @param jdbcUri
@@ -51,16 +49,9 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
      */
     public TenantDerbyConnectionHandler(GenericValue tenantDataSource) {
         super(tenantDataSource);
-        try {
-            Debug.logInfo("Get a connection of " + this.getJdbcUsername() + "@" + this.getJdbcUri() + " with " + this.getJdbcPassword(), module);
-            Delegator delegator = tenantDataSource.getDelegator();
-            GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
-            Connection connection = ConnectionFactory.getConnection(this.getJdbcUri(), this.getJdbcUsername(), this.getJdbcPassword());
-            SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, connection);
-            sqlProcessor.close();
-        } catch (Exception e) {
-            Debug.logError(e, module);
-        }
+    
+        databaseDir = new File(System.getProperty("ofbiz.home") + File.separator + "runtime" + File.separator + "data"
+                + File.separator + "derby" + File.separator + this.getDatabaseName());
     }
     /**
      * get JDBC Server name
@@ -84,33 +75,22 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
     }
     
     @Override
+    public boolean isExist() {
+        return databaseDir.exists();
+    }
+    
+    @Override
     protected void doCreateDatabase(GenericHelperInfo helperInfo)
             throws GenericEntityException, SQLException {
-        Debug.logInfo("Create database: " + this.getJdbcUri(), module);
+        
     }
 
     @Override
     protected void doDeleteDatabase(GenericHelperInfo helperInfo) throws GenericEntityException, SQLException {
-        File databaseDir = new File(System.getProperty("ofbiz.home") + File.separator + "runtime" + File.separator + "data"
-            + File.separator + "derby" + File.separator + this.getDatabaseName());
         if (databaseDir.exists()) {
             Debug.logInfo("Delete database dirctory: " + databaseDir, module);
             TenantUtil.deleteDirectory(databaseDir);
         }
-    }
-    
-    @Override
-    protected void doCopyDatabase(String newDatabaseName,
-            GenericHelperInfo helperInfo) throws GenericEntityException,
-            SQLException {
-        
-    }
-    
-    @Override
-    protected String doExportAsTextFileContent() throws GenericEntityException,
-            SQLException {
-        String contentId = null;
-        return contentId;
     }
     
     @Override
