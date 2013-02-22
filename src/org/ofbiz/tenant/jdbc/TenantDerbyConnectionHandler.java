@@ -27,6 +27,7 @@ import org.ofbiz.base.util.Debug;
 import org.ofbiz.entity.GenericEntityException;
 import org.ofbiz.entity.GenericValue;
 import org.ofbiz.entity.datasource.GenericHelperInfo;
+import org.ofbiz.tenant.jdbc.TenantJdbcConnectionHandler;
 import org.ofbiz.tenant.util.TenantUtil;
 
 /**
@@ -56,9 +57,11 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
     /**
      * get JDBC Server name
      */
+    @Override
     public String getJdbcServerName() {
         return null;
     }
+    
     /**
      * get database name
      */
@@ -91,11 +94,5 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
             Debug.logInfo("Delete database dirctory: " + databaseDir, module);
             TenantUtil.deleteDirectory(databaseDir);
         }
-    }
-    
-    @Override
-    protected void doRestoreDatabase(String contentId)
-            throws GenericEntityException, SQLException {
-        
     }
 }

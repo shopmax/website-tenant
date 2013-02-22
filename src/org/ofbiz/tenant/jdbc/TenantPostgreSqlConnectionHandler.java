@@ -71,6 +71,7 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
     /**
      * get JDBC Server name
      */
+    @Override
     public String getJdbcServerName() {
         String jdbcUri = getJdbcUri();
         String serverName;
@@ -149,12 +150,6 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
         sqlProcessor.executeUpdate("DROP DATABASE \"" + this.getDatabaseName() + "\"");
         sqlProcessor.close();
         conn.close();
-    }
-    
-    @Override
-    protected void doRestoreDatabase(String contentId)
-            throws GenericEntityException, SQLException {
-        
     }
     
     protected String getPostgresJdbcUri() {

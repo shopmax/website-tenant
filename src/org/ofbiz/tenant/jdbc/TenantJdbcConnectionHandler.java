@@ -178,14 +178,9 @@ public abstract class TenantJdbcConnectionHandler {
         managedConnectionFactory.removeConnection(helperInfo);
     }
     
-    public void restoreDatabase(String contentId) throws GenericEntityException, SQLException {
-        doRestoreDatabase(contentId);
-    }
-    
     public abstract boolean isExist() ;
     protected abstract void doCreateDatabase(GenericHelperInfo helperInfo) throws GenericEntityException, SQLException;
     protected abstract void doDeleteDatabase(GenericHelperInfo helperInfo) throws GenericEntityException, SQLException;
-    protected abstract void doRestoreDatabase(String contentId) throws GenericEntityException, SQLException;
     
     protected abstract String getJdbcServerName();
 }

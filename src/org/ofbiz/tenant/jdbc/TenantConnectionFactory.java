@@ -19,6 +19,9 @@
 package org.ofbiz.tenant.jdbc;
 
 import java.sql.SQLException;
+import java.util.Map;
+
+import javolution.util.FastMap;
 
 import org.ofbiz.base.util.Debug;
 import org.ofbiz.base.util.UtilMisc;
@@ -26,6 +29,9 @@ import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.GenericEntityException;
 import org.ofbiz.entity.GenericValue;
+import org.ofbiz.tenant.jdbc.TenantDerbyConnectionHandler;
+import org.ofbiz.tenant.jdbc.TenantJdbcConnectionHandler;
+import org.ofbiz.tenant.jdbc.TenantPostgreSqlConnectionHandler;
 
 /**
  * Tenant Connection Factory
@@ -35,6 +41,8 @@ import org.ofbiz.entity.GenericValue;
 public class TenantConnectionFactory {
 
     public final static String module = TenantConnectionFactory.class.getName();
+    
+    private final static Map<String, TenantJdbcConnectionHandler> jdbcConnectionHandlers = FastMap.newInstance();
     
     /**
      * get tenant JDBC connection handler
@@ -46,28 +54,37 @@ public class TenantConnectionFactory {
      * @throws SQLException
      */
     public static TenantJdbcConnectionHandler getTenantJdbcConnectionHandler(String tenantId, String entityGroupName, Delegator delegator) throws GenericEntityException, SQLException {
-        TenantJdbcConnectionHandler connectionHandler = null;
         GenericValue tenantDataSource = delegator.findOne("TenantDataSource", UtilMisc.toMap("tenantId", tenantId, "entityGroupName", entityGroupName), false);
         if (UtilValidate.isNotEmpty(tenantDataSource)) {
-            Debug.logInfo("Create JDBC connection handler for tenant: " + tenantId + " with entity group: " + entityGroupName, module);
             String jdbcUri = tenantDataSource.getString("jdbcUri");
             
-            try {
-                if (jdbcUri.startsWith(TenantDerbyConnectionHandler.URI_PREFIX)) { // Derby
-                    Debug.logInfo("Create Derby connection handler", module);
-                    connectionHandler = new TenantDerbyConnectionHandler(tenantDataSource);
-                } else if (jdbcUri.startsWith(TenantPostgreSqlConnectionHandler.URI_PREFIX)) { // PostgreSQL
-                    Debug.logInfo("Create PostgreSQL connection handler", module);
-                    connectionHandler = new TenantPostgreSqlConnectionHandler(tenantDataSource);
-                } else {
-                    throw new GenericEntityException("Could not find a JDBC connection handler for: " + jdbcUri);
+            TenantJdbcConnectionHandler jdbcConnectionHandler = jdbcConnectionHandlers.get(jdbcUri);
+            if (UtilValidate.isEmpty(jdbcConnectionHandler)) {
+                Debug.logInfo("Create JDBC connection handler for tenant: " + tenantId + " with entity group: " + entityGroupName, module);
+                try {
+                    if (jdbcUri.startsWith(TenantDerbyConnectionHandler.URI_PREFIX)) { // Derby
+                        Debug.logInfo("Create Derby connection handler", module);
+                        jdbcConnectionHandler = new TenantDerbyConnectionHandler(tenantDataSource);
+                        jdbcConnectionHandlers.put(jdbcUri, jdbcConnectionHandler);
+                        return jdbcConnectionHandler;
+                    } else if (jdbcUri.startsWith(TenantPostgreSqlConnectionHandler.URI_PREFIX)) { // PostgreSQL
+                        Debug.logInfo("Create PostgreSQL connection handler", module);
+                        jdbcConnectionHandler = new TenantPostgreSqlConnectionHandler(tenantDataSource);
+                        jdbcConnectionHandlers.put(jdbcUri, jdbcConnectionHandler);
+                        return jdbcConnectionHandler;
+                    } else {
+                        throw new GenericEntityException("Could not find a JDBC connection handler for: " + jdbcUri);
+                    }
+                } catch (Exception e) {
+                    String errMsg = "Could not create a tenant connection handler for " + tenantId + " with entity group name " + entityGroupName + " : " + e.getMessage();
+                    Debug.logError(e, errMsg, module);
+                    throw new GenericEntityException(errMsg);
                 }
-            } catch (Exception e) {
-                String errMsg = "Could not create a tenant connection handler for " + tenantId + " with entity group name " + entityGroupName + " : " + e.getMessage();
-                Debug.logError(e, errMsg, module);
-                throw new GenericEntityException(errMsg);
+            } else {
+                return jdbcConnectionHandler;
             }
+        } else {
+            throw new GenericEntityException("Could not find a tenant data source for: " + tenantId + "@" + entityGroupName);
         }
-        return connectionHandler;
     }
 }
