@@ -44,6 +44,8 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
     public final static String module = TenantPostgreSqlConnectionHandler.class.getName();
     
     public final static String URI_PREFIX = "jdbc:postgresql:";
+    
+    private boolean exists = false;
 
     /**
      * Constructor
@@ -52,6 +54,24 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
      */
     public TenantPostgreSqlConnectionHandler(GenericValue tenantDataSource) {
         super(tenantDataSource);
+        try {
+            Delegator delegator = tenantDataSource.getDelegator();
+            GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
+            Connection connection = ConnectionFactory.getConnection(this.getPostgresJdbcUri(), this.getSuperUsername(), this.getSuperPassword());
+            SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, connection);
+            ResultSet rs = sqlProcessor.executeQuery("SELECT COUNT(*) AS count FROM pg_database WHERE datname='" + this.getDatabaseName() + "' AND datistemplate = false");
+            if (rs.next()) {
+                int count = rs.getInt("count");
+                sqlProcessor.close();
+                connection.close();
+                exists = (count > 0);
+            } else {
+                exists = false;
+            }
+        } catch (Exception e) {
+            Debug.logWarning(e, module);
+            exists = false;
+        }
     }
     /**
      * get JDBC Server name
@@ -86,20 +106,7 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
     
     @Override
     public boolean isExist() {
-        try {
-            Delegator delegator = tenantDataSource.getDelegator();
-            GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
-            Connection connection = ConnectionFactory.getConnection(this.getPostgresJdbcUri(), this.getSuperUsername(), this.getSuperPassword());
-            SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, connection);
-            ResultSet rs = sqlProcessor.executeQuery("SELECT COUNT(*) FROM pg_database WHERE datname='" + this.getDatabaseName() + "' AND datistemplate = false");
-            sqlProcessor.close();
-            connection.close();
-            int count = rs.getInt(0);
-            return count > 0;
-        } catch (Exception e) {
-            Debug.logWarning(e, module);
-            return false;
-        }
+        return exists;
     }
     
     @Override
@@ -115,17 +122,15 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
             // create JDBC username
             statement.executeUpdate("CREATE USER \"" + this.getJdbcUsername() + "\" WITH PASSWORD '" + this.getJdbcPassword() +"' LOGIN;");
             statement.close();
-            superConnection.close();
         }
         
         // create a new database
-        Connection connection = ConnectionFactory.getConnection(this.getPostgresJdbcUri(), this.getJdbcUsername(), this.getJdbcPassword());
-        SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, connection);
+        SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, superConnection);
         sqlProcessor.executeUpdate("CREATE DATABASE \"" + this.getDatabaseName() + "\"");
         sqlProcessor.executeUpdate("ALTER DATABASE \"" + this.getDatabaseName() + "\" OWNER TO \"" + this.getJdbcUsername() + "\"");
-        sqlProcessor.executeUpdate("GRANT ALL PRIVILEGES ON \"" + this.getDatabaseName() + "\" TO \"" + this.getJdbcUsername() + "\"");
+        sqlProcessor.executeUpdate("GRANT ALL PRIVILEGES ON DATABASE \"" + this.getDatabaseName() + "\" TO \"" + this.getJdbcUsername() + "\"");
         sqlProcessor.close();
-        connection.close();
+        superConnection.close();
     }
 
     @Override

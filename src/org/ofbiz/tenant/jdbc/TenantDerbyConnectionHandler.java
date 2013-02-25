@@ -42,6 +42,7 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
     public final static String URI_PREFIX = "jdbc:derby:";
     
     private File databaseDir = null;
+    private boolean exists = false;
     
     /**
      * Constructor
@@ -53,6 +54,7 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
     
         databaseDir = new File(System.getProperty("ofbiz.home") + File.separator + "runtime" + File.separator + "data"
                 + File.separator + "derby" + File.separator + this.getDatabaseName());
+        exists = databaseDir.exists();
     }
     /**
      * get JDBC Server name
@@ -79,7 +81,7 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
     
     @Override
     public boolean isExist() {
-        return databaseDir.exists();
+        return exists;
     }
     
     @Override
