@@ -52,21 +52,6 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
      */
     public TenantPostgreSqlConnectionHandler(GenericValue tenantDataSource) {
         super(tenantDataSource);
-        try {
-            Delegator delegator = tenantDataSource.getDelegator();
-            GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
-            try {
-                Debug.logInfo("Get a connection of " + this.getJdbcUsername() + "@" + this.getJdbcUri() + " with " + this.getJdbcPassword(), module);
-                Connection connection = ConnectionFactory.getConnection(this.getJdbcUri(), this.getJdbcUsername(), this.getJdbcPassword());
-                SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, connection);
-                sqlProcessor.close();
-                connection.close();
-            } catch (Exception e) {
-                Debug.logInfo("Database does not exist: " + this.getJdbcUri(), module);
-            }
-        } catch (Exception e) {
-            Debug.logError(e, module);
-        }
     }
     /**
      * get JDBC Server name
