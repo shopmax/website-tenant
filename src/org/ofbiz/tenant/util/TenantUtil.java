@@ -36,6 +36,8 @@ import org.ofbiz.base.util.UtilMisc;
 import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.GenericValue;
+import org.ofbiz.entity.config.DatasourceInfo;
+import org.ofbiz.entity.config.EntityConfigUtil;
 import org.ofbiz.entity.datasource.GenericHelperInfo;
 import org.ofbiz.entity.jdbc.ConnectionFactory;
 import org.ofbiz.service.GenericServiceException;
@@ -144,5 +146,29 @@ public class TenantUtil {
         }
         toContext.putAll(modelService.makeValid(context, "IN", true, errorMessages, timeZone, locale));
         return ServiceUtil.returnSuccess();
+    }
+    
+    public static boolean isSameJdbcType(String tenantId, Delegator delegator) {
+        boolean isSameJdbcType = true;
+        try {
+            List<GenericValue> tenantDataSources = delegator.findByAnd("TenantDataSource", UtilMisc.toMap("tenantId", tenantId), null, false);
+            for (GenericValue tenantDataSource : tenantDataSources) {
+                String entityGroupName = tenantDataSource.getString("entityGroupName");
+                String jdbcUri = tenantDataSource.getString("jdbcUri");
+                String jdbcType = jdbcUri.split(":")[1];
+                
+                GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(entityGroupName);
+                DatasourceInfo datasourceInfo = EntityConfigUtil.getDatasourceInfo(helperInfo.getHelperBaseName());
+                String targetJdbcUri = datasourceInfo.inlineJdbcElement.getAttribute("jdbc-uri");
+                String targetJdbcType = targetJdbcUri.split(":")[1];
+                
+                isSameJdbcType = jdbcType.equals(targetJdbcType);
+                if (!isSameJdbcType) return isSameJdbcType;
+            }
+        } catch (Exception e) {
+            Debug.logWarning(e, module);
+            isSameJdbcType = false;
+        }
+        return isSameJdbcType;
     }
 }

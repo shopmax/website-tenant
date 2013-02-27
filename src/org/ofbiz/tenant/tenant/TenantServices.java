@@ -377,46 +377,50 @@ public class TenantServices {
         String files = (String) context.get("files");
         
         try {
-            // check if the tenant is used as demo
-            String isDemo = EntityUtilProperties.getPropertyValue("tenant", "isDemo", "Y", delegator);
-            if ("Y".equals(isDemo) && UtilValidate.isEmpty(readers)
-                    && UtilValidate.isEmpty(files) && UtilValidate.isEmpty(delegator.getDelegatorTenantId())) {
-                // get a readers from the first componentDemo.properties file
-                List<GenericValue> tenantComponents = delegator.findList("TenantComponent", EntityCondition.makeCondition("tenantId", tenantId), null, UtilMisc.toList("sequenceNum"), null, false);
-                if (UtilValidate.isNotEmpty(tenantComponents)) {
-                    GenericValue tenantComponent = EntityUtil.getFirst(tenantComponents);
-                    String componentName = tenantComponent.getString("componentName");
-                    readers = EntityUtilProperties.getPropertyValue(componentName + "Demo", "demoLoadData", delegator);
-                }
-                if (UtilValidate.isEmpty(readers)) {
-                    readers = "security,seed,seed-initial,demo,ext,ext-demo,ext-test";  // load everything when not specified
-                }
-            } else if (UtilValidate.isEmpty(readers)
-                    && UtilValidate.isNotEmpty(delegator.getDelegatorTenantId())) { // load only 'seed' if no readers but tenant exists
-                readers = "seed";
-            }
-            
-            // if the reader or files exists then install data
-            if (UtilValidate.isNotEmpty(readers) || UtilValidate.isNotEmpty(files)) {
-                if (TransactionUtil.getStatus() == TransactionUtil.STATUS_ACTIVE) {
-                    TransactionUtil.commit();
+            if (TenantUtil.isSameJdbcType(tenantId, delegator)) {
+                // check if the tenant is used as demo
+                String isDemo = EntityUtilProperties.getPropertyValue("tenant", "isDemo", "Y", delegator);
+                if ("Y".equals(isDemo) && UtilValidate.isEmpty(readers)
+                        && UtilValidate.isEmpty(files) && UtilValidate.isEmpty(delegator.getDelegatorTenantId())) {
+                    // get a readers from the first componentDemo.properties file
+                    List<GenericValue> tenantComponents = delegator.findList("TenantComponent", EntityCondition.makeCondition("tenantId", tenantId), null, UtilMisc.toList("sequenceNum"), null, false);
+                    if (UtilValidate.isNotEmpty(tenantComponents)) {
+                        GenericValue tenantComponent = EntityUtil.getFirst(tenantComponents);
+                        String componentName = tenantComponent.getString("componentName");
+                        readers = EntityUtilProperties.getPropertyValue(componentName + "Demo", "demoLoadData", delegator);
+                    }
+                    if (UtilValidate.isEmpty(readers)) {
+                        readers = "security,seed,seed-initial,demo,ext,ext-demo,ext-test";  // load everything when not specified
+                    }
+                } else if (UtilValidate.isEmpty(readers)
+                        && UtilValidate.isNotEmpty(delegator.getDelegatorTenantId())) { // load only 'seed' if no readers but tenant exists
+                    readers = "seed";
                 }
                 
-                // load data
-                String configFile = FileUtil.getFile("component://base/config/ofbiz-containers.xml").getAbsolutePath();
-                String delegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
-                List<String> argList = FastList.newInstance();
-                argList.add("-delegator=" + delegatorName);
-                if (UtilValidate.isNotEmpty(readers)) {
-                    argList.add("-readers=" + readers);
+                // if the reader or files exists then install data
+                if (UtilValidate.isNotEmpty(readers) || UtilValidate.isNotEmpty(files)) {
+                    if (TransactionUtil.getStatus() == TransactionUtil.STATUS_ACTIVE) {
+                        TransactionUtil.commit();
+                    }
+                    
+                    // load data
+                    String configFile = FileUtil.getFile("component://base/config/ofbiz-containers.xml").getAbsolutePath();
+                    String delegatorName = delegator.getDelegatorBaseName() + "#" + tenantId;
+                    List<String> argList = FastList.newInstance();
+                    argList.add("-delegator=" + delegatorName);
+                    if (UtilValidate.isNotEmpty(readers)) {
+                        argList.add("-readers=" + readers);
+                    }
+                    if (UtilValidate.isNotEmpty(files)) {
+                        argList.add("-file=" + files);
+                    }
+                    String[] args = argList.toArray(new String[argList.size()]);
+                    EntityDataLoadContainer entityDataLoadContainer = new EntityDataLoadContainer();
+                    entityDataLoadContainer.init(args, "dataload-container", configFile);
+                    entityDataLoadContainer.start();
                 }
-                if (UtilValidate.isNotEmpty(files)) {
-                    argList.add("-file=" + files);
-                }
-                String[] args = argList.toArray(new String[argList.size()]);
-                EntityDataLoadContainer entityDataLoadContainer = new EntityDataLoadContainer();
-                entityDataLoadContainer.init(args, "dataload-container", configFile);
-                entityDataLoadContainer.start();
+            } else {
+                Debug.logWarning("Tenant [" + tenantId + "] does not have the same JDBC type as " + delegator.getDelegatorName(), module);
             }
         } catch (Exception e) {
             String errMsg = "Could not install databases for tenant " + tenantId + " : " + e.getMessage();
@@ -438,11 +442,19 @@ public class TenantServices {
         String tenantId = (String) context.get("tenantId");
         String entityGroupName = (String) context.get("entityGroupName");
         try {
-            TenantJdbcConnectionHandler connectionHandler = TenantConnectionFactory.getTenantJdbcConnectionHandler(tenantId, entityGroupName, delegator);
-            connectionHandler.createDatabase();
-            Map<String, Object> results = ServiceUtil.returnSuccess();
-            results.put("isExist", connectionHandler.isExist());
-            return results;
+            if (TenantUtil.isSameJdbcType(tenantId, delegator)) {
+                TenantJdbcConnectionHandler connectionHandler = TenantConnectionFactory.getTenantJdbcConnectionHandler(tenantId, entityGroupName, delegator);
+                connectionHandler.createDatabase();
+                Map<String, Object> results = ServiceUtil.returnSuccess();
+                results.put("isExist", connectionHandler.isExist());
+                return results;
+            } else {
+                String errMsg = "Tenant [" + tenantId + "] does not have the same JDBC type as " + delegator.getDelegatorName();
+                Debug.logWarning(errMsg, module);
+                Map<String, Object> results = ServiceUtil.returnSuccess();
+                results.put("isExist", false);
+                return results;
+            }
         } catch (Exception e) {
             String errMsg = "Could not install databases for tenant '" + tenantId + "' with entity group name '" + entityGroupName + "' : " + e.getMessage();
             Debug.logError(e, errMsg, module);
