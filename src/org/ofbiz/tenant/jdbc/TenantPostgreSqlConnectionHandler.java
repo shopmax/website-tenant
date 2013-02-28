@@ -112,25 +112,29 @@ public class TenantPostgreSqlConnectionHandler extends TenantJdbcConnectionHandl
     @Override
     protected void doCreateDatabase(GenericHelperInfo helperInfo)
             throws GenericEntityException, SQLException {
-        Debug.logInfo("Create database " + this.getJdbcUsername() + "@" + this.getJdbcUri() + " with " + this.getJdbcPassword(), module);
-        // check if the user is not exist then create the user
-        Debug.logInfo("Check a user[" + this.getJdbcUsername() + "] by " + this.getSuperUsername() + "@" + this.getPostgresJdbcUri() + " with " + this.getSuperPassword(), module);
-        Connection superConnection = ConnectionFactory.getConnection(this.getPostgresJdbcUri(), this.getSuperUsername(), this.getSuperPassword());
-        Statement statement = superConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-        ResultSet resultSet = statement.executeQuery("SELECT * FROM pg_roles WHERE rolname='" + this.getJdbcUsername() + "';");
-        if (!resultSet.next()) {
-            // create JDBC username
-            statement.executeUpdate("CREATE USER \"" + this.getJdbcUsername() + "\" WITH PASSWORD '" + this.getJdbcPassword() +"' LOGIN;");
-            statement.close();
+        if (!isExist()) {
+            Debug.logInfo("Create database " + this.getJdbcUsername() + "@" + this.getJdbcUri() + " with " + this.getJdbcPassword(), module);
+            // check if the user is not exist then create the user
+            Debug.logInfo("Check a user[" + this.getJdbcUsername() + "] by " + this.getSuperUsername() + "@" + this.getPostgresJdbcUri() + " with " + this.getSuperPassword(), module);
+            Connection superConnection = ConnectionFactory.getConnection(this.getPostgresJdbcUri(), this.getSuperUsername(), this.getSuperPassword());
+            Statement statement = superConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM pg_roles WHERE rolname='" + this.getJdbcUsername() + "';");
+            if (!resultSet.next()) {
+                // create JDBC username
+                statement.executeUpdate("CREATE USER \"" + this.getJdbcUsername() + "\" WITH PASSWORD '" + this.getJdbcPassword() +"' LOGIN;");
+                statement.close();
+            }
+            
+            // create a new database
+            SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, superConnection);
+            sqlProcessor.executeUpdate("CREATE DATABASE \"" + this.getDatabaseName() + "\"");
+            sqlProcessor.executeUpdate("ALTER DATABASE \"" + this.getDatabaseName() + "\" OWNER TO \"" + this.getJdbcUsername() + "\"");
+            sqlProcessor.executeUpdate("GRANT ALL PRIVILEGES ON DATABASE \"" + this.getDatabaseName() + "\" TO \"" + this.getJdbcUsername() + "\"");
+            sqlProcessor.close();
+            superConnection.close();
+        } else {
+            Debug.logWarning("Could not create teh database because it is already exist.", module);
         }
-        
-        // create a new database
-        SQLProcessor sqlProcessor = new SQLProcessor(helperInfo, superConnection);
-        sqlProcessor.executeUpdate("CREATE DATABASE \"" + this.getDatabaseName() + "\"");
-        sqlProcessor.executeUpdate("ALTER DATABASE \"" + this.getDatabaseName() + "\" OWNER TO \"" + this.getJdbcUsername() + "\"");
-        sqlProcessor.executeUpdate("GRANT ALL PRIVILEGES ON DATABASE \"" + this.getDatabaseName() + "\" TO \"" + this.getJdbcUsername() + "\"");
-        sqlProcessor.close();
-        superConnection.close();
     }
 
     @Override
