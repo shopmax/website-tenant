@@ -263,4 +263,10 @@
         <attribute name="tenantId" mode="IN" type="String" optional="false"/>
         <attribute name="userLoginId" mode="OUT" type="String" optional="true"/>
     </service>
+    <service name="getTenantComponentDataReaders" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
+        invoke="getTenantComponentDataReaders" auth="true">
+        <description>Get Tenant Component Data Readers</description>
+        <attribute name="tenantId" mode="IN" type="String" optional="false"/>
+        <attribute name="readers" mode="OUT" type="String" optional="false"/>
+    </service>
 </services>

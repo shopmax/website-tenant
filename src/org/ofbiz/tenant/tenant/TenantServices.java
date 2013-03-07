@@ -373,30 +373,10 @@ public class TenantServices {
         Delegator delegator = ctx.getDelegator();
         String tenantId = (String) context.get("tenantId");
         String readers = (String) context.get("readers");
-        String newReaders = null;
         String files = (String) context.get("files");
         
         try {
             if (TenantUtil.isSameJdbcType(tenantId, delegator)) {
-                // check if the tenant is used as demo
-                String isDemo = EntityUtilProperties.getPropertyValue("tenant", "isDemo", "Y", delegator);
-                if ("Y".equals(isDemo) && UtilValidate.isEmpty(readers)
-                        && UtilValidate.isEmpty(files) && UtilValidate.isEmpty(delegator.getDelegatorTenantId())) {
-                    // get a readers from the first componentDemo.properties file
-                    List<GenericValue> tenantComponents = delegator.findList("TenantComponent", EntityCondition.makeCondition("tenantId", tenantId), null, UtilMisc.toList("sequenceNum"), null, false);
-                    if (UtilValidate.isNotEmpty(tenantComponents)) {
-                        GenericValue tenantComponent = EntityUtil.getFirst(tenantComponents);
-                        String componentName = tenantComponent.getString("componentName");
-                        readers = EntityUtilProperties.getPropertyValue(componentName + "Demo", "demoLoadData", delegator);
-                    }
-                    if (UtilValidate.isEmpty(readers)) {
-                        readers = "security,seed,seed-initial,demo,ext,ext-demo,ext-test";  // load everything when not specified
-                    }
-                } else if (UtilValidate.isEmpty(readers)
-                        && UtilValidate.isNotEmpty(delegator.getDelegatorTenantId())) { // load only 'seed' if no readers but tenant exists
-                    readers = "seed";
-                }
-                
                 // if the reader or files exists then install data
                 if (UtilValidate.isNotEmpty(readers) || UtilValidate.isNotEmpty(files)) {
                     if (TransactionUtil.getStatus() == TransactionUtil.STATUS_ACTIVE) {
@@ -418,6 +398,8 @@ public class TenantServices {
                     EntityDataLoadContainer entityDataLoadContainer = new EntityDataLoadContainer();
                     entityDataLoadContainer.init(args, "dataload-container", configFile);
                     entityDataLoadContainer.start();
+                } else {
+                    Debug.logWarning("Could not find any readers and data files to install", module);
                 }
             } else {
                 Debug.logWarning("Tenant [" + tenantId + "] does not have the same JDBC type as " + delegator.getDelegatorName(), module);
@@ -784,5 +766,46 @@ public class TenantServices {
         
         result.put("userLoginId", userLoginId);
         return result;
+    }
+    
+    /**
+     * Get UserLogin By Tenant
+     * @param ctx
+     * @param context
+     * @return String userLoginId
+     */
+    public static Map<String, Object> getTenantComponentDataReaders(DispatchContext ctx, Map<String, Object> context) {
+        Delegator delegator = ctx.getDelegator();
+        String tenantId = (String) context.get("tenantId");
+
+        String defaultReaders = "security,seed,seed-initial,demo,ext,ext-demo,ext-test";
+        String readers = null;
+        
+        try {
+            // check if the tenant is used as demo
+            String isDemo = EntityUtilProperties.getPropertyValue("tenant", "isDemo", "Y", delegator);
+            if ("Y".equals(isDemo)) {
+                // get a readers from the first componentDemo.properties file
+                List<GenericValue> tenantComponents = delegator.findList("TenantComponent", EntityCondition.makeCondition("tenantId", tenantId), null, UtilMisc.toList("sequenceNum"), null, false);
+                if (UtilValidate.isNotEmpty(tenantComponents)) {
+                    GenericValue tenantComponent = EntityUtil.getFirst(tenantComponents);
+                    String componentName = tenantComponent.getString("componentName");
+                    readers = EntityUtilProperties.getPropertyValue(componentName + "Demo", "demoLoadData", delegator);
+                }
+            }
+            if (UtilValidate.isEmpty(readers)) {
+                readers = defaultReaders;  // load everything when not specified
+            }
+        } catch (Exception e) {
+            readers = defaultReaders;
+            String errMsg = "Could not get readers for tenant " + tenantId + ", so use the default reader " + e.getMessage();
+            Debug.logError(e, errMsg, module);
+            // do not return an error because it will block other correct tenants
+            //return ServiceUtil.returnError(errMsg);
+        }
+        
+        Map<String, Object> results = ServiceUtil.returnSuccess();
+        results.put("readers", readers);
+        return results;
     }
 }
