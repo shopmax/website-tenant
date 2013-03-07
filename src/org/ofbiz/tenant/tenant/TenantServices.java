@@ -810,25 +810,30 @@ public class TenantServices {
     }
     
     /**
-     * Condition Has Tenant User Login
+     * Condition Install Tenant From Data Source
      * @param ctx
      * @param context
      * @return
      */
-    public static Map<String, Object> conditionHasTenantUserLogin(DispatchContext ctx, Map<String, Object> context) {
+    public static Map<String, Object> conditionInstallTenantFromDataSource(DispatchContext ctx, Map<String, Object> context) {
         Delegator delegator = ctx.getDelegator();
-        String tenantId = (String) context.get("tenantId");
+        Map<String, Object> serviceContext = UtilGenerics.cast(context.get("serviceContext"));
+        
+        String tenantId = (String) serviceContext.get("tenantId");
+        String entityGroupName = (String) serviceContext.get("entityGroupName");
+        Boolean isExist = (Boolean) serviceContext.get("isExist");
         
         Boolean conditionReply = Boolean.FALSE;
         
         try {
+            // if the entity group is org.ofbiz.olap, is not exist and no user login  then set the condition reply to true
             GenericValue tenantUserLogin = delegator.findOne("UserLogin", UtilMisc.toMap("userLoginId", tenantId), false);
-            if (UtilValidate.isNotEmpty(tenantUserLogin)) {
+            if ("org.ofbiz.olap".equals(entityGroupName) && !isExist && UtilValidate.isEmpty(tenantUserLogin)) {
                 conditionReply = Boolean.TRUE;
             }
             Map<String, Object> result = ServiceUtil.returnSuccess();
             result.put("conditionReply", conditionReply);
-        return result;
+            return result;
         } catch (Exception e) {
             Debug.logError(e, module);
             return ServiceUtil.returnError(e.getMessage());
