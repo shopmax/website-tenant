@@ -7,4 +7,5 @@
     <UserLogin  userLoginId="tenantmgr" currentPassword="$SHA$CO07pMLK5Z7ai0$SCQfRYqFre31NswZbrs9KONON88" enabled="Y" hasLoggedOut="Y" partyId="tenantmgr" requirePasswordChange="N"/>
     <!-- password = aws455 -->
     <UserLoginSecurityGroup fromDate="2001-01-01 12:00:00.0" groupId="TENANTMGRADMIN" userLoginId="tenantmgr"/>
+    <UserLoginSecurityGroup fromDate="2001-01-01 12:00:00.0" groupId="SUPER" userLoginId="tenantmgr"/>
 </entity-engine-xml>

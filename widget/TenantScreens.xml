@@ -24,20 +24,40 @@
                 <set field="parameters.noConditionFind" value="Y"/>
             </actions>
             <widgets>
-                <decorator-screen name="main-decorator" location="${parameters.mainDecoratorLocation}">
+               <decorator-screen name="main-decorator" location="${parameters.mainDecoratorLocation}">
                     <decorator-section name="body">
-                        <include-menu name="TenantSubTabBar" location="component://tenant/widget/TenantMenus.xml"/>
-                        <decorator-screen name="FindScreenDecorator" location="component://common/widget/CommonScreens.xml">
-                            <decorator-section name="search-options">
-                                <include-form name="FindTenant" location="component://tenant/widget/TenantForms.xml"/>
-                            </decorator-section>
-                            <decorator-section name="search-results">
-                                <include-form name="ListTenants" location="component://tenant/widget/TenantForms.xml"/>
-                            </decorator-section>
-                         </decorator-screen>
+                        <section>
+                          <condition>
+                              <if-has-permission permission="TENANTMGR" action="_ADMIN"/>
+                          </condition>
+                          <widgets>
+                              <decorator-screen name="FindScreenDecorator" location="component://common/widget/CommonScreens.xml">
+                                  <decorator-section name="search-options">
+                                      <include-form name="FindTenant" location="component://tenant/widget/TenantForms.xml"/>
+                                  </decorator-section>
+                                  <decorator-section name="search-results">
+                                      <include-form name="ListTenants" location="component://tenant/widget/TenantForms.xml"/>
+                                  </decorator-section>
+                               </decorator-screen>
+                            </widgets>
+                            <fail-widgets>
+                                <screenlet title="${uiLabelMap.TenantTenant}">
+                                    <include-form name="tenantHeader" location="component://tenant/widget/TenantForms.xml"/>
+                                </screenlet>
+                                <screenlet title="${uiLabelMap.TenantDomainNames}">
+                                    <include-form name="tenantDomainNames" location="component://tenant/widget/TenantForms.xml"/>
+                                </screenlet>
+                                <screenlet title="${uiLabelMap.TenantDataSources}">
+                                    <include-form name="tenantDataSources" location="component://tenant/widget/TenantForms.xml"/>
+                                </screenlet>
+                                <screenlet title="${uiLabelMap.TenantComponents}">
+                                    <include-form name="tenantComponents" location="component://tenant/widget/TenantForms.xml"/>
+                                </screenlet>
+                            </fail-widgets>
+                         </section>
                     </decorator-section>
                 </decorator-screen>
-            </widgets>
+             </widgets>
         </section>
     </screen>
     <screen name="TenantOverview">
