@@ -25,7 +25,8 @@ under the License.
     <eca service="createTenantDataSourceDb" event="return">
         <condition field-name="entityGroupName" operator="equals" value="org.ofbiz.olap"/>
         <condition field-name="isExist" operator="equals" value="false" type="Boolean"/>
-        <action mode="sync" service=getTenantComponentDataReaders/>
+        <condition-service service-name="conditionHasTenantUserLogin"/>
+        <action mode="sync" service="getTenantComponentDataReaders"/>
         <action service="installTenantDataSources" mode="sync"/>
     </eca>
 </service-eca>

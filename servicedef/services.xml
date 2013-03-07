@@ -269,4 +269,10 @@
         <attribute name="tenantId" mode="IN" type="String" optional="false"/>
         <attribute name="readers" mode="OUT" type="String" optional="false"/>
     </service>
+    <service name="conditionHasTenantUserLogin" engine="java" location="org.ofbiz.tenant.tenant.TenantServices"
+        invoke="conditionHasTenantUserLogin" auth="true">
+        <description>Condition Has Tenant User Login</description>
+        <implements service="serviceEcaConditionInterface"/>
+        <attribute name="tenantId" mode="IN" type="String" optional="false"/>
+    </service>
 </services>

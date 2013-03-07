@@ -769,10 +769,10 @@ public class TenantServices {
     }
     
     /**
-     * Get UserLogin By Tenant
+     * Get Tenant Component Data Readers
      * @param ctx
      * @param context
-     * @return String userLoginId
+     * @return
      */
     public static Map<String, Object> getTenantComponentDataReaders(DispatchContext ctx, Map<String, Object> context) {
         Delegator delegator = ctx.getDelegator();
@@ -807,5 +807,31 @@ public class TenantServices {
         Map<String, Object> results = ServiceUtil.returnSuccess();
         results.put("readers", readers);
         return results;
+    }
+    
+    /**
+     * Condition Has Tenant User Login
+     * @param ctx
+     * @param context
+     * @return
+     */
+    public static Map<String, Object> conditionHasTenantUserLogin(DispatchContext ctx, Map<String, Object> context) {
+        Delegator delegator = ctx.getDelegator();
+        String tenantId = (String) context.get("tenantId");
+        
+        Boolean conditionReply = Boolean.FALSE;
+        
+        try {
+            GenericValue tenantUserLogin = delegator.findOne("UserLogin", UtilMisc.toMap("userLoginId", tenantId), false);
+            if (UtilValidate.isNotEmpty(tenantUserLogin)) {
+                conditionReply = Boolean.TRUE;
+            }
+            Map<String, Object> result = ServiceUtil.returnSuccess();
+            result.put("conditionReply", conditionReply);
+        return result;
+        } catch (Exception e) {
+            Debug.logError(e, module);
+            return ServiceUtil.returnError(e.getMessage());
+        }
     }
 }
