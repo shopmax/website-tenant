@@ -16,6 +16,8 @@
                 <set field="applicationMenuName" value="MainAppBar" global="true"/>
                 <set field="applicationMenuLocation" value="component://tenant/widget/TenantMenus.xml" global="true"/>
                 <set field="applicationTitle" value="${uiLabelMap.TenantApplication}" global="true"/>
+                <set field="hasTenantComponent" value="true" type="Boolean" global="true"/>
+                <!-- value="${groovy:org.ofbiz.base.component.ComponentConfig.componentExists(&quot;tenant&quot;);}" -->
             </actions>
             <widgets>
                 <include-screen name="ApplicationDecorator" location="component://commonext/widget/CommonScreens.xml"/>
@@ -26,35 +28,49 @@
     <screen name="CommonTenantDecorator">
         <section>
             <actions>
+                <set field="headerItem" value="tenant"/>
                 <set field="tenantId" from-field="parameters.tenantId" global="true"/>
                 <entity-one value-field="tenant" entity-name="Tenant"/>
                 <set field="tenant" from-field="tenant" global="true"/>
             </actions>
             <widgets>
-                <decorator-screen name="main-decorator" location="${parameters.mainDecoratorLocation}">
-                    <decorator-section name="pre-body">
-                        <section>
-                            <widgets>
-                                <include-menu name="TenantTabBar" location="component://tenant/widget/TenantMenus.xml"/>
-                            </widgets>
-                        </section>
-                    </decorator-section>
-                    <decorator-section name="body">
-                        <section>
-                            <condition>
-                                <if-has-permission permission="TENANTMGR" action="_VIEW"/>
-                            </condition>
-                            <widgets>
-                                <include-menu name="TenantSubTabBar" location="component://tenant/widget/TenantMenus.xml"/>
-                                <label style="h1" text="${tenant.tenantName} [${tenantId}]"/>
-                                <decorator-section-include name="body"/>
-                            </widgets>
-                            <fail-widgets>
-                                <label style="h3">${uiLabelMap.TenantViewPermissionError}</label>
-                            </fail-widgets>
-                        </section>
-                    </decorator-section>
-                </decorator-screen>
+                <section>
+                    <condition>
+                        <if-has-permission permission="TENANTMGR" action="_ADMIN"/>
+                    </condition>
+                    <widgets>
+                        <decorator-screen name="main-decorator" location="${parameters.mainDecoratorLocation}">
+                            <decorator-section name="pre-body">
+                                <section>
+                                    <widgets>
+                                        <include-menu name="TenantTabBar" location="component://tenant/widget/TenantMenus.xml"/>
+                                    </widgets>
+                                </section>
+                            </decorator-section>
+                            <decorator-section name="body">
+                                <section>
+                                    <widgets>
+                                        <include-menu name="TenantSubTabBar" location="component://tenant/widget/TenantMenus.xml"/>
+                                        <label style="h1" text="${tenant.tenantName} [${tenantId}]"/>
+                                        <decorator-section-include name="body"/>
+                                    </widgets>
+                                </section>
+                            </decorator-section>
+                        </decorator-screen>
+                    </widgets>
+                    <fail-widgets>
+                         <decorator-screen name="main-decorator" location="${parameters.mainDecoratorLocation}">
+                            <decorator-section name="body">
+                                <section>
+                                    <widgets>
+                                        <label style="h1" text="${tenant.tenantName} [${tenantId}]"/>
+                                        <decorator-section-include name="body"/>
+                                    </widgets>
+                                </section>
+                            </decorator-section>
+                        </decorator-screen>
+                    </fail-widgets>
+                </section>
             </widgets>
         </section>
     </screen>

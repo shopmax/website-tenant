@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<default-tenant>
+    <component name="growerpbackend"/>
+    <component name="growerpwebsite"/>
+    <component name="growerpsaas"/>
+    
+    <domain name="growerpsaasbackend.localhost" initial-path="/backend"/>
+    <domain name="growerpsaasbackend.ofbizdemo.com" initial-path="/backend"/>
+</default-tenant>

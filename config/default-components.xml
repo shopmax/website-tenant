@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<default-components>
-    <component name="growerpbackend"/>
-    <component name="growerpwebsite"/>
-    <component name="growerpsaas"/>
-</default-components>

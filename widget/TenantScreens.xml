@@ -22,22 +22,46 @@
                 <set field="viewIndex" from-field="parameters.VIEW_INDEX" type="Integer" default-value="0"/>
                 <set field="viewSize" from-field="parameters.VIEW_SIZE" type="Integer" default-value="20"/>
                 <set field="parameters.noConditionFind" value="Y"/>
-                
                 <entity-one value-field="tenant" entity-name="Tenant">
                     <field-map field-name="tenantId" from-field="parameters.tenantId"/>
                 </entity-one>
+                <set field="hasTenantComponent" value="${groovy:org.ofbiz.base.component.ComponentConfig.componentExists(&quot;tenant&quot;);}" type="Boolean" global="true"/>
             </actions>
             <widgets>
                 <section>
                     <condition>
-                        <if-has-permission permission="TENANTMGR" action="_ADMIN"/>
+                         <if-compare operator="equals" value="true" field="hasTenantComponent"/>
                     </condition>
                     <widgets>
                         <section>
                             <condition>
-                                <if-empty field="tenant"/>
+                                <if-has-permission permission="TENANTMGR" action="_ADMIN"/>
                             </condition>
                             <widgets>
+                                <section>
+                                    <condition>
+                                        <if-empty field="tenantId"/>
+                                    </condition>
+                                    <widgets>
+                                        <decorator-screen name="main-decorator" location="${parameters.mainDecoratorLocation}">
+                                            <decorator-section name="body">
+                                                <decorator-screen name="FindScreenDecorator" location="component://common/widget/CommonScreens.xml">
+                                                    <decorator-section name="search-options">
+                                                        <include-form name="FindTenant" location="component://tenant/widget/TenantForms.xml"/>
+                                                    </decorator-section>
+                                                    <decorator-section name="search-results">
+                                                        <include-form name="ListTenants" location="component://tenant/widget/TenantForms.xml"/>
+                                                    </decorator-section>
+                                                </decorator-screen>
+                                            </decorator-section>
+                                        </decorator-screen>
+                                    </widgets>
+                                    <fail-widgets>
+                                        <include-screen name="TenantOverview"/>
+                                    </fail-widgets>
+                                </section>
+                            </widgets>
+                            <fail-widgets>
                                 <decorator-screen name="main-decorator" location="${parameters.mainDecoratorLocation}">
                                     <decorator-section name="body">
                                         <decorator-screen name="FindScreenDecorator" location="component://common/widget/CommonScreens.xml">
@@ -50,17 +74,16 @@
                                         </decorator-screen>
                                     </decorator-section>
                                 </decorator-screen>
-                            </widgets>
-                            <fail-widgets>
-                                <include-screen name="TenantOverview"/>
                             </fail-widgets>
                         </section>
                     </widgets>
                     <fail-widgets>
-                        <decorator-screen name="main-decorator" location="${parameters.mainDecoratorLocation}">
+                        <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
                             <decorator-section name="body">
-                                <label text="You do have a permission to view this screen."/>
-                            </decorator-section>
+                                <screenlet title="${uiLabelMap.TenantTenant}">
+                                    <label style="h3">${uiLabelMap.NoTenantContent}</label>
+                                </screenlet>
+                           </decorator-section>
                         </decorator-screen>
                     </fail-widgets>
                  </section>
@@ -74,24 +97,41 @@
                 <set field="tabButtonItem" value="overview"/>
                 <set field="viewIndex" from-field="parameters.VIEW_INDEX" type="Integer" default-value="0"/>
                 <set field="viewSize" from-field="parameters.VIEW_SIZE" type="Integer" default-value="20"/>
+                <set field="hasTenantComponent" value="${groovy:org.ofbiz.base.component.ComponentConfig.componentExists(&quot;tenant&quot;);}" type="Boolean" global="true"/>
             </actions>
             <widgets>
-                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
-                    <decorator-section name="body">
-                        <screenlet title="${uiLabelMap.TenantTenant}">
-                            <include-form name="tenantHeader" location="component://tenant/widget/TenantForms.xml"/>
-                        </screenlet>
-                        <screenlet title="${uiLabelMap.TenantDomainNames}">
-                            <include-form name="tenantDomainNames" location="component://tenant/widget/TenantForms.xml"/>
-                        </screenlet>
-                        <screenlet title="${uiLabelMap.TenantDataSources}">
-                            <include-form name="tenantDataSources" location="component://tenant/widget/TenantForms.xml"/>
-                        </screenlet>
-                        <screenlet title="${uiLabelMap.TenantComponents}">
-                            <include-form name="tenantComponents" location="component://tenant/widget/TenantForms.xml"/>
-                        </screenlet>
-                    </decorator-section>
-                </decorator-screen>
+                <section>
+                    <condition>
+                        <if-compare operator="equals" value="true" field="hasTenantComponent"/>
+                    </condition>
+                    <widgets>
+                        <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                            <decorator-section name="body">
+                                <screenlet title="${uiLabelMap.TenantTenant}">
+                                    <include-form name="tenantHeader" location="component://tenant/widget/TenantForms.xml"/>
+                                </screenlet>
+                                <screenlet title="${uiLabelMap.TenantDomainNames}">
+                                    <include-form name="tenantDomainNames" location="component://tenant/widget/TenantForms.xml"/>
+                                </screenlet>
+                                <screenlet title="${uiLabelMap.TenantDataSources}">
+                                    <include-form name="tenantDataSources" location="component://tenant/widget/TenantForms.xml"/>
+                                </screenlet>
+                                <screenlet title="${uiLabelMap.TenantComponents}">
+                                    <include-form name="tenantComponents" location="component://tenant/widget/TenantForms.xml"/>
+                                </screenlet>
+                            </decorator-section>
+                        </decorator-screen>
+                    </widgets>
+                    <fail-widgets>
+                        <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                            <decorator-section name="body">
+                                <screenlet title="${uiLabelMap.TenantTenant}">
+                                    <label style="h3">${uiLabelMap.NoTenantContent}</label>
+                                </screenlet>
+                           </decorator-section>
+                        </decorator-screen>
+                    </fail-widgets>
+                </section>
             </widgets>
         </section>
     </screen>
@@ -102,15 +142,48 @@
                 <set field="tabButtonItem" value="tenant"/>
                 <set field="viewIndex" from-field="parameters.VIEW_INDEX" type="Integer" default-value="0"/>
                 <set field="viewSize" from-field="parameters.VIEW_SIZE" type="Integer" default-value="20"/>
+                <set field="hasTenantComponent" value="${groovy:org.ofbiz.base.component.ComponentConfig.componentExists(&quot;tenant&quot;);}" type="Boolean" global="true"/>
             </actions>
             <widgets>
-                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
-                    <decorator-section name="body">
-                        <screenlet title="${uiLabelMap.TenantTenant}">
-                            <include-form name="EditTenant" location="component://tenant/widget/TenantForms.xml"/>
-                        </screenlet>
-                    </decorator-section>
-                </decorator-screen>
+                <section>
+                    <condition>
+                        <if-compare operator="equals" value="true" field="hasTenantComponent"/>
+                    </condition>
+                    <widgets>
+                        <section>
+                            <condition>
+                                <if-has-permission permission="TENANTMGR" action="_ADMIN"/>
+                            </condition>
+                            <widgets>
+                                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                                    <decorator-section name="body">
+                                        <screenlet title="${uiLabelMap.TenantTenant}">
+                                            <include-form name="EditTenant" location="component://tenant/widget/TenantForms.xml"/>
+                                        </screenlet>
+                                    </decorator-section>
+                                </decorator-screen>
+                            </widgets>
+                            <fail-widgets>
+                                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                                    <decorator-section name="body">
+                                        <screenlet title="${uiLabelMap.TenantTenant}">
+                                            <label style="h3">${uiLabelMap.TenantViewPermissionError}</label>
+                                        </screenlet>
+                                   </decorator-section>
+                                </decorator-screen>
+                            </fail-widgets>
+                        </section>
+                    </widgets>
+                    <fail-widgets>
+                        <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                            <decorator-section name="body">
+                                <screenlet title="${uiLabelMap.TenantTenant}">
+                                    <label style="h3">${uiLabelMap.NoTenantContent}</label>
+                                </screenlet>
+                           </decorator-section>
+                        </decorator-screen>
+                    </fail-widgets>
+                </section>
             </widgets>
         </section>
     </screen>
@@ -121,18 +194,51 @@
                 <set field="tabButtonItem" value="domainNames"/>
                 <set field="viewIndex" from-field="parameters.VIEW_INDEX" type="Integer" default-value="0"/>
                 <set field="viewSize" from-field="parameters.VIEW_SIZE" type="Integer" default-value="20"/>
+                <set field="hasTenantComponent" value="${groovy:org.ofbiz.base.component.ComponentConfig.componentExists(&quot;tenant&quot;);}" type="Boolean" global="true"/>
             </actions>
             <widgets>
-                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
-                    <decorator-section name="body">
-                        <screenlet title="${uiLabelMap.TenantDomainNames}">
-                            <include-form name="ListTenantDomainNames" location="component://tenant/widget/TenantForms.xml"/>
-                        </screenlet>
-                        <screenlet title="${uiLabelMap.TenantCreateDomainName}">
-                            <include-form name="EditTenantDomainName" location="component://tenant/widget/TenantForms.xml"/>
-                        </screenlet>
-                    </decorator-section>
-                </decorator-screen>
+                <section>
+                    <condition>
+                        <if-compare operator="equals" value="true" field="hasTenantComponent"/>
+                    </condition>
+                    <widgets>
+                        <section>
+                            <condition>
+                                <if-has-permission permission="TENANTMGR" action="_ADMIN"/>
+                            </condition>
+                            <widgets>
+                               <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                                   <decorator-section name="body">
+                                       <screenlet title="${uiLabelMap.TenantDomainNames}">
+                                           <include-form name="ListTenantDomainNames" location="component://tenant/widget/TenantForms.xml"/>
+                                       </screenlet>
+                                       <screenlet title="${uiLabelMap.TenantCreateDomainName}">
+                                           <include-form name="EditTenantDomainName" location="component://tenant/widget/TenantForms.xml"/>
+                                       </screenlet>
+                                   </decorator-section>
+                               </decorator-screen>
+                           </widgets>
+                           <fail-widgets>
+                               <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                                   <decorator-section name="body">
+                                       <screenlet title="${uiLabelMap.TenantTenant}">
+                                           <label style="h3">${uiLabelMap.TenantViewPermissionError}</label>
+                                       </screenlet>
+                                   </decorator-section>
+                               </decorator-screen>
+                           </fail-widgets>
+                        </section>
+                    </widgets>
+                    <fail-widgets>
+                        <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                            <decorator-section name="body">
+                                <screenlet title="${uiLabelMap.TenantTenant}">
+                                    <label style="h3">${uiLabelMap.NoTenantContent}</label>
+                                </screenlet>
+                            </decorator-section>
+                        </decorator-screen>
+                    </fail-widgets>
+                </section>
             </widgets>
         </section>
     </screen>
@@ -143,18 +249,51 @@
                 <set field="tabButtonItem" value="dataSources"/>
                 <set field="viewIndex" from-field="parameters.VIEW_INDEX" type="Integer" default-value="0"/>
                 <set field="viewSize" from-field="parameters.VIEW_SIZE" type="Integer" default-value="20"/>
+                <set field="hasTenantComponent" value="${groovy:org.ofbiz.base.component.ComponentConfig.componentExists(&quot;tenant&quot;);}" type="Boolean" global="true"/>
             </actions>
             <widgets>
-                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
-                    <decorator-section name="body">
-                        <screenlet title="${uiLabelMap.TenantDataSources}">
-                            <include-form name="ListTenantDataSources" location="component://tenant/widget/TenantForms.xml"/>
-                        </screenlet>
-                        <screenlet title="${uiLabelMap.TenantCreateDataSource}">
-                            <include-form name="EditTenantDataSource" location="component://tenant/widget/TenantForms.xml"/>
-                        </screenlet>
-                    </decorator-section>
-                </decorator-screen>
+                <section>
+                    <condition>
+                        <if-compare operator="equals" value="true" field="hasTenantComponent"/>
+                    </condition>
+                    <widgets>
+                        <section>
+                            <condition>
+                                <if-has-permission permission="TENANTMGR" action="_ADMIN"/>
+                            </condition>
+                            <widgets>
+                                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                                    <decorator-section name="body">
+                                        <screenlet title="${uiLabelMap.TenantDataSources}">
+                                            <include-form name="ListTenantDataSources" location="component://tenant/widget/TenantForms.xml"/>
+                                        </screenlet>
+                                        <screenlet title="${uiLabelMap.TenantCreateDataSource}">
+                                            <include-form name="EditTenantDataSource" location="component://tenant/widget/TenantForms.xml"/>
+                                        </screenlet>
+                                    </decorator-section>
+                                </decorator-screen>
+                            </widgets>
+                            <fail-widgets>
+                                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                                    <decorator-section name="body">
+                                        <screenlet title="${uiLabelMap.TenantTenant}">
+                                            <label style="h3">${uiLabelMap.TenantViewPermissionError}</label>
+                                        </screenlet>
+                                    </decorator-section>
+                                </decorator-screen>
+                            </fail-widgets>
+                        </section>
+                    </widgets>
+                    <fail-widgets>
+                        <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                            <decorator-section name="body">
+                                <screenlet title="${uiLabelMap.TenantTenant}">
+                                    <label style="h3">${uiLabelMap.NoTenantContent}</label>
+                                </screenlet>
+                            </decorator-section>
+                        </decorator-screen>
+                    </fail-widgets>
+                </section>
             </widgets>
         </section>
     </screen>
@@ -165,18 +304,51 @@
                 <set field="tabButtonItem" value="components"/>
                 <set field="viewIndex" from-field="parameters.VIEW_INDEX" type="Integer" default-value="0"/>
                 <set field="viewSize" from-field="parameters.VIEW_SIZE" type="Integer" default-value="20"/>
+                <set field="hasTenantComponent" value="${groovy:org.ofbiz.base.component.ComponentConfig.componentExists(&quot;tenant&quot;);}" type="Boolean" global="true"/>
             </actions>
             <widgets>
-                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
-                    <decorator-section name="body">
-                        <screenlet title="${uiLabelMap.TenantComponents}">
-                            <include-form name="ListTenantComponents" location="component://tenant/widget/TenantForms.xml"/>
-                        </screenlet>
-                        <screenlet title="${uiLabelMap.TenantCreateComponent}">
-                            <include-form name="EditTenantComponent" location="component://tenant/widget/TenantForms.xml"/>
-                        </screenlet>
-                    </decorator-section>
-                </decorator-screen>
+                <section>
+                    <condition>
+                        <if-compare operator="equals" value="true" field="hasTenantComponent"/>
+                    </condition>
+                    <widgets>
+                        <section>
+                            <condition>
+                                <if-has-permission permission="TENANTMGR" action="_ADMIN"/>
+                            </condition>
+                            <widgets>
+                                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                                    <decorator-section name="body">
+                                        <screenlet title="${uiLabelMap.TenantComponents}">
+                                            <include-form name="ListTenantComponents" location="component://tenant/widget/TenantForms.xml"/>
+                                        </screenlet>
+                                        <screenlet title="${uiLabelMap.TenantCreateComponent}">
+                                            <include-form name="EditTenantComponent" location="component://tenant/widget/TenantForms.xml"/>
+                                        </screenlet>
+                                    </decorator-section>
+                                </decorator-screen>
+                            </widgets>
+                            <fail-widgets>
+                                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                                    <decorator-section name="body">
+                                        <screenlet title="${uiLabelMap.TenantTenant}">
+                                            <label style="h3">${uiLabelMap.TenantViewPermissionError}</label>
+                                        </screenlet>
+                                    </decorator-section>
+                                </decorator-screen>
+                            </fail-widgets>
+                        </section>
+                    </widgets>
+                    <fail-widgets>
+                        <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                            <decorator-section name="body">
+                                <screenlet title="${uiLabelMap.TenantTenant}">
+                                    <label style="h3">${uiLabelMap.NoTenantContent}</label>
+                                </screenlet>
+                            </decorator-section>
+                        </decorator-screen>
+                    </fail-widgets>
+                </section>
             </widgets>
         </section>
     </screen>
@@ -188,15 +360,48 @@
                 <set field="viewIndex" from-field="parameters.VIEW_INDEX" type="Integer" default-value="0"/>
                 <set field="viewSize" from-field="parameters.VIEW_SIZE" type="Integer" default-value="20"/>
                 <set field="readers" from-field="parameters.readers"/>
+                <set field="hasTenantComponent" value="${groovy:org.ofbiz.base.component.ComponentConfig.componentExists(&quot;tenant&quot;);}" type="Boolean" global="true"/>
             </actions>
             <widgets>
-                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
-                    <decorator-section name="body">
-                        <screenlet title="${uiLabelMap.TenantInstallation}">
-                            <include-form name="EditTenantInstallation" location="component://tenant/widget/TenantForms.xml"/>
-                        </screenlet>
-                    </decorator-section>
-                </decorator-screen>
+                <section>
+                    <condition>
+                        <if-compare operator="equals" value="true" field="hasTenantComponent"/>
+                    </condition>
+                    <widgets>
+                        <section>
+                            <condition>
+                                <if-has-permission permission="TENANTMGR" action="_ADMIN"/>
+                            </condition>
+                            <widgets>
+                               <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                                   <decorator-section name="body">
+                                       <screenlet title="${uiLabelMap.TenantInstallation}">
+                                           <include-form name="EditTenantInstallation" location="component://tenant/widget/TenantForms.xml"/>
+                                       </screenlet>
+                                   </decorator-section>
+                               </decorator-screen>
+                           </widgets>
+                           <fail-widgets>
+                               <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                                   <decorator-section name="body">
+                                       <screenlet title="${uiLabelMap.TenantTenant}">
+                                           <label style="h3">${uiLabelMap.TenantViewPermissionError}</label>
+                                       </screenlet>
+                                   </decorator-section>
+                               </decorator-screen>
+                           </fail-widgets>
+                        </section>
+                    </widgets>
+                    <fail-widgets>
+                        <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                            <decorator-section name="body">
+                                <screenlet title="${uiLabelMap.TenantTenant}">
+                                    <label style="h3">${uiLabelMap.NoTenantContent}</label>
+                                </screenlet>
+                            </decorator-section>
+                        </decorator-screen>
+                    </fail-widgets>
+                </section>
             </widgets>
         </section>
     </screen>
@@ -205,15 +410,48 @@
             <actions>
                 <set field="tabButtonItem" value="mailListener"/>
                 <script location="component://tenant/webapp/tenantmgr/WEB-INF/actions/ViewMailListener.groovy"/>
+                <set field="hasTenantComponent" value="${groovy:org.ofbiz.base.component.ComponentConfig.componentExists(&quot;tenant&quot;);}" type="Boolean" global="true"/>
             </actions>
             <widgets>
-                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
-                    <decorator-section name="body">
-                        <screenlet title="${uiLabelMap.TenantMailListener}">
-                            <include-form name="EditMailListener" location="component://tenant/widget/TenantForms.xml"/>
-                        </screenlet>
-                    </decorator-section>
-                </decorator-screen>
+                <section>
+                    <condition>
+                        <if-compare operator="equals" value="true" field="hasTenantComponent"/>
+                    </condition>
+                    <widgets>
+                        <section>
+                            <condition>
+                                <if-has-permission permission="TENANTMGR" action="_ADMIN"/>
+                            </condition>
+                            <widgets>
+                                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                                    <decorator-section name="body">
+                                        <screenlet title="${uiLabelMap.TenantMailListener}">
+                                            <include-form name="EditMailListener" location="component://tenant/widget/TenantForms.xml"/>
+                                        </screenlet>
+                                    </decorator-section>
+                                </decorator-screen>
+                            </widgets>
+                            <fail-widgets>
+                                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                                    <decorator-section name="body">
+                                        <screenlet title="${uiLabelMap.TenantTenant}">
+                                            <label style="h3">${uiLabelMap.TenantViewPermissionError}</label>
+                                        </screenlet>
+                                    </decorator-section>
+                                </decorator-screen>
+                            </fail-widgets>
+                        </section>
+                    </widgets>
+                    <fail-widgets>
+                        <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                            <decorator-section name="body">
+                                <screenlet title="${uiLabelMap.TenantTenant}">
+                                    <label style="h3">${uiLabelMap.NoTenantContent}</label>
+                                </screenlet>
+                            </decorator-section>
+                        </decorator-screen>
+                    </fail-widgets>
+                </section>
             </widgets>
         </section>
     </screen>
@@ -221,15 +459,48 @@
         <section>
             <actions>
                 <set field="tabButtonItem" value="export"/>
+                <set field="hasTenantComponent" value="${groovy:org.ofbiz.base.component.ComponentConfig.componentExists(&quot;tenant&quot;);}" type="Boolean" global="true"/>
             </actions>
             <widgets>
-                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
-                    <decorator-section name="body">
-                        <screenlet title="${uiLabelMap.CommonExport}">
-                            <include-form name="EditTenantExport" location="component://tenant/widget/TenantForms.xml"/>
-                        </screenlet>
-                    </decorator-section>
-                </decorator-screen>
+                <section>
+                    <condition>
+                        <if-compare operator="equals" value="true" field="hasTenantComponent"/>
+                    </condition>
+                    <widgets>
+                        <section>
+                            <condition>
+                                <if-has-permission permission="TENANTMGR" action="_ADMIN"/>
+                            </condition>
+                            <widgets>
+                                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                                    <decorator-section name="body">
+                                        <screenlet title="${uiLabelMap.CommonExport}">
+                                            <include-form name="EditTenantExport" location="component://tenant/widget/TenantForms.xml"/>
+                                        </screenlet>
+                                    </decorator-section>
+                                </decorator-screen>
+                            </widgets>
+                            <fail-widgets>
+                                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                                    <decorator-section name="body">
+                                        <screenlet title="${uiLabelMap.TenantTenant}">
+                                            <label style="h3">${uiLabelMap.TenantViewPermissionError}</label>
+                                        </screenlet>
+                                    </decorator-section>
+                                </decorator-screen>
+                            </fail-widgets>
+                        </section>
+                    </widgets>
+                    <fail-widgets>
+                        <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                            <decorator-section name="body">
+                                <screenlet title="${uiLabelMap.TenantTenant}">
+                                    <label style="h3">${uiLabelMap.NoTenantContent}</label>
+                                </screenlet>
+                            </decorator-section>
+                        </decorator-screen>
+                    </fail-widgets>
+                </section>
             </widgets>
         </section>
     </screen>
@@ -237,15 +508,48 @@
         <section>
             <actions>
                 <set field="tabButtonItem" value="import"/>
+                <set field="hasTenantComponent" value="${groovy:org.ofbiz.base.component.ComponentConfig.componentExists(&quot;tenant&quot;);}" type="Boolean" global="true"/>
             </actions>
             <widgets>
-                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
-                    <decorator-section name="body">
-                        <screenlet title="${uiLabelMap.WebtoolsImport}">
-                            <include-form name="EditTenantImport" location="component://tenant/widget/TenantForms.xml"/>
-                        </screenlet>
-                    </decorator-section>
-                </decorator-screen>
+                <section>
+                    <condition>
+                        <if-compare operator="equals" value="true" field="hasTenantComponent"/>
+                    </condition>
+                    <widgets>
+                        <section>
+                            <condition>
+                                <if-has-permission permission="TENANTMGR" action="_ADMIN"/>
+                            </condition>
+                            <widgets>
+                                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                                    <decorator-section name="body">
+                                        <screenlet title="${uiLabelMap.WebtoolsImport}">
+                                            <include-form name="EditTenantImport" location="component://tenant/widget/TenantForms.xml"/>
+                                        </screenlet>
+                                    </decorator-section>
+                                </decorator-screen>
+                            </widgets>
+                            <fail-widgets>
+                                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                                    <decorator-section name="body">
+                                        <screenlet title="${uiLabelMap.TenantTenant}">
+                                            <label style="h3">${uiLabelMap.TenantViewPermissionError}</label>
+                                        </screenlet>
+                                    </decorator-section>
+                                </decorator-screen>
+                            </fail-widgets>
+                        </section>
+                    </widgets>
+                    <fail-widgets>
+                        <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                            <decorator-section name="body">
+                                <screenlet title="${uiLabelMap.TenantTenant}">
+                                    <label style="h3">${uiLabelMap.NoTenantContent}</label>
+                                </screenlet>
+                            </decorator-section>
+                        </decorator-screen>
+                    </fail-widgets>
+                </section>
             </widgets>
         </section>
     </screen>
@@ -260,18 +564,51 @@
                     <field-map field-name="userLoginId" from-field="parameters.tenantId"/>
                 </entity-one>
                 <set field="partyId" from-field="tenantUserLogin.partyId"/>
+                <set field="hasTenantComponent" value="${groovy:org.ofbiz.base.component.ComponentConfig.componentExists(&quot;tenant&quot;);}" type="Boolean" global="true"/>
             </actions>
             <widgets>
-                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
-                    <decorator-section name="body">
-                        <screenlet title="${uiLabelMap.TenantCreateBackup}">
-                            <include-form name="EditTenantBackup" location="component://tenant/widget/TenantForms.xml"/>
-                        </screenlet>
-                        <screenlet title="${uiLabelMap.TenantBackups}">
-                            <include-form name="ListTenantBackups" location="component://tenant/widget/TenantForms.xml"/>
-                        </screenlet>
-                    </decorator-section>
-                </decorator-screen>
+                <section>
+                    <condition>
+                        <if-compare operator="equals" value="true" field="hasTenantComponent"/>
+                    </condition>
+                    <widgets>
+                        <section>
+                            <condition>
+                                <if-has-permission permission="TENANTMGR" action="_ADMIN"/>
+                            </condition>
+                            <widgets>
+                                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                                    <decorator-section name="body">
+                                        <screenlet title="${uiLabelMap.TenantCreateBackup}">
+                                            <include-form name="EditTenantBackup" location="component://tenant/widget/TenantForms.xml"/>
+                                        </screenlet>
+                                        <screenlet title="${uiLabelMap.TenantBackups}">
+                                            <include-form name="ListTenantBackups" location="component://tenant/widget/TenantForms.xml"/>
+                                        </screenlet>
+                                    </decorator-section>
+                                </decorator-screen>
+                            </widgets>
+                            <fail-widgets>
+                                <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                                    <decorator-section name="body">
+                                        <screenlet title="${uiLabelMap.TenantTenant}">
+                                            <label style="h3">${uiLabelMap.TenantViewPermissionError}</label>
+                                        </screenlet>
+                                    </decorator-section>
+                                </decorator-screen>
+                            </fail-widgets>
+                        </section>
+                    </widgets>
+                    <fail-widgets>
+                        <decorator-screen name="CommonTenantDecorator" location="${parameters.mainDecoratorLocation}">
+                            <decorator-section name="body">
+                                <screenlet title="${uiLabelMap.TenantTenant}">
+                                    <label style="h3">${uiLabelMap.NoTenantContent}</label>
+                                </screenlet>
+                            </decorator-section>
+                        </decorator-screen>
+                    </fail-widgets>
+                </section>
             </widgets>
         </section>
     </screen>

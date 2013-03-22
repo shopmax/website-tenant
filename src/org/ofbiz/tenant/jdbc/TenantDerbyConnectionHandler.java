@@ -19,7 +19,11 @@
 package org.ofbiz.tenant.jdbc;
 
 import java.io.File;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -87,14 +91,75 @@ public class TenantDerbyConnectionHandler extends TenantJdbcConnectionHandler {
     @Override
     protected void doCreateDatabase(GenericHelperInfo helperInfo)
             throws GenericEntityException, SQLException {
-        
+        if (!isExist()) {
+            Connection connection = DriverManager.getConnection(URI_PREFIX + getDatabaseName() + ";create=true");
+            Statement statement = connection.createStatement();
+            
+            // Turn on built-in user
+            
+            // Setting and Confirming requireAuthentication
+            statement.executeUpdate("CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY(" +
+                "'derby.connection.requireAuthentication', 'true')");
+            ResultSet rs = statement.executeQuery(
+                "VALUES SYSCS_UTIL.SYSCS_GET_DATABASE_PROPERTY(" +
+                "'derby.connection.requireAuthentication')");
+            rs.next();
+            Debug.logInfo("Value of requireAuthentication is " + rs.getString(1), module);
+            
+            // Setting authentication scheme to Derby
+            statement.executeUpdate("CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY(" +
+                "'derby.authentication.provider', 'BUILTIN')");
+            
+            // Creating a user
+            statement.executeUpdate("CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY(" +
+                    "'derby.user." + getJdbcUsername() + "', '" + getJdbcPassword() + "')");
+            
+            // Setting default connection mode to no access (user authorization)
+            statement.executeUpdate("CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY(" +
+                "'derby.database.defaultConnectionMode', 'noAccess')");
+            
+            // Confirming default connection mode
+            rs = statement.executeQuery (
+                "VALUES SYSCS_UTIL.SYSCS_GET_DATABASE_PROPERTY(" +
+                "'derby.database.defaultConnectionMode')");
+            rs.next();
+            Debug.logInfo("Value of defaultConnectionMode is " + rs.getString(1), module);
+            
+            // Defining read-write users
+            statement.executeUpdate("CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY(" +
+                "'derby.database.fullAccessUsers', '" + getJdbcUsername() + "')");
+            
+            // Confirming full-access users
+            rs = statement.executeQuery(
+                "VALUES SYSCS_UTIL.SYSCS_GET_DATABASE_PROPERTY(" +
+                "'derby.database.fullAccessUsers')");
+            rs.next();
+            Debug.logInfo("Value of fullAccessUsers is " + rs.getString(1), module);
+            
+            // We would set the following property to TRUE only
+            // when we were ready to deploy.
+            statement.executeUpdate("CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY(" +
+                "'derby.database.propertiesOnly', 'false')");
+            statement.close();
+            
+            shutdown();
+        }
     }
 
     @Override
     protected void doDeleteDatabase(GenericHelperInfo helperInfo) throws GenericEntityException, SQLException {
+        shutdown();
         if (databaseDir.exists()) {
             Debug.logInfo("Delete database dirctory: " + databaseDir, module);
             TenantUtil.deleteDirectory(databaseDir);
+        }
+    }
+    
+    private void shutdown() {
+        try {
+            DriverManager.getConnection(URI_PREFIX + getDatabaseName() + ";shutdown=true");
+        } catch (Exception e) {
+            Debug.logWarning("Shutdown database: " + getDatabaseName(), module);
         }
     }
 }

@@ -55,6 +55,6 @@ ofbiztenant
 10. make sure that an olap database of the required tenant does not exist if you want to re-create databases
 
 11. run the following command to create all required databases and content:
-./ant load-readers -Ddata-readers=security,seed,seed-initial,tenant,demo,ext-demo
+./ant load-readers -Ddata-readers=seed,seed-initial,ext,tenant,demo,ext-demo
 
 the readers spec here is for the basic system only.

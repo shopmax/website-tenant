@@ -57,9 +57,7 @@ public class TenantJavaMailContainer implements Container {
     public boolean start() throws ContainerException {
         ContainerConfig.Container cfg = ContainerConfig.getContainer("tenant-javamail-container", configFile);
         String delegatorName = ContainerConfig.getPropertyValue(cfg, "delegator-name", "default");
-        String dispatcherName = ContainerConfig.getPropertyValue(cfg, "dispatcher-name", "TenantJavaMailDispatcher");
         Delegator delegator = DelegatorFactory.getDelegator(delegatorName);
-        LocalDispatcher dispatcher = ServiceContainer.getLocalDispatcher(dispatcherName, delegator);
         
         try {
             String multitenant = EntityUtilProperties.getPropertyValue("general", "multitenant", delegator);
