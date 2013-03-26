@@ -1,0 +1,244 @@
+Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
+===================================================================
+--- framework/base/src/org/ofbiz/base/component/ComponentConfig.java	(revision 1447126)
++++ framework/base/src/org/ofbiz/base/component/ComponentConfig.java	(working copy)
+@@ -37,7 +37,9 @@
+ import org.ofbiz.base.container.ContainerException;
+ import org.ofbiz.base.location.FlexibleLocation;
+ import org.ofbiz.base.util.Debug;
++import org.ofbiz.base.util.FileUtil;
+ import org.ofbiz.base.util.KeyStoreUtil;
++import org.ofbiz.base.util.UtilProperties;
+ import org.ofbiz.base.util.UtilURL;
+ import org.ofbiz.base.util.UtilValidate;
+ import org.ofbiz.base.util.UtilXml;
+@@ -56,7 +58,15 @@
+ 
+     // this is not a UtilCache because reloading may cause problems
+     protected static Map<String, ComponentConfig> componentConfigs = FastMap.newInstance();
++    protected static Map<String, ComponentConfig> frameworkComponentConfigs = FastMap.newInstance();
++    protected static Map<String, ComponentConfig> applicationsComponentConfigs = FastMap.newInstance();
++    protected static Map<String, ComponentConfig> specialpurposeComponentConfigs = FastMap.newInstance();
++    protected static Map<String, ComponentConfig> themesComponentConfigs = FastMap.newInstance();
++    protected static Map<String, ComponentConfig> hotDeployComponentConfigs = FastMap.newInstance();
++    protected static Map<String, ComponentConfig> defaultHotDeployComponentConfigs = FastMap.newInstance();
+     protected static Map<String, List<WebappInfo>> serverWebApps = FastMap.newInstance();
++    
++    protected static List<String> defaultTenantComponentNames = null;
+ 
+     public static ComponentConfig getComponentConfig(String globalName) throws ComponentException {
+         // TODO: we need to look up the rootLocation from the container config, or this will blow up
+@@ -64,6 +74,7 @@
+     }
+ 
+     public static ComponentConfig getComponentConfig(String globalName, String rootLocation) throws ComponentException {
++        String ofbizHome = System.getProperty("ofbiz.home");
+         ComponentConfig componentConfig = null;
+         if (UtilValidate.isNotEmpty(globalName)) {
+             componentConfig = componentConfigs.get(globalName);
+@@ -80,6 +91,24 @@
+                             Debug.logWarning("WARNING: Loading ofbiz-component using a global name that already exists, will over-write: " + componentConfig.getGlobalName(), module);
+                         }
+                         if (componentConfig.enabled()) {
++                            String componentLocation = rootLocation.substring(rootLocation.indexOf(ofbizHome) + ofbizHome.length() + 1, rootLocation.length());
++                            if (componentLocation.startsWith("framework") || "tenant".equals(componentConfig.getComponentName())) {
++                                frameworkComponentConfigs.put(componentConfig.getComponentName(),componentConfig);
++                            } else if (componentLocation.startsWith("applications")) {
++                                applicationsComponentConfigs.put(componentConfig.getComponentName(), componentConfig);
++                            } else if (componentLocation.startsWith("specialpurpose")) {
++                                specialpurposeComponentConfigs.put(componentConfig.getComponentName(), componentConfig);
++                            } else if (componentLocation.startsWith("themes")) {
++                                themesComponentConfigs.put(componentConfig.getComponentName(), componentConfig);
++                            } else if (componentLocation.startsWith("hot-deploy") && !"tenant".equals(componentConfig.getComponentName())) {
++                                List<String> defaultTenantComponentNames = getDefaultTenantComponentNames();
++                                if (defaultTenantComponentNames.contains(componentConfig.getComponentName())) {
++                                    defaultHotDeployComponentConfigs.put(componentConfig.getComponentName(), componentConfig);
++                                } else {
++                                    hotDeployComponentConfigs.put(componentConfig.getComponentName(), componentConfig);
++                                }
++                            }
++                            
+                             componentConfigs.put(componentConfig.getGlobalName(), componentConfig);
+                         }
+                     }
+@@ -109,7 +138,152 @@
+             return FastList.newInstance();
+         }
+     }
++    
++    public static Collection<ComponentConfig> getFrameworkComponents() {
++        Collection<ComponentConfig> values = frameworkComponentConfigs.values();
++        if (values != null) {
++            return values;
++        } else {
++            Debug.logWarning("No framework components were found, something is probably missing or incorrect in the component-load setup.", module);
++            return FastList.newInstance();
++        }
++    }
+ 
++    public static Collection<ComponentConfig> getApplicationsComponents() {
++        Collection<ComponentConfig> values = applicationsComponentConfigs.values();
++        if (values != null) {
++            return values;
++        } else {
++            Debug.logWarning("No applications components were found, something is probably missing or incorrect in the component-load setup.", module);
++            return FastList.newInstance();
++        }
++    }
++
++    public static Collection<ComponentConfig> getSpecialpurposeComponents() {
++        Collection<ComponentConfig> values = specialpurposeComponentConfigs.values();
++        if (values != null) {
++            return values;
++        } else {
++            Debug.logWarning("No specialpurpose components were found, something is probably missing or incorrect in the component-load setup.", module);
++            return FastList.newInstance();
++        }
++    }
++
++    public static Collection<ComponentConfig> getThemesComponents() {
++        Collection<ComponentConfig> values = themesComponentConfigs.values();
++        if (values != null) {
++            return values;
++        } else {
++            Debug.logWarning("No themes components were found, something is probably missing or incorrect in the component-load setup.", module);
++            return FastList.newInstance();
++        }
++    }
++
++    public static Collection<ComponentConfig> getHotDeployComponents() {
++        Collection<ComponentConfig> values = hotDeployComponentConfigs.values();
++        if (values != null) {
++            return values;
++        } else {
++            Debug.logWarning("No hot-deploy components were found, something is probably missing or incorrect in the component-load setup.", module);
++            return FastList.newInstance();
++        }
++    }
++
++    public static ComponentConfig getHotDeployComponent(String componentName) {
++        ComponentConfig value = hotDeployComponentConfigs.get(componentName);
++        if (value != null) {
++            return value;
++        } else {
++            value = defaultHotDeployComponentConfigs.get(componentName);
++            if (value != null) {
++                return value;
++            } else {
++                Debug.logWarning("No hot-deploy component[" + componentName + "] were found, something is probably missing or incorrect in the component-load setup.", module);
++                return null;
++            }
++        }
++    }
++
++    public static Collection<ComponentConfig> getDefaultHotDeployComponents() {
++        Collection<ComponentConfig> values = defaultHotDeployComponentConfigs.values();
++        if (values != null) {
++            return values;
++        } else {
++            Debug.logWarning("No default hot-deploy components were found, something is probably missing or incorrect in the component-load setup.", module);
++            return FastList.newInstance();
++        }
++    }
++    
++    public static List<String> getDefaultHotDeployComponentNames() {
++        List<String> componentNames = FastList.newInstance();
++        Collection<ComponentConfig> values = defaultHotDeployComponentConfigs.values();
++        if (values != null) {
++            for (ComponentConfig value : values) {
++                componentNames.add(value.getComponentName());
++            }
++        } else {
++            Debug.logWarning("No default hot-deploy components were found, something is probably missing or incorrect in the component-load setup.", module);
++            return FastList.newInstance();
++        }
++        return componentNames;
++    }
++    
++    public static Collection<ComponentConfig> getTenantComponents(List<String> componentNames) {
++        Collection<ComponentConfig> components = FastList.newInstance();
++        if (UtilValidate.isEmpty(componentNames)) {
++            components.addAll(ComponentConfig.getFrameworkComponents());
++            components.addAll(ComponentConfig.getApplicationsComponents());
++            components.addAll(ComponentConfig.getSpecialpurposeComponents());
++            components.addAll(ComponentConfig.getThemesComponents());
++            if (!"Y".equals(UtilProperties.getPropertyValue("general", "multitenant"))) {
++                components.addAll(ComponentConfig.getHotDeployComponents());
++            }
++        } else {
++            components.addAll(ComponentConfig.getFrameworkComponents());
++            components.addAll(ComponentConfig.getApplicationsComponents());
++            components.addAll(ComponentConfig.getSpecialpurposeComponents());
++            components.addAll(ComponentConfig.getThemesComponents());
++            for (String componentName : componentNames) {
++                ComponentConfig component = ComponentConfig.getHotDeployComponent(componentName);
++                if (UtilValidate.isNotEmpty(component)) {
++                    components.add(component);
++                }
++            }
++        }
++        return components;
++    }
++    
++    public static Collection<ComponentConfig> getDefaultTenantComponents() {
++        Collection<ComponentConfig> components = FastList.newInstance();
++        components.addAll(ComponentConfig.getFrameworkComponents());
++        components.addAll(ComponentConfig.getApplicationsComponents());
++        components.addAll(ComponentConfig.getSpecialpurposeComponents());
++        components.addAll(ComponentConfig.getThemesComponents());
++        components.addAll(ComponentConfig.getDefaultHotDeployComponents());
++        return components;
++    }
++    
++    public static List<String> getDefaultTenantComponentNames() {
++        if (UtilValidate.isEmpty(defaultTenantComponentNames)) {
++            defaultTenantComponentNames = FastList.newInstance();
++            try {
++                String ofbizHome = System.getProperty("ofbiz.home");
++                File defaultTenantFile = FileUtil.getFile(new File(ofbizHome), "hot-deploy/tenant/config/default-tenant.xml");
++                if (defaultTenantFile.exists()) {
++                    Document document = UtilXml.readXmlDocument(defaultTenantFile.toURI().toURL());
++                    List<? extends Element> componentElements = UtilXml.childElementList(document.getDocumentElement(), "component");
++                    for (Element componentElement : componentElements) {
++                        String componentName = UtilXml.elementAttribute(componentElement, "name", null);
++                        defaultTenantComponentNames.add(componentName);
++                    }
++                }
++            } catch (Exception e) {
++                Debug.logWarning(e, module);
++            }
++        }
++        return defaultTenantComponentNames;
++    }
++
+     public static List<ClasspathInfo> getAllClasspathInfos() {
+         return getAllClasspathInfos(null);
+     }
+@@ -341,6 +515,27 @@
+         }
+         return info;
+     }
++    
++    public static WebappInfo getWebAppInfo(String serverName, String hostName, String contextRoot) {
++        ComponentConfig.WebappInfo info = null;
++        if (serverName == null || contextRoot == null) {
++            return info;
++        }
++    
++        for (ComponentConfig cc: getAllComponents()) {
++            for (WebappInfo wInfo: cc.getWebappInfos()) {
++                if (serverName.equals(wInfo.server) && contextRoot.equals(wInfo.getContextRoot())) {
++                    List<String> virtualHosts = wInfo.getVirtualHosts();
++                    if (UtilValidate.isNotEmpty(virtualHosts) && virtualHosts.contains(hostName)) {
++                        return wInfo;
++                    } else {
++                        info = wInfo;
++                    }
++                }
++            }
++        }
++        return info;
++    }
+ 
+     // ========== component info fields ==========
+     protected String globalName = null;

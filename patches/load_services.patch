@@ -1,0 +1,607 @@
+Index: framework/webtools/src/org/ofbiz/webtools/artifactinfo/ServiceArtifactInfo.java
+===================================================================
+--- framework/webtools/src/org/ofbiz/webtools/artifactinfo/ServiceArtifactInfo.java	(revision 1447126)
++++ framework/webtools/src/org/ofbiz/webtools/artifactinfo/ServiceArtifactInfo.java	(working copy)
+@@ -39,6 +39,7 @@
+ import org.ofbiz.base.util.UtilJavaParse;
+ import org.ofbiz.base.util.UtilMisc;
+ import org.ofbiz.base.util.UtilPlist;
++import org.ofbiz.entity.Delegator;
+ import org.ofbiz.minilang.MiniLangException;
+ import org.ofbiz.minilang.SimpleMethod;
+ import org.ofbiz.service.ModelParam;
+@@ -72,10 +73,10 @@
+      *
+      * @throws GeneralException
+      */
+-    public void populateAll() throws GeneralException {
++    public void populateAll(Delegator delegator) throws GeneralException {
+         this.populateUsedEntities();
+-        this.populateCalledServices();
+-        this.populateTriggeredServiceEcas();
++        this.populateCalledServices(delegator);
++        this.populateTriggeredServiceEcas(delegator);
+     }
+ 
+     protected void populateUsedEntities() throws GeneralException {
+@@ -138,7 +139,7 @@
+         }
+     }
+ 
+-    protected void populateCalledServices() throws GeneralException {
++    protected void populateCalledServices(Delegator delegator) throws GeneralException {
+         // populate servicesCalledByThisService and for each the reverse-associate cache in the aif
+         if ("simple".equals(this.modelService.engineName)) {
+             // we can do something with this!
+@@ -180,7 +181,7 @@
+             Set<String> allServiceNameSet = FastSet.newInstance();
+             GroupModel groupModel = modelService.internalGroup;
+             if (groupModel == null) {
+-                groupModel = ServiceGroupReader.getGroupModel(this.modelService.location);
++                groupModel = ServiceGroupReader.getGroupModel(this.modelService.location, delegator);
+             }
+ 
+             if (groupModel != null) {
+@@ -211,9 +212,9 @@
+         }
+     }
+ 
+-    protected void populateTriggeredServiceEcas() throws GeneralException {
++    protected void populateTriggeredServiceEcas(Delegator delegator) throws GeneralException {
+         // populate serviceEcasTriggeredByThisService and for each the reverse-associate cache in the aif
+-        Map<String, List<ServiceEcaRule>> serviceEventMap = ServiceEcaUtil.getServiceEventMap(this.modelService.name);
++        Map<String, List<ServiceEcaRule>> serviceEventMap = ServiceEcaUtil.getServiceEventMap(this.modelService.name, delegator);
+         if (serviceEventMap == null) return;
+         for (List<ServiceEcaRule> ecaRuleList: serviceEventMap.values()) {
+             for (ServiceEcaRule ecaRule: ecaRuleList) {
+Index: framework/webtools/src/org/ofbiz/webtools/artifactinfo/ArtifactInfoFactory.java
+===================================================================
+--- framework/webtools/src/org/ofbiz/webtools/artifactinfo/ArtifactInfoFactory.java	(revision 1447126)
++++ framework/webtools/src/org/ofbiz/webtools/artifactinfo/ArtifactInfoFactory.java	(working copy)
+@@ -216,7 +216,7 @@
+         if (curInfo == null) {
+             curInfo = new ServiceArtifactInfo(serviceName, this);
+             this.allServiceInfos.put(serviceName, curInfo);
+-            curInfo.populateAll();
++            curInfo.populateAll(this.dispatchContext.getDelegator());
+         }
+         return curInfo;
+     }
+Index: framework/webtools/webapp/webtools/WEB-INF/actions/service/AvailableServices.groovy
+===================================================================
+--- framework/webtools/webapp/webtools/WEB-INF/actions/service/AvailableServices.groovy	(revision 1447126)
++++ framework/webtools/webapp/webtools/WEB-INF/actions/service/AvailableServices.groovy	(working copy)
+@@ -29,8 +29,8 @@
+ import org.ofbiz.base.util.UtilHttp;
+ import org.ofbiz.base.util.UtilProperties;
+ 
+-List getEcaListForService(String selectedService) {
+-    ecaMap = org.ofbiz.service.eca.ServiceEcaUtil.getServiceEventMap(selectedService);
++List getEcaListForService(String selectedService, delegator) {
++    ecaMap = org.ofbiz.service.eca.ServiceEcaUtil.getServiceEventMap(selectedService, delegator);
+ 
+     if (!ecaMap) return null;
+ 
+@@ -363,7 +363,7 @@
+         maxRetry = curServiceModel.maxRetry;
+ 
+         //Test for ECA's
+-        ecaMapList = getEcaListForService(selectedService);
++        ecaMapList = getEcaListForService(selectedService, delegator);
+         if (ecaMapList) {
+             context.ecaMapList = ecaMapList;
+         }
+Index: framework/service/src/org/ofbiz/service/DispatchContext.java
+===================================================================
+--- framework/service/src/org/ofbiz/service/DispatchContext.java	(revision 1447126)
++++ framework/service/src/org/ofbiz/service/DispatchContext.java	(working copy)
+@@ -19,6 +19,7 @@
+ package org.ofbiz.service;
+ 
+ import java.io.Serializable;
++import java.util.Collection;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.Set;
+@@ -32,16 +33,22 @@
+ import javolution.util.FastMap;
+ 
+ import org.ofbiz.base.component.ComponentConfig;
++import org.ofbiz.base.component.ComponentConfig.ServiceResourceInfo;
+ import org.ofbiz.base.concurrent.ExecutionPool;
+ import org.ofbiz.base.config.GenericConfigException;
+ import org.ofbiz.base.config.MainResourceHandler;
+ import org.ofbiz.base.config.ResourceHandler;
+ import org.ofbiz.base.util.Debug;
++import org.ofbiz.base.util.UtilMisc;
++import org.ofbiz.base.util.UtilValidate;
+ import org.ofbiz.base.util.UtilXml;
+ import org.ofbiz.base.util.cache.UtilCache;
+ import org.ofbiz.entity.Delegator;
++import org.ofbiz.entity.GenericEntityException;
++import org.ofbiz.entity.GenericValue;
+ import org.ofbiz.entity.config.DelegatorInfo;
+ import org.ofbiz.entity.config.EntityConfigUtil;
++import org.ofbiz.entity.util.EntityUtil;
+ import org.ofbiz.security.Security;
+ import org.ofbiz.service.config.ServiceConfigUtil;
+ import org.ofbiz.service.eca.ServiceEcaUtil;
+@@ -56,13 +63,14 @@
+ 
+     public static final String module = DispatchContext.class.getName();
+ 
+-    private static final UtilCache<String, Map<String, ModelService>> modelServiceMapByModel = UtilCache.createUtilCache("service.ModelServiceMapByModel", 0, 0, false);
++    public static UtilCache<String, UtilCache<String, Map<String, ModelService>>> tenantModelServiceMapByModel = UtilCache.createUtilCache("service.ModelServiceMapByDispatcher", 0, 0, false);
+ 
+     // these four fields represent the immutable state of a DispatchContext object
+     private final String name;
+     private final transient ClassLoader loader;
+     private final transient LocalDispatcher dispatcher;
+     private final String model;
++    protected Map<String, Map<String, ModelService>> modelServiceMapByDispatcher = null;
+ 
+     /**
+      * Creates new DispatchContext as an immutable object.
+@@ -94,7 +102,12 @@
+             modelName = name;
+         }
+         this.model = modelName;
+-        getGlobalServiceMap();
++        
++        try {
++            getGlobalServiceMap(getTenantComponentNames());
++        } catch (GenericServiceException e) {
++            Debug.logError(e, module);
++        }
+     }
+ 
+     /**
+@@ -200,7 +213,7 @@
+      * @return GenericServiceModel that corresponds to the serviceName
+      */
+     public ModelService getModelService(String serviceName) throws GenericServiceException {
+-        Map<String, ModelService> serviceMap = getGlobalServiceMap();
++        Map<String, ModelService> serviceMap = getGlobalServiceMap(getTenantComponentNames());
+         ModelService retVal = null;
+         if (serviceMap != null) {
+             retVal = serviceMap.get(serviceName);
+@@ -217,6 +230,7 @@
+     public Set<String> getAllServiceNames() {
+         Set<String> serviceNames = new TreeSet<String>();
+ 
++        UtilCache<String, Map<String, ModelService>> modelServiceMapByModel = tenantModelServiceMapByModel.get(this.dispatcher.getDelegator().getDelegatorName());
+         Map<String, ModelService> globalServices = modelServiceMapByModel.get(this.model);
+         if (globalServices != null) {
+             serviceNames.addAll(globalServices.keySet());
+@@ -237,7 +251,12 @@
+         };
+     }
+ 
+-    private Map<String, ModelService> getGlobalServiceMap() {
++    private Map<String, ModelService> getGlobalServiceMap(List<String> componentNames) {
++        UtilCache<String, Map<String, ModelService>> modelServiceMapByModel = tenantModelServiceMapByModel.get(this.dispatcher.getDelegator().getDelegatorName());
++        if (UtilValidate.isEmpty(modelServiceMapByModel)) {
++            modelServiceMapByModel = UtilCache.createUtilCache("service.ModelServiceMapByModel." + this.dispatcher.getDelegator().getDelegatorName(), 0, 0, false);
++            tenantModelServiceMapByModel.put(this.dispatcher.getDelegator().getDelegatorName(), modelServiceMapByModel);
++        }
+         Map<String, ModelService> serviceMap = modelServiceMapByModel.get(this.model);
+         if (serviceMap == null) {
+             serviceMap = FastMap.newInstance();
+@@ -259,8 +278,16 @@
+                 futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createServiceReaderCallable(handler)));
+             }
+ 
+-            // get all of the component resource model stuff, ie specified in each ofbiz-component.xml file
+-            for (ComponentConfig.ServiceResourceInfo componentResourceInfo: ComponentConfig.getAllServiceResourceInfos("model")) {
++            // get service resource infos
++            List<ServiceResourceInfo> serviceResourceInfos = FastList.newInstance();
++            Collection<ComponentConfig> components = ComponentConfig.getTenantComponents(componentNames);
++            for (ComponentConfig component : components) {
++                List<ServiceResourceInfo> componentServiceResourceInfos = ComponentConfig.getAllServiceResourceInfos("model", component.getComponentName());
++                serviceResourceInfos.addAll(componentServiceResourceInfos);
++            }
++            
++            // create resource handler
++            for (ComponentConfig.ServiceResourceInfo componentResourceInfo: serviceResourceInfos) {
+                 futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createServiceReaderCallable(componentResourceInfo.createResourceHandler())));
+             }
+             for (Map<String, ModelService> servicesMap: ExecutionPool.getAllFutures(futures)) {
+@@ -272,10 +299,28 @@
+             if (serviceMap != null) {
+                 Map<String, ModelService> cachedServiceMap = modelServiceMapByModel.putIfAbsentAndGet(this.model, serviceMap);
+                 if (cachedServiceMap == serviceMap) { // same object: this means that the object created by this thread was actually added to the cache
+-                    ServiceEcaUtil.reloadConfig();
++                    ServiceEcaUtil.reloadConfig(this.dispatcher.getDelegator());
+                 }
+             }
+         }
+         return serviceMap;
+     }
++    
++    private List<String> getTenantComponentNames() throws GenericServiceException {
++        List<String> componentNames = null;
++        Delegator delegator = getDelegator();
++        String tenantId = delegator.getDelegatorTenantId();
++        if (UtilValidate.isNotEmpty(tenantId)) {
++            // get tenant components
++            try {
++                List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", tenantId), UtilMisc.toList("sequenceNum"), false);
++                componentNames = EntityUtil.getFieldListFromEntityList(tenantComponents, "componentName", true);
++            } catch (GenericEntityException e) {
++                throw new GenericServiceException(e);
++            }
++        } else {
++            componentNames = ComponentConfig.getDefaultHotDeployComponentNames();
++        }
++        return componentNames;
++    }
+ }
+Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
+===================================================================
+--- framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java	(revision 1447126)
++++ framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java	(working copy)
+@@ -35,8 +35,13 @@
+ import org.ofbiz.base.config.MainResourceHandler;
+ import org.ofbiz.base.config.ResourceHandler;
+ import org.ofbiz.base.util.Debug;
++import org.ofbiz.base.util.UtilMisc;
+ import org.ofbiz.base.util.UtilValidate;
+ import org.ofbiz.base.util.UtilXml;
++import org.ofbiz.entity.Delegator;
++import org.ofbiz.entity.GenericEntityException;
++import org.ofbiz.entity.GenericValue;
++import org.ofbiz.entity.util.EntityUtil;
+ import org.ofbiz.service.DispatchContext;
+ import org.ofbiz.service.GenericServiceException;
+ import org.ofbiz.service.config.ServiceConfigUtil;
+@@ -52,14 +57,21 @@
+     public static final String module = ServiceEcaUtil.class.getName();
+ 
+     // using a cache is dangerous here because if someone clears it the ECAs won't run: public static UtilCache ecaCache = new UtilCache("service.ServiceECAs", 0, 0, false);
+-    public static Map<String, Map<String, List<ServiceEcaRule>>> ecaCache = FastMap.newInstance();
++    public static Map<String, Map<String, Map<String, List<ServiceEcaRule>>>> tenantEcaCache = FastMap.newInstance();
+ 
+-    public static void reloadConfig() {
++    public static void reloadConfig(Delegator delegator) {
++        Map<String, Map<String, List<ServiceEcaRule>>> ecaCache = tenantEcaCache.get(delegator.getDelegatorName());
+         ecaCache.clear();
+-        readConfig();
++        readConfig(delegator);
+     }
+ 
+-    public static void readConfig() {
++    public static void readConfig(Delegator delegator) {
++        Map<String, Map<String, List<ServiceEcaRule>>> ecaCache = tenantEcaCache.get(delegator.getDelegatorName());
++        if (UtilValidate.isEmpty(ecaCache)) {
++            ecaCache = FastMap.newInstance();
++            tenantEcaCache.put(delegator.getDelegatorName(), ecaCache);
++        }
++        
+         // Only proceed if the cache hasn't already been populated, caller should be using reloadConfig() in that situation
+         if (UtilValidate.isNotEmpty(ecaCache)) {
+             return;
+@@ -75,33 +87,47 @@
+         List<Future<List<ServiceEcaRule>>> futures = FastList.newInstance();
+         for (Element serviceEcasElement: UtilXml.childElementList(rootElement, "service-ecas")) {
+             ResourceHandler handler = new MainResourceHandler(ServiceConfigUtil.SERVICE_ENGINE_XML_FILENAME, serviceEcasElement);
+-            futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createEcaLoaderCallable(handler)));
++            futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createEcaLoaderCallable(handler, delegator)));
+         }
+ 
+         // get all of the component resource eca stuff, ie specified in each ofbiz-component.xml file
+-        for (ComponentConfig.ServiceResourceInfo componentResourceInfo: ComponentConfig.getAllServiceResourceInfos("eca")) {
+-            futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createEcaLoaderCallable(componentResourceInfo.createResourceHandler())));
++        try {
++            Collection<ComponentConfig> components = null;
++            if (UtilValidate.isNotEmpty(delegator.getDelegatorTenantId())) {
++                List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", delegator.getDelegatorTenantId()), null, false);
++                List<String> componentNames = EntityUtil.getFieldListFromEntityList(tenantComponents, "componentName", true);
++                components = ComponentConfig.getTenantComponents(componentNames);
++            } else {
++                components = ComponentConfig.getDefaultTenantComponents();
++            }
++            for (ComponentConfig component : components) {
++                for (ComponentConfig.ServiceResourceInfo componentResourceInfo: ComponentConfig.getAllServiceResourceInfos("eca", component.getComponentName())) {
++                    futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createEcaLoaderCallable(componentResourceInfo.createResourceHandler(), delegator)));
++                }
++            }
++        } catch (GenericEntityException e) {
++            Debug.logError(e, module);
+         }
+ 
+         for (List<ServiceEcaRule> handlerRules: ExecutionPool.getAllFutures(futures)) {
+-            mergeEcaDefinitions(handlerRules);
++            mergeEcaDefinitions(handlerRules, delegator);
+         }
+     }
+ 
+-    protected static Callable<List<ServiceEcaRule>> createEcaLoaderCallable(final ResourceHandler handler) {
++    protected static Callable<List<ServiceEcaRule>> createEcaLoaderCallable(final ResourceHandler handler, final Delegator delegator) {
+         return new Callable<List<ServiceEcaRule>>() {
+             public List<ServiceEcaRule> call() throws Exception {
+-                return getEcaDefinitions(handler);
++                return getEcaDefinitions(handler, delegator);
+             }
+         };
+     }
+ 
+-    public static void addEcaDefinitions(ResourceHandler handler) {
+-        List<ServiceEcaRule> handlerRules = getEcaDefinitions(handler);
+-        mergeEcaDefinitions(handlerRules);
++    public static void addEcaDefinitions(ResourceHandler handler, Delegator delegator) {
++        List<ServiceEcaRule> handlerRules = getEcaDefinitions(handler, delegator);
++        mergeEcaDefinitions(handlerRules, delegator);
+     }
+ 
+-    private static List<ServiceEcaRule> getEcaDefinitions(ResourceHandler handler) {
++    private static List<ServiceEcaRule> getEcaDefinitions(ResourceHandler handler, Delegator delegator) {
+         List<ServiceEcaRule> handlerRules = FastList.newInstance();
+         Element rootElement = null;
+         try {
+@@ -126,7 +152,8 @@
+         return handlerRules;
+     }
+ 
+-    private static void mergeEcaDefinitions(List<ServiceEcaRule> handlerRules) {
++    private static void mergeEcaDefinitions(List<ServiceEcaRule> handlerRules, Delegator delegator) {
++        Map<String, Map<String, List<ServiceEcaRule>>> ecaCache = tenantEcaCache.get(delegator.getDelegatorName());
+         for (ServiceEcaRule rule: handlerRules) {
+             String serviceName = rule.getServiceName();
+             String eventName = rule.getEventName();
+@@ -149,13 +176,18 @@
+         }
+     }
+ 
+-    public static Map<String, List<ServiceEcaRule>> getServiceEventMap(String serviceName) {
+-        if (ServiceEcaUtil.ecaCache == null) ServiceEcaUtil.readConfig();
+-        return ServiceEcaUtil.ecaCache.get(serviceName);
++    public static Map<String, List<ServiceEcaRule>> getServiceEventMap(String serviceName, Delegator delegator) {
++        Map<String, Map<String, List<ServiceEcaRule>>> ecaCache = tenantEcaCache.get(delegator.getDelegatorName());
++        if (UtilValidate.isEmpty(ecaCache)) {
++            ServiceEcaUtil.readConfig(delegator);
++            tenantEcaCache.put(delegator.getDelegatorName(), ecaCache);
++        }
++        
++        return ecaCache.get(serviceName);
+     }
+ 
+-    public static List<ServiceEcaRule> getServiceEventRules(String serviceName, String event) {
+-        Map<String, List<ServiceEcaRule>> eventMap = getServiceEventMap(serviceName);
++    public static List<ServiceEcaRule> getServiceEventRules(String serviceName, String event, Delegator delegator) {
++        Map<String, List<ServiceEcaRule>> eventMap = getServiceEventMap(serviceName, delegator);
+         if (eventMap != null) {
+             if (event != null) {
+                 return eventMap.get(event);
+@@ -172,7 +204,7 @@
+ 
+     public static void evalRules(String serviceName, Map<String, List<ServiceEcaRule>> eventMap, String event, DispatchContext dctx, Map<String, Object> context, Map<String, Object> result, boolean isError, boolean isFailure) throws GenericServiceException {
+         // if the eventMap is passed we save a Map lookup, but if not that's okay we'll just look it up now
+-        if (eventMap == null) eventMap = getServiceEventMap(serviceName);
++        if (eventMap == null) eventMap = getServiceEventMap(serviceName, dctx.getDelegator());
+         if (UtilValidate.isEmpty(eventMap)) {
+             return;
+         }
+@@ -188,4 +220,8 @@
+             eca.eval(serviceName, dctx, context, result, isError, isFailure, actionsRun);
+         }
+     }
++    
++    public static Map<String, Map<String, List<ServiceEcaRule>>> getEcaCache(Delegator delegator) {
++        return tenantEcaCache.get(delegator.getDelegatorName());
++    }
+ }
+Index: framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java
+===================================================================
+--- framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java	(revision 1447126)
++++ framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java	(working copy)
+@@ -18,9 +18,12 @@
+  *******************************************************************************/
+ package org.ofbiz.service.group;
+ 
++import java.util.Collection;
++import java.util.List;
+ import java.util.Map;
+ 
+ import freemarker.template.utility.StringUtil;
++import javolution.util.FastList;
+ import javolution.util.FastMap;
+ 
+ import org.ofbiz.base.component.ComponentConfig;
+@@ -28,7 +31,14 @@
+ import org.ofbiz.base.config.MainResourceHandler;
+ import org.ofbiz.base.config.ResourceHandler;
+ import org.ofbiz.base.util.Debug;
++import org.ofbiz.base.util.UtilMisc;
++import org.ofbiz.base.util.UtilProperties;
++import org.ofbiz.base.util.UtilValidate;
+ import org.ofbiz.base.util.UtilXml;
++import org.ofbiz.entity.Delegator;
++import org.ofbiz.entity.GenericEntityException;
++import org.ofbiz.entity.GenericValue;
++import org.ofbiz.entity.util.EntityUtil;
+ import org.ofbiz.service.config.ServiceConfigUtil;
+ import org.w3c.dom.Element;
+ 
+@@ -40,9 +50,22 @@
+     public static final String module = ServiceGroupReader.class.getName();
+ 
+     // using a cache is dangerous here because if someone clears it the groups won't work at all: public static UtilCache groupsCache = new UtilCache("service.ServiceGroups", 0, 0, false);
+-    public static Map<String, GroupModel> groupsCache = FastMap.newInstance();
++    public static Map<String, Map<String, GroupModel>> tenantGroupsCache = FastMap.newInstance();
+ 
+-    public static void readConfig() {
++    public static void readConfig(Delegator delegator) {
++        String delegatorName = null;
++        if (UtilValidate.isNotEmpty(delegator)) {
++            delegatorName = delegator.getDelegatorName();
++        } else {
++            delegatorName = "default";
++        }
++        
++        Map<String, GroupModel> groupsCache = tenantGroupsCache.get(delegator.getDelegatorName());
++        if (UtilValidate.isEmpty(groupsCache)) {
++            groupsCache = FastMap.newInstance();
++            tenantGroupsCache.put(delegatorName, groupsCache);
++        }
++        
+         Element rootElement = null;
+ 
+         try {
+@@ -54,16 +77,31 @@
+ 
+         for (Element serviceGroupElement: UtilXml.childElementList(rootElement, "service-groups")) {
+             ResourceHandler handler = new MainResourceHandler(ServiceConfigUtil.SERVICE_ENGINE_XML_FILENAME, serviceGroupElement);
+-            addGroupDefinitions(handler);
++            addGroupDefinitions(handler, delegator);
+         }
+-
+-        // get all of the component resource group stuff, ie specified in each ofbiz-component.xml file
+-        for (ComponentConfig.ServiceResourceInfo componentResourceInfo: ComponentConfig.getAllServiceResourceInfos("group")) {
+-            addGroupDefinitions(componentResourceInfo.createResourceHandler());
++        
++        try {
++            Collection<ComponentConfig> components = null;
++            if (UtilValidate.isNotEmpty(delegator.getDelegatorTenantId())) {
++                List<GenericValue> tenantComponents = delegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", delegator.getDelegatorTenantId()), UtilMisc.toList("sequenceNum"), false);
++                List<String> componentNames = EntityUtil.getFieldListFromEntityList(tenantComponents, "componentName", true);
++                components = ComponentConfig.getTenantComponents(componentNames);
++            } else {
++                components = ComponentConfig.getDefaultTenantComponents();
++            }
++            
++            for (ComponentConfig component : components) {
++                for (ComponentConfig.ServiceResourceInfo componentResourceInfo: ComponentConfig.getAllServiceResourceInfos("group", component.getComponentName())) {
++                    addGroupDefinitions(componentResourceInfo.createResourceHandler(), delegator);
++                }
++            }
++        } catch (GenericEntityException e) {
++            Debug.logError(e, module);
+         }
+     }
+ 
+-    public static void addGroupDefinitions(ResourceHandler handler) {
++    public static void addGroupDefinitions(ResourceHandler handler, Delegator delegator) {
++        Map<String, GroupModel> groupsCache = tenantGroupsCache.get(delegator.getDelegatorName());
+         Element rootElement = null;
+ 
+         try {
+@@ -86,13 +124,19 @@
+             } catch (GenericConfigException e) {
+                 Debug.logError(e, "Could not get resource URL", module);
+             }
+-            Debug.logImportant("Loaded [" + StringUtil.leftPad(Integer.toString(numDefs), 3) + "] Group definitions from " + resourceLocation, module);
+-        }
++            Debug.logImportant("Loaded [" + delegator.getDelegatorName() + "] [" + StringUtil.leftPad(Integer.toString(numDefs), 3) + "] Group definitions from " + resourceLocation, module);
++         }
+     }
+ 
+-    public static GroupModel getGroupModel(String serviceName) {
++    public static GroupModel getGroupModel(String serviceName, Delegator delegator) {
++        Map<String, GroupModel> groupsCache = tenantGroupsCache.get(delegator.getDelegatorName());
++        if (UtilValidate.isEmpty(groupsCache)) {
++            groupsCache = FastMap.newInstance();
++            tenantGroupsCache.put(delegator.getDelegatorName(), groupsCache);
++        }
++        
+         if (groupsCache.size() == 0) {
+-            ServiceGroupReader.readConfig();
++            ServiceGroupReader.readConfig(delegator);
+         }
+         return groupsCache.get(serviceName);
+     }
+Index: framework/service/src/org/ofbiz/service/group/ServiceGroupEngine.java
+===================================================================
+--- framework/service/src/org/ofbiz/service/group/ServiceGroupEngine.java	(revision 1447126)
++++ framework/service/src/org/ofbiz/service/group/ServiceGroupEngine.java	(working copy)
+@@ -45,7 +45,7 @@
+     public Map<String, Object> runSync(String localName, ModelService modelService, Map<String, Object> context) throws GenericServiceException {
+         GroupModel groupModel = modelService.internalGroup;
+         if (groupModel == null) {
+-            groupModel = ServiceGroupReader.getGroupModel(this.getLocation(modelService));
++            groupModel = ServiceGroupReader.getGroupModel(this.getLocation(modelService), dispatcher.getDelegator());
+         }
+         if (groupModel == null) {
+             throw new GenericServiceException("GroupModel was null; not a valid ServiceGroup!");
+Index: framework/service/src/org/ofbiz/service/ModelServiceReader.java
+===================================================================
+--- framework/service/src/org/ofbiz/service/ModelServiceReader.java	(revision 1447126)
++++ framework/service/src/org/ofbiz/service/ModelServiceReader.java	(working copy)
+@@ -74,12 +74,12 @@
+         }
+ 
+         ModelServiceReader reader = new ModelServiceReader(true, readerURL, null, dctx);
+-        return reader.getModelServices();
++        return reader.getModelServices(dctx.getDelegator());
+     }
+ 
+     public static Map<String, ModelService> getModelServiceMap(ResourceHandler handler, DispatchContext dctx) {
+         ModelServiceReader reader = new ModelServiceReader(false, null, handler, dctx);
+-        return reader.getModelServices();
++        return reader.getModelServices(dctx.getDelegator());
+     }
+ 
+     private ModelServiceReader(boolean isFromURL, URL readerURL, ResourceHandler handler, DispatchContext dctx) {
+@@ -89,7 +89,7 @@
+         this.dctx = dctx;
+     }
+ 
+-    private Map<String, ModelService> getModelServices() {
++    private Map<String, ModelService> getModelServices(Delegator delegator) {
+         UtilTimer utilTimer = new UtilTimer();
+         Document document;
+         if (this.isFromURL) {
+@@ -186,7 +186,7 @@
+         } else {
+             utilTimer.timerString("Finished document in " + handler + " - Total Services: " + i + " FINISHED");
+             if (Debug.importantOn()) {
+-                Debug.logImportant("Loaded [" + StringUtil.leftPad(Integer.toString(i), 3) + "] Services from " + resourceLocation, module);
++                Debug.logImportant("Loaded [" + delegator.getDelegatorName() + "] [" + StringUtil.leftPad(Integer.toString(i), 3) + "] Services from " + resourceLocation, module);
+             }
+         }
+         return modelServices;
+Index: framework/service/src/org/ofbiz/service/ServiceDispatcher.java
+===================================================================
+--- framework/service/src/org/ofbiz/service/ServiceDispatcher.java	(revision 1447126)
++++ framework/service/src/org/ofbiz/service/ServiceDispatcher.java	(working copy)
+@@ -85,8 +85,8 @@
+     protected ServiceDispatcher(Delegator delegator, boolean enableJM, boolean enableJMS, boolean enableSvcs) {
+         Debug.logInfo("[ServiceDispatcher] : Creating new instance.", module);
+         factory = new GenericEngineFactory(this);
+-        ServiceGroupReader.readConfig();
+-        ServiceEcaUtil.readConfig();
++        ServiceGroupReader.readConfig(delegator);
++        ServiceEcaUtil.readConfig(delegator);
+ 
+         this.delegator = delegator;
+         this.localContext = FastMap.newInstance();
+@@ -275,7 +275,7 @@
+             rs = this.logService(localName, modelService, GenericEngine.SYNC_MODE);
+ 
+             // get eventMap once for all calls for speed, don't do event calls if it is null
+-            eventMap = ServiceEcaUtil.getServiceEventMap(modelService.name);
++            eventMap = ServiceEcaUtil.getServiceEventMap(modelService.name, ctx.getDelegator());
+             engine = this.getGenericEngine(modelService.engineName);
+ 
+ 
+@@ -659,7 +659,7 @@
+ 
+             try {
+                 // get eventMap once for all calls for speed, don't do event calls if it is null
+-                Map<String, List<ServiceEcaRule>> eventMap = ServiceEcaUtil.getServiceEventMap(service.name);
++                Map<String, List<ServiceEcaRule>> eventMap = ServiceEcaUtil.getServiceEventMap(service.name, ctx.getDelegator());
+ 
+                 // pre-auth ECA
+                 if (eventMap != null) ServiceEcaUtil.evalRules(service.name, eventMap, "auth", ctx, context, result, isError, isFailure);
+Index: framework/service/src/org/ofbiz/service/ModelService.java
+===================================================================
+--- framework/service/src/org/ofbiz/service/ModelService.java	(revision 1447126)
++++ framework/service/src/org/ofbiz/service/ModelService.java	(working copy)
+@@ -1101,7 +1101,7 @@
+             if (this.engineName.equals("group") && implServices.size() == 0) {
+                 GroupModel group = internalGroup;
+                 if (group == null) {
+-                    group = ServiceGroupReader.getGroupModel(this.location);
++                    group = ServiceGroupReader.getGroupModel(this.location, dctx.getDelegator());
+                 }
+                 if (group != null) {
+                     for (GroupServiceModel sm: group.getServices()) {

@@ -1,0 +1,416 @@
+Index: framework/entity/src/org/ofbiz/entity/GenericDelegator.java
+===================================================================
+--- framework/entity/src/org/ofbiz/entity/GenericDelegator.java	(revision 1447126)
++++ framework/entity/src/org/ofbiz/entity/GenericDelegator.java	(working copy)
+@@ -37,6 +37,7 @@
+ import javolution.util.FastList;
+ import javolution.util.FastMap;
+ 
++import org.ofbiz.base.component.ComponentConfig;
+ import org.ofbiz.base.concurrent.ExecutionPool;
+ import org.ofbiz.base.util.Debug;
+ import org.ofbiz.base.util.GeneralRuntimeException;
+@@ -75,6 +76,7 @@
+ import org.ofbiz.entity.util.EntityCrypto;
+ import org.ofbiz.entity.util.EntityFindOptions;
+ import org.ofbiz.entity.util.EntityListIterator;
++import org.ofbiz.entity.util.EntityUtil;
+ import org.ofbiz.entity.util.SequenceUtil;
+ import org.w3c.dom.Document;
+ import org.w3c.dom.Element;
+@@ -208,6 +210,7 @@
+         //if (Debug.infoOn()) Debug.logInfo("Creating new Delegator with name \"" + delegatorFullName + "\".", module);
+         this.setDelegatorNames(delegatorFullName);
+         this.delegatorInfo = EntityConfigUtil.getDelegatorInfo(delegatorBaseName);
++ 		List<String> componentNames = null;
+ 
+         String kekText;
+         // before continuing, if there is a tenantId use the base delegator to see if it is valid
+@@ -216,21 +219,27 @@
+             GenericValue tenant = baseDelegator.findOne("Tenant", true, "tenantId", this.delegatorTenantId);
+             if (tenant == null) {
+                 throw new GenericEntityException("No Tenant record found for delegator [" + this.delegatorFullName + "] with tenantId [" + this.delegatorTenantId + "]");
+-            } else if ("Y".equals(tenant.getString("disabled"))) {
++            }/* else if ("Y".equals(tenant.getString("disabled"))) {
+                 throw new GenericEntityException("No Tenant record found for delegator [" + this.delegatorFullName + "] with tenantId [" + this.delegatorTenantId + "]");
+-            }
++            }*/
+             GenericValue kekValue = baseDelegator.findOne("TenantKeyEncryptingKey", true, "tenantId", getDelegatorTenantId());
+             if (kekValue != null) {
+                 kekText = kekValue.getString("kekText");
+             } else {
+                 kekText = this.delegatorInfo.kekText;
+             }
++
++            // get tenant components
++            List<GenericValue> tenantComponents = baseDelegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", this.delegatorTenantId), UtilMisc.toList("sequenceNum"), false);
++            componentNames = EntityUtil.getFieldListFromEntityList(tenantComponents, "componentName", true);
++
+         } else {
++            componentNames = ComponentConfig.getDefaultHotDeployComponentNames();
+             kekText = this.delegatorInfo.kekText;
+         }
+ 
+-        this.modelReader = ModelReader.getModelReader(delegatorBaseName);
+-        this.modelGroupReader = ModelGroupReader.getModelGroupReader(delegatorBaseName);
++        this.modelReader = ModelReader.getModelReader(delegatorBaseName, delegatorTenantId, componentNames);
++        this.modelGroupReader = ModelGroupReader.getModelGroupReader(delegatorBaseName, delegatorTenantId, componentNames);
+ 
+         cache = new Cache(delegatorFullName);
+ 
+Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
+===================================================================
+--- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1447126)
++++ framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(working copy)
+@@ -1238,11 +1238,14 @@
+     public void checkDb(Map<String, ModelEntity> modelEntities, List<String> messages, boolean addMissing) {
+         DatabaseUtil dbUtil = new DatabaseUtil(this.helperInfo, this.executor);
+         dbUtil.checkDb(modelEntities, messages, addMissing);
++        dbUtil.close();
+     }
+ 
+     /** Creates a list of ModelEntity objects based on meta data from the database */
+     public List<ModelEntity> induceModelFromDb(Collection<String> messages) {
+         DatabaseUtil dbUtil = new DatabaseUtil(this.helperInfo, this.executor);
+-        return dbUtil.induceModelFromDb(messages);
++        List<ModelEntity> modelEntities = dbUtil.induceModelFromDb(messages);
++        dbUtil.close();
++        return modelEntities;
+     }
+ }
+Index: framework/entity/src/org/ofbiz/entity/model/ModelReader.java
+===================================================================
+--- framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(revision 1447126)
++++ framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(working copy)
+@@ -32,6 +32,7 @@
+ import javolution.util.FastSet;
+ 
+ import org.ofbiz.base.component.ComponentConfig;
++import org.ofbiz.base.component.ComponentConfig.EntityResourceInfo;
+ import org.ofbiz.base.config.GenericConfigException;
+ import org.ofbiz.base.config.MainResourceHandler;
+ import org.ofbiz.base.config.ResourceHandler;
+@@ -80,25 +81,41 @@
+     protected Map<String, ResourceHandler> entityResourceHandlerMap;
+ 
+     public static ModelReader getModelReader(String delegatorName) throws GenericEntityException {
+-        DelegatorInfo delegatorInfo = EntityConfigUtil.getDelegatorInfo(delegatorName);
++        return getModelReader(delegatorName, null, null);
++    }
+ 
++    public static ModelReader getModelReader(String delegatorBaseName, String tenantId, List<String> componentNames) throws GenericEntityException {
++        DelegatorInfo delegatorInfo = EntityConfigUtil.getDelegatorInfo(delegatorBaseName);
++
+         if (delegatorInfo == null) {
+-            throw new GenericEntityConfException("Could not find a delegator with the name " + delegatorName);
++            throw new GenericEntityConfException("Could not find a delegator with the name " + delegatorBaseName);
+         }
+ 
+         String tempModelName = delegatorInfo.entityModelReader;
+-        ModelReader reader = readers.get(tempModelName);
++        String delegatorName = delegatorBaseName;
++        if (UtilValidate.isNotEmpty(tenantId)) {
++            delegatorName += "#" + tenantId;
++        }
++        ModelReader reader = readers.get(delegatorName);
+ 
+         if (reader == null) {
+-            reader = new ModelReader(tempModelName);
++            if (UtilValidate.isEmpty(componentNames)) {
++                reader = new ModelReader(tempModelName);
++            } else {
++                reader = new ModelReader(tempModelName, componentNames);
++            }
+             // preload caches...
+             reader.getEntityCache();
+-            reader = readers.putIfAbsentAndGet(tempModelName, reader);
++            reader = readers.putIfAbsentAndGet(delegatorName, reader);
+         }
+         return reader;
+     }
+ 
+     private ModelReader(String modelName) throws GenericEntityException {
++        this(modelName, null);
++    }
++
++    private ModelReader(String modelName, List<String> componentNames) throws GenericEntityException {
+         this.modelName = modelName;
+         entityResourceHandlers = FastList.newInstance();
+         resourceHandlerEntities = FastMap.newInstance();
+@@ -115,9 +132,17 @@
+             ResourceHandler handler = new MainResourceHandler(EntityConfigUtil.ENTITY_ENGINE_XML_FILENAME, resourceElement);
+             entityResourceHandlers.add(handler);
+         }
+-
+-        // get all of the component resource model stuff, ie specified in each ofbiz-component.xml file
+-        for (ComponentConfig.EntityResourceInfo componentResourceInfo: ComponentConfig.getAllEntityResourceInfos("model")) {
++        
++        // get entity resource infos
++        List<EntityResourceInfo> entityResourceInfos = FastList.newInstance();
++        Collection<ComponentConfig> components = ComponentConfig.getTenantComponents(componentNames);
++        for (ComponentConfig component : components) {
++            List<EntityResourceInfo> componentEntityResourceInfos = ComponentConfig.getAllEntityResourceInfos("model", component.getComponentName());
++            entityResourceInfos.addAll(componentEntityResourceInfos);
++        }
++        
++        // create resource handlers
++        for (ComponentConfig.EntityResourceInfo componentResourceInfo: entityResourceInfos) {
+             if (modelName.equals(componentResourceInfo.readerName)) {
+                 entityResourceHandlers.add(componentResourceInfo.createResourceHandler());
+             }
+Index: framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java
+===================================================================
+--- framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java	(revision 1447126)
++++ framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java	(working copy)
+@@ -19,6 +19,7 @@
+ package org.ofbiz.entity.model;
+ 
+ import java.io.Serializable;
++import java.util.Collection;
+ import java.util.HashMap;
+ import java.util.LinkedList;
+ import java.util.List;
+@@ -26,9 +27,11 @@
+ import java.util.Set;
+ import java.util.TreeSet;
+ 
++import javolution.util.FastList;
+ import javolution.util.FastSet;
+ 
+ import org.ofbiz.base.component.ComponentConfig;
++import org.ofbiz.base.component.ComponentConfig.EntityResourceInfo;
+ import org.ofbiz.base.config.GenericConfigException;
+ import org.ofbiz.base.config.MainResourceHandler;
+ import org.ofbiz.base.config.ResourceHandler;
+@@ -62,22 +65,39 @@
+     public List<ResourceHandler> entityGroupResourceHandlers = new LinkedList<ResourceHandler>();
+ 
+     public static ModelGroupReader getModelGroupReader(String delegatorName) throws GenericEntityConfException {
+-        DelegatorInfo delegatorInfo = EntityConfigUtil.getDelegatorInfo(delegatorName);
++        return getModelGroupReader(delegatorName, null, null);
++    }
+ 
++    public static ModelGroupReader getModelGroupReader(String delegatorBaseName, String tenantId, List<String> componentNames) throws GenericEntityConfException {
++        DelegatorInfo delegatorInfo = EntityConfigUtil.getDelegatorInfo(delegatorBaseName);
++
+         if (delegatorInfo == null) {
+-            throw new GenericEntityConfException("Could not find a delegator with the name " + delegatorName);
++            throw new GenericEntityConfException("Could not find a delegator with the name " + delegatorBaseName);
+         }
+ 
+         String tempModelName = delegatorInfo.entityGroupReader;
+-        ModelGroupReader reader = readers.get(tempModelName);
++        String delegatorName = delegatorBaseName;
++        if (UtilValidate.isNotEmpty(tenantId)) {
++            delegatorName += "#" + tenantId;
++        }
++        ModelGroupReader reader = readers.get(delegatorName);
+ 
+         if (reader == null) {
+-            reader = readers.putIfAbsentAndGet(tempModelName, new ModelGroupReader(tempModelName));
++            if (UtilValidate.isEmpty(componentNames)) {
++                reader = new ModelGroupReader(tempModelName);
++            } else {
++                reader = new ModelGroupReader(tempModelName, componentNames);
++            }
++            reader = readers.putIfAbsentAndGet(delegatorName, reader);
+         }
+         return reader;
+     }
+ 
+     public ModelGroupReader(String modelName) throws GenericEntityConfException {
++        this(modelName, null);
++    }
++    
++    public ModelGroupReader(String modelName, List<String> componentNames) throws GenericEntityConfException {
+         this.modelName = modelName;
+         EntityGroupReaderInfo entityGroupReaderInfo = EntityConfigUtil.getEntityGroupReaderInfo(modelName);
+ 
+@@ -88,8 +108,16 @@
+             this.entityGroupResourceHandlers.add(new MainResourceHandler(EntityConfigUtil.ENTITY_ENGINE_XML_FILENAME, resourceElement));
+         }
+ 
+-        // get all of the component resource group stuff, ie specified in each ofbiz-component.xml file
+-        for (ComponentConfig.EntityResourceInfo componentResourceInfo: ComponentConfig.getAllEntityResourceInfos("group")) {
++        // get entity resource infos
++        List<EntityResourceInfo> entityResourceInfos = FastList.newInstance();
++        Collection<ComponentConfig> components = ComponentConfig.getTenantComponents(componentNames);
++        for (ComponentConfig component : components) {
++            List<EntityResourceInfo> componentEntityResourceInfos = ComponentConfig.getAllEntityResourceInfos("group", component.getComponentName());
++            entityResourceInfos.addAll(componentEntityResourceInfos);
++        }
++        
++        // create resource handlers
++        for (ComponentConfig.EntityResourceInfo componentResourceInfo: entityResourceInfos) {
+             if (modelName.equals(componentResourceInfo.readerName)) {
+                 this.entityGroupResourceHandlers.add(componentResourceInfo.createResourceHandler());
+             }
+Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
+===================================================================
+--- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1447126)
++++ framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(working copy)
+@@ -56,4 +56,8 @@
+             delegatorCache.putIfAbsent(delegatorName, delegator);
+         } while (true);
+     }
++    
++    public static void removeDelegator(String delegatorName) {
++        delegatorCache.remove(delegatorName);
++    }
+ }
+Index: framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java
+===================================================================
+--- framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java	(revision 1447126)
++++ framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java	(working copy)
+@@ -53,11 +53,11 @@
+         this.dctx = EntityServiceFactory.getDispatchContext(delegator);
+ 
+         //preload the cache
+-        EntityEcaUtil.getEntityEcaCache(this.entityEcaReaderName);
++        EntityEcaUtil.getEntityEcaCache(this.entityEcaReaderName, delegator);
+     }
+ 
+     public Map<String, List<EntityEcaRule>> getEntityEventMap(String entityName) {
+-        Map<String, Map<String, List<EntityEcaRule>>> ecaCache = EntityEcaUtil.getEntityEcaCache(this.entityEcaReaderName);
++        Map<String, Map<String, List<EntityEcaRule>>> ecaCache = EntityEcaUtil.getEntityEcaCache(this.entityEcaReaderName, delegator);
+         if (ecaCache == null) return null;
+         return ecaCache.get(entityName);
+     }
+Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
+===================================================================
+--- framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java	(revision 1447126)
++++ framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java	(working copy)
+@@ -34,12 +34,18 @@
+ import org.ofbiz.base.config.MainResourceHandler;
+ import org.ofbiz.base.config.ResourceHandler;
+ import org.ofbiz.base.util.Debug;
++import org.ofbiz.base.util.UtilMisc;
++import org.ofbiz.base.util.UtilValidate;
+ import org.ofbiz.base.util.UtilXml;
+ import org.ofbiz.base.util.cache.UtilCache;
+ import org.ofbiz.entity.Delegator;
++import org.ofbiz.entity.DelegatorFactory;
++import org.ofbiz.entity.GenericEntityException;
++import org.ofbiz.entity.GenericValue;
+ import org.ofbiz.entity.config.DelegatorInfo;
+ import org.ofbiz.entity.config.EntityConfigUtil;
+ import org.ofbiz.entity.config.EntityEcaReaderInfo;
++import org.ofbiz.entity.util.EntityUtil;
+ import org.w3c.dom.Element;
+ 
+ /**
+@@ -49,13 +55,19 @@
+ 
+     public static final String module = EntityEcaUtil.class.getName();
+ 
+-    private static final UtilCache<String, Map<String, Map<String, List<EntityEcaRule>>>> entityEcaReaders = UtilCache.createUtilCache("entity.EcaReaders", 0, 0, false);
++    private static final UtilCache<String, UtilCache<String, Map<String, Map<String, List<EntityEcaRule>>>>> tenantEntityEcaReaders = UtilCache.createUtilCache("entity.EcaReaders", 0, 0, false);
+ 
+-    public static Map<String, Map<String, List<EntityEcaRule>>> getEntityEcaCache(String entityEcaReaderName) {
++    public static Map<String, Map<String, List<EntityEcaRule>>> getEntityEcaCache(String entityEcaReaderName, Delegator delegator) {
++        UtilCache<String, Map<String, Map<String, List<EntityEcaRule>>>> entityEcaReaders = tenantEntityEcaReaders.get(delegator.getDelegatorName());
++        if (UtilValidate.isEmpty(entityEcaReaders)) {
++            entityEcaReaders = UtilCache.createUtilCache("entity.EcaReaders." + delegator.getDelegatorName(), 0, 0, false);
++            tenantEntityEcaReaders.put(delegator.getDelegatorName(), entityEcaReaders);
++        }
++        
+         Map<String, Map<String, List<EntityEcaRule>>> ecaCache = entityEcaReaders.get(entityEcaReaderName);
+         if (ecaCache == null) {
+             ecaCache = FastMap.newInstance();
+-            readConfig(entityEcaReaderName, ecaCache);
++            readConfig(entityEcaReaderName, ecaCache, delegator);
+             ecaCache = entityEcaReaders.putIfAbsentAndGet(entityEcaReaderName, ecaCache);
+         }
+         return ecaCache;
+@@ -70,7 +82,7 @@
+         return delegatorInfo.entityEcaReader;
+     }
+ 
+-    protected static void readConfig(String entityEcaReaderName, Map<String, Map<String, List<EntityEcaRule>>> ecaCache) {
++    protected static void readConfig(String entityEcaReaderName, Map<String, Map<String, List<EntityEcaRule>>> ecaCache, Delegator delegator) {
+         EntityEcaReaderInfo entityEcaReaderInfo = EntityConfigUtil.getEntityEcaReaderInfo(entityEcaReaderName);
+         if (entityEcaReaderInfo == null) {
+             Debug.logError("BAD ERROR: Could not find entity-eca-reader config with name: " + entityEcaReaderName, module);
+@@ -80,14 +92,29 @@
+         List<Future<List<EntityEcaRule>>> futures = FastList.newInstance();
+         for (Element eecaResourceElement: entityEcaReaderInfo.resourceElements) {
+             ResourceHandler handler = new MainResourceHandler(EntityConfigUtil.ENTITY_ENGINE_XML_FILENAME, eecaResourceElement);
+-            futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createEcaLoaderCallable(handler)));
++            futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createEcaLoaderCallable(handler, delegator)));
+         }
+ 
+         // get all of the component resource eca stuff, ie specified in each ofbiz-component.xml file
+-        for (ComponentConfig.EntityResourceInfo componentResourceInfo: ComponentConfig.getAllEntityResourceInfos("eca")) {
+-            if (entityEcaReaderName.equals(componentResourceInfo.readerName)) {
+-                futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createEcaLoaderCallable(componentResourceInfo.createResourceHandler())));
++        try {
++            List<String> componentNames = null;
++            if (UtilValidate.isNotEmpty(delegator.getDelegatorTenantId())) {
++                Delegator baseDelegator = DelegatorFactory.getDelegator(delegator.getDelegatorBaseName());
++                List<GenericValue> tenantComponents = baseDelegator.findByAnd("TenantComponent", UtilMisc.toMap("tenantId", delegator.getDelegatorTenantId()), null, false);
++                componentNames = EntityUtil.getFieldListFromEntityList(tenantComponents, "componentName", true);
++            } else {
++                componentNames = ComponentConfig.getDefaultHotDeployComponentNames();
+             }
++            Collection<ComponentConfig> components = ComponentConfig.getTenantComponents(componentNames);
++            for (ComponentConfig component : components) {
++                for (ComponentConfig.EntityResourceInfo componentResourceInfo: ComponentConfig.getAllEntityResourceInfos("eca", component.getComponentName())) {
++                    if (entityEcaReaderName.equals(componentResourceInfo.readerName)) {
++                        futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createEcaLoaderCallable(componentResourceInfo.createResourceHandler(), delegator)));
++                    }
++                }
++            }
++        } catch (GenericEntityException e) {
++            Debug.logError(e, module);
+         }
+ 
+         for (List<EntityEcaRule> oneFileRules: ExecutionPool.getAllFutures(futures)) {
+@@ -113,7 +140,7 @@
+         }
+     }
+ 
+-    private static List<EntityEcaRule> getEcaDefinitions(ResourceHandler handler) {
++    private static List<EntityEcaRule> getEcaDefinitions(ResourceHandler handler, Delegator delegator) {
+         List<EntityEcaRule> rules = FastList.newInstance();
+         Element rootElement = null;
+         try {
+@@ -126,23 +153,23 @@
+             rules.add(new EntityEcaRule(e));
+         }
+         try {
+-            Debug.logImportant("Loaded [" + StringUtil.leftPad(Integer.toString(rules.size()), 3) + "] Entity ECA definitions from " + handler.getFullLocation() + " in loader " + handler.getLoaderName(), module);
++            Debug.logImportant("Loaded [" + delegator.getDelegatorName() + "] [" + StringUtil.leftPad(Integer.toString(rules.size()), 3) + "] Entity ECA definitions from " + handler.getFullLocation() + " in loader " + handler.getLoaderName(), module);
+         } catch (GenericConfigException e) {
+             Debug.logError(e, module);
+         }
+         return rules;
+     }
+ 
+-    protected static Callable<List<EntityEcaRule>> createEcaLoaderCallable(final ResourceHandler handler) {
++    protected static Callable<List<EntityEcaRule>> createEcaLoaderCallable(final ResourceHandler handler, final Delegator delegator) {
+         return new Callable<List<EntityEcaRule>>() {
+             public List<EntityEcaRule> call() throws Exception {
+-                return getEcaDefinitions(handler);
++                return getEcaDefinitions(handler, delegator);
+             }
+         };
+     }
+ 
+     public static Collection<EntityEcaRule> getEntityEcaRules(Delegator delegator, String entityName, String event) {
+-        Map<String, Map<String, List<EntityEcaRule>>> ecaCache = EntityEcaUtil.getEntityEcaCache(EntityEcaUtil.getEntityEcaReaderName(delegator.getDelegatorName()));
++        Map<String, Map<String, List<EntityEcaRule>>> ecaCache = EntityEcaUtil.getEntityEcaCache(EntityEcaUtil.getEntityEcaReaderName(delegator.getDelegatorName()), delegator);
+         Map<String, List<EntityEcaRule>> eventMap = ecaCache.get(entityName);
+         if (eventMap != null) {
+             if (event != null) {
+Index: framework/testtools/build.xml
+===================================================================
+--- framework/testtools/build.xml	(revision 1447126)
++++ framework/testtools/build.xml	(working copy)
+@@ -37,6 +37,7 @@
+         <fileset dir="../base/build/lib" includes="*.jar"/>
+         <fileset dir="../entity/lib" includes="*.jar"/>
+         <fileset dir="../entity/build/lib" includes="*.jar"/>
++        <fileset dir="../entityext/build/lib" includes="*.jar"/>
+         <fileset dir="../security/build/lib" includes="*.jar"/>
+         <fileset dir="../service/lib" includes="*.jar"/>
+         <fileset dir="../service/build/lib" includes="*.jar"/>

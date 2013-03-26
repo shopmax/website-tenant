@@ -1,0 +1,46 @@
+Index: framework/testtools/src/org/ofbiz/testtools/ModelTestSuite.java
+===================================================================
+--- framework/testtools/src/org/ofbiz/testtools/ModelTestSuite.java	(revision 1447126)
++++ framework/testtools/src/org/ofbiz/testtools/ModelTestSuite.java	(working copy)
+@@ -36,6 +36,7 @@
+ import org.ofbiz.entity.Delegator;
+ import org.ofbiz.entity.DelegatorFactory;
+ import org.ofbiz.entity.testtools.EntityTestCase;
++import org.ofbiz.entity.util.EntityUtilProperties;
+ import org.ofbiz.minilang.MiniLangException;
+ import org.ofbiz.minilang.SimpleMethod;
+ import org.ofbiz.service.LocalDispatcher;
+@@ -68,11 +69,29 @@
+         this.originalDispatcherName = mainElement.getAttribute("dispatcher-name");
+         if (UtilValidate.isEmpty(this.originalDispatcherName)) this.originalDispatcherName = "test-dispatcher";
+ 
+-        String uniqueSuffix = "-" + RandomStringUtils.randomAlphanumeric(10);
++        Delegator originalDelegator = DelegatorFactory.getDelegator(this.originalDelegatorName);
++        String useMultitenant = EntityUtilProperties.getPropertyValue("general.properties", "multitenant", originalDelegator);
++        if ("Y".equals(useMultitenant) && UtilValidate.isNotEmpty(originalDelegator.getDelegatorTenantId())) {
++            
++            this.delegator = originalDelegator.makeTestDelegator(originalDelegator.getDelegatorName());
++            LocalDispatcher originalDispatcher = ServiceContainer.getLocalDispatcher(this.delegator.getDelegatorName(), this.delegator);
++            this.dispatcher = originalDispatcher;
++            
++            /*
++            ModelReader.readers.put(this.delegator.getDelegatorName(), ModelReader.readers.get(originalDelegator.getDelegatorName()));
++            DispatchContext dispatchContext = this.dispatcher.getDispatchContext();
++            originalDispatcher.getDispatchContext().loadReaders();
++            DispatchContext.tenantModelServiceMapByDispatcher.put(dispatchContext.getName(), DispatchContext.tenantModelServiceMapByDispatcher.get(originalDispatcher.getDispatchContext().getName()));
++            EntityEcaUtil.tenantEntityEcaReaders.put(this.delegator.getDelegatorName(), EntityEcaUtil.tenantEntityEcaReaders.get(originalDelegator.getDelegatorName()));
++            ServiceEcaUtil.tenantEcaCache.put(this.delegator.getDelegatorName(), ServiceEcaUtil.tenantEcaCache.get(originalDelegator.getDelegatorName()));
++            ServiceGroupReader.tenantGroupsCache.put(this.delegator.getDelegatorName(), ServiceGroupReader.tenantGroupsCache.get(originalDelegator.getDelegatorName()));
++            */
++        } else {
++            String uniqueSuffix = "-" + RandomStringUtils.randomAlphanumeric(10);
++            this.delegator = originalDelegator.makeTestDelegator(this.originalDelegatorName + uniqueSuffix);
++            this.dispatcher = ServiceContainer.getLocalDispatcher(originalDispatcherName + uniqueSuffix, delegator);
++        }
+ 
+-        this.delegator = DelegatorFactory.getDelegator(this.originalDelegatorName).makeTestDelegator(this.originalDelegatorName + uniqueSuffix);
+-        this.dispatcher = ServiceContainer.getLocalDispatcher(originalDispatcherName + uniqueSuffix, delegator);
+-
+         for (Element testCaseElement : UtilXml.childElementList(mainElement, UtilMisc.toSet("test-case", "test-group"))) {
+             String caseName = testCaseElement.getAttribute("case-name");
+             String nodeName = testCaseElement.getNodeName();

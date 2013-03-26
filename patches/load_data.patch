@@ -1,0 +1,92 @@
+Index: framework/entity/src/org/ofbiz/entity/util/EntitySaxReader.java
+===================================================================
+--- framework/entity/src/org/ofbiz/entity/util/EntitySaxReader.java	(revision 1447126)
++++ framework/entity/src/org/ofbiz/entity/util/EntitySaxReader.java	(working copy)
+@@ -237,7 +237,7 @@
+             Debug.logWarning("location URL was null, doing nothing", module);
+             return 0;
+         }
+-        Debug.logImportant("Beginning import from URL: " + location.toExternalForm(), module);
++        Debug.logImportant("Beginning import [" + delegator.getDelegatorName() + "] from URL: " + location.toExternalForm(), module);
+         InputStream is = null;
+         long numberRead = 0;
+         try {
+@@ -287,7 +287,7 @@
+             boolean beganTransaction = false;
+             if (transactionTimeout > -1) {
+                 beganTransaction = TransactionUtil.begin(transactionTimeout);
+-                Debug.logImportant("Transaction Timeout set to " + transactionTimeout / 3600 + " hours (" + transactionTimeout + " seconds)", module);
++                Debug.logImportant("Transaction Timeout [" + delegator.getDelegatorName() + "] set to " + transactionTimeout / 3600 + " hours (" + transactionTimeout + " seconds)", module);
+             }
+             try {
+                 parser.parse(is);
+@@ -310,7 +310,7 @@
+         } catch (GenericTransactionException e) {
+             throw new SAXException("A transaction error occurred reading data", e);
+         }
+-        Debug.logImportant("Finished " + numberRead + " values from " + docDescription, module);
++        Debug.logImportant("Finished [" + delegator.getDelegatorName() + "] " + numberRead + " values from " + docDescription, module);
+         if (Debug.verboseOn()) { 
+             Debug.logVerbose("  Detail created : " + numberCreated + ", skipped : " + numberSkipped +
+                     ", updated : " + numberUpdated + ", replaced : " + numberReplaced +
+Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java
+===================================================================
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(revision 1447126)
++++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(working copy)
+@@ -307,8 +307,20 @@
+                 Debug.logError(e.getMessage(), module);
+             }
+         }
+-        // load specify components
++        
++        // get standard components
++        List<ComponentConfig> standardComponents = FastList.newInstance();
++        standardComponents.addAll(ComponentConfig.getFrameworkComponents());
++        standardComponents.addAll(ComponentConfig.getApplicationsComponents());
++        standardComponents.addAll(ComponentConfig.getSpecialpurposeComponents());
++        standardComponents.addAll(ComponentConfig.getThemesComponents());
++        
++        // load standard components
+         List<String> loadComponents = FastList.newInstance();
++        for (ComponentConfig componentConfig : standardComponents) {
++            loadComponents.add(componentConfig.getComponentName());
++        }
++        
+         if (UtilValidate.isNotEmpty(delegator.getDelegatorTenantId()) && "Y".equals(UtilProperties.getPropertyValue("general.properties", "multitenant"))) {
+             try {
+                 List<EntityExpr> exprs = FastList.newInstance();
+@@ -341,6 +353,8 @@
+             } catch (GenericEntityException e) {
+                 Debug.logError(e.getMessage(), module);
+             }
++        } else if (UtilValidate.isEmpty(delegator.getDelegatorTenantId()) && "Y".equals(UtilProperties.getPropertyValue("general.properties", "multitenant"))) {
++            loadComponents.addAll(ComponentConfig.getDefaultHotDeployComponentNames());
+         }
+         // check for drop index/fks
+         if (dropConstraints) {
+@@ -432,6 +446,16 @@
+                 urlList = EntityDataLoader.getUrlList(helperInfo.getHelperBaseName(), component);
+             }
+         }
++        
++        // load tenant reader data from hot-deploy components if requested
++        if (UtilValidate.isNotEmpty(readerNames) && readerNames.contains("tenant")) {
++            List<String> loadHotDeployComponents = FastList.newInstance();
++            for (ComponentConfig component : ComponentConfig.getHotDeployComponents()) {
++                loadHotDeployComponents.add(component.getComponentName());
++            }
++            urlList.addAll(EntityDataLoader.getUrlByComponentList(helperInfo.getHelperBaseName(), loadHotDeployComponents, UtilMisc.toList("tenant")));
++        }
++        
+         // need a list if it is empty
+         if (urlList == null) {
+             urlList = FastList.newInstance();
+@@ -565,6 +589,8 @@
+                 }
+             }
+         }
++
++        dbUtil.close();
+     }
+     /**
+      * @see org.ofbiz.base.container.Container#stop()

@@ -1,0 +1,38 @@
+Index: framework/images/webapp/images/WEB-INF/web.xml
+===================================================================
+--- framework/images/webapp/images/WEB-INF/web.xml	(revision 1447126)
++++ framework/images/webapp/images/WEB-INF/web.xml	(working copy)
+@@ -22,6 +22,33 @@
+ <web-app>
+   <display-name>Open For Business - demostore images</display-name>
+   <description>Demo Store Images for the Open For Business Project</description>
++    <context-param>
++        <param-name>localDispatcherName</param-name>
++        <param-value>images</param-value>
++        <description>A unique name used to identify/recognize the local dispatcher for the Service Engine</description>
++    </context-param>
++    <filter>
++        <filter-name>ContextFilter</filter-name>
++        <display-name>ContextFilter</display-name>
++        <filter-class>org.ofbiz.webapp.control.ContextFilter</filter-class>
++        <init-param>
++            <param-name>allowedPaths</param-name>
++            <param-value>/products</param-value>
++        </init-param>
++    </filter>
++    <filter>
++        <filter-name>TenantImageFilter</filter-name>
++        <display-name>TenantImageFilter</display-name>
++        <filter-class>org.ofbiz.tenant.control.TenantImageFilter</filter-class>
++    </filter>
++    <filter-mapping>
++        <filter-name>ContextFilter</filter-name>
++        <url-pattern>/products/*</url-pattern>
++    </filter-mapping>
++    <filter-mapping>
++        <filter-name>TenantImageFilter</filter-name>
++        <url-pattern>/products/*</url-pattern>
++    </filter-mapping>
+ 
+   <session-config>
+     <session-timeout>1</session-timeout>
