@@ -1,0 +1,66 @@
+=======================
+Patch Files
+=======================
+
+-------------------
+configuration.patch
+-------------------
+* set the 'multitenant' property to 'Y'
+
+-------------------------
+database_connection.patch
+-------------------------
+* separate connection factory and object pool by a helper name
+* close connections after they have been used.
+
+----------------
+data_model.patch
+----------------
+* TenantDomainName entity to "org.ofbiz.tenant" group
+
+---------------------
+load_components.patch
+---------------------
+* separate components as 'framework', 'applications', 'specialpurpose', 'theme', 'hot-deploy' and 'default hot-deploy'
+* return webapp info by virtual host
+
+---------------
+load_data.patch
+---------------
+* load data files only components related to a specific tenant
+
+-------------------
+load_entities.patch
+-------------------
+* load only 'entities', 'entity groups' and 'EECA' from a specific tenant
+
+-----------------
+load_images.patch
+-----------------
+* load any requested images from separated tenant directories
+
+-------------------
+load_services.patch
+-------------------
+* load and run only 'services', 'service groups' and 'SECA' from a specific tenant
+
+---------------------
+load_test_cases.patch
+---------------------
+* run test cases with a specific tenant
+
+--------------------
+product_images.patch
+--------------------
+* upload and display product images from a specific tenant directory
+
+----------------------
+requested_tenant.patch
+----------------------
+* change 'delegator', 'dispatcher' and 'security' objects to requested tenant which requested by domain name
+
+----------------------
+requested_webapp.patch
+----------------------
+* also get an webapp info by a mount point.
+
