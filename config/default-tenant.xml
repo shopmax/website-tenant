@@ -4,6 +4,13 @@
     <component name="growerpwebsite"/>
     <component name="growerpsaas"/>
     
+    <!-- frontend -->
+    <domain name="growerpsaas.localhost" initial-path="/"/>
+    <domain name="growerpsaas.ofbizdemo.com" initial-path="/"/>
+    <domain name="saas.growerp.com" initial-path="/"/>
+    
+    <!-- backend -->
     <domain name="growerpsaasbackend.localhost" initial-path="/backend"/>
     <domain name="growerpsaasbackend.ofbizdemo.com" initial-path="/backend"/>
+    <domain name="saasbackend.growerp.com" initial-path="/backend"/>
 </default-tenant>
