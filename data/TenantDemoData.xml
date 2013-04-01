@@ -29,7 +29,7 @@
     <TenantDataSource tenantId="demotenant1" entityGroupName="org.ofbiz"
        jdbcUri="jdbc:derby:demotenant1ofbiz;create=true" jdbcUsername="ofbiz" jdbcPassword="ofbiz"/>
     <TenantDataSource tenantId="demotenant1" entityGroupName="org.ofbiz.olap"
-       jdbcUri="jdbc:derby:demotenant1olap" jdbcUsername="ofbiz" jdbcPassword="ofbiz"/>
+       jdbcUri="jdbc:derby:demotenant1olap;create=true" jdbcUsername="ofbiz" jdbcPassword="ofbiz"/>
        
     <Party partyId="DemoTenant1"/>
     <UserLogin userLoginId="demotenant1" partyId="DemoTenant1"/>

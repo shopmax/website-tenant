@@ -778,7 +778,7 @@ public class TenantServices {
         Delegator delegator = ctx.getDelegator();
         String tenantId = (String) context.get("tenantId");
 
-        String defaultReaders = "security,seed,seed-initial,demo,ext,ext-demo,ext-test";
+        String defaultReaders = "security,seed,seed-initial,ext,ext-demo,ext-test";
         String readers = null;
         
         try {
