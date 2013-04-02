@@ -227,37 +227,54 @@ public class TenantServices {
                 FileUtils.deleteDirectory(tempDir);
                 
                 // create party content
+                String partyId = null;
                 String contentName = null;
-                GenericValue tenantUserLogin = delegator.findOne("UserLogin", UtilMisc.toMap("userLoginId", "system"), false);
-                if (UtilValidate.isNotEmpty(tenantUserLogin)) {
-                    String partyId = tenantUserLogin.getString("partyId");
-                    contentName = "Data of " + tenantId + " at " + nowDate.toString();
-                    String dataResourceName = contentName.replace(" ", "_").replace(":", "_") + ".zip";
+                GenericValue tenantUserLogin = delegator.findOne("UserLogin", UtilMisc.toMap("userLoginId", tenantId), false);
+                if (UtilValidate.isEmpty(tenantUserLogin)) {
+                    // create person
+                    Map<String, Object> createPersonInMap = FastMap.newInstance();
+                    createPersonInMap.put("firstName", "Tenant Owner");
+                    createPersonInMap.put("lastName", "Of " + tenantId);
+                    createPersonInMap.put("userLogin", sysUserLogin);
+                    Map<String, Object> createPersonResults = dispatcher.runSync("createPerson", createPersonInMap);
+                    partyId = UtilGenerics.cast(createPersonResults.get("partyId"));
                     
-                    Map<String, Object> createDataResourceInMap = FastMap.newInstance();
-                    createDataResourceInMap.put("dataResourceName", dataResourceName);
-                    createDataResourceInMap.put("dataResourceTypeId", "URL_RESOURCE");
-                    createDataResourceInMap.put("isPublic", "Y");
-                    createDataResourceInMap.put("mimeTypeId", "application/zip");
-                    createDataResourceInMap.put("objectInfo", "file://" + outFile.getAbsolutePath());
-                    createDataResourceInMap.put("userLogin", sysUserLogin);
-                    Map<String, Object> createDataResourceResults = dispatcher.runSync("createDataResource", createDataResourceInMap);
-                    String dataResourceId = UtilGenerics.cast(createDataResourceResults.get("dataResourceId"));
-
-                    Map<String, Object> createContentInMap = FastMap.newInstance();
-                    createContentInMap.put("contentName", contentName);
-                    createContentInMap.put("dataResourceId", dataResourceId);
-                    createContentInMap.put("userLogin", sysUserLogin);
-                    Map<String, Object> createContentResults = dispatcher.runSync("createContent", createContentInMap);
-                    String contentId = UtilGenerics.cast(createContentResults.get("contentId"));
-                    
-                    Map<String, Object> createPartyContentInMap = FastMap.newInstance();
-                    createPartyContentInMap.put("partyId", partyId);
-                    createPartyContentInMap.put("contentId", contentId);
-                    createPartyContentInMap.put("partyContentTypeId", "TENANT_BACKUP");
-                    createPartyContentInMap.put("userLogin", sysUserLogin);
-                    dispatcher.runSync("createPartyContent", createPartyContentInMap);
+                    // create user login
+                    tenantUserLogin = delegator.makeValue("UserLogin");
+                    tenantUserLogin.setString("userLoginId", tenantId);
+                    tenantUserLogin.setString("partyId", partyId);
+                    tenantUserLogin.setString("currentPassword", "{SHA}47ca69ebb4bdc9ae0adec130880165d2cc05db1a");
+                    delegator.create(tenantUserLogin);
+                } else {
+                    partyId = tenantUserLogin.getString("partyId");
                 }
+                
+                contentName = "Data of " + tenantId + " at " + nowDate.toString();
+                String dataResourceName = contentName.replace(" ", "_").replace(":", "_") + ".zip";
+                
+                Map<String, Object> createDataResourceInMap = FastMap.newInstance();
+                createDataResourceInMap.put("dataResourceName", dataResourceName);
+                createDataResourceInMap.put("dataResourceTypeId", "URL_RESOURCE");
+                createDataResourceInMap.put("isPublic", "Y");
+                createDataResourceInMap.put("mimeTypeId", "application/zip");
+                createDataResourceInMap.put("objectInfo", "file://" + outFile.getAbsolutePath());
+                createDataResourceInMap.put("userLogin", sysUserLogin);
+                Map<String, Object> createDataResourceResults = dispatcher.runSync("createDataResource", createDataResourceInMap);
+                String dataResourceId = UtilGenerics.cast(createDataResourceResults.get("dataResourceId"));
+
+                Map<String, Object> createContentInMap = FastMap.newInstance();
+                createContentInMap.put("contentName", contentName);
+                createContentInMap.put("dataResourceId", dataResourceId);
+                createContentInMap.put("userLogin", sysUserLogin);
+                Map<String, Object> createContentResults = dispatcher.runSync("createContent", createContentInMap);
+                String contentId = UtilGenerics.cast(createContentResults.get("contentId"));
+                
+                Map<String, Object> createPartyContentInMap = FastMap.newInstance();
+                createPartyContentInMap.put("partyId", partyId);
+                createPartyContentInMap.put("contentId", contentId);
+                createPartyContentInMap.put("partyContentTypeId", "TENANT_BACKUP");
+                createPartyContentInMap.put("userLogin", sysUserLogin);
+                dispatcher.runSync("createPartyContent", createPartyContentInMap);
                 
                 return ServiceUtil.returnSuccess(contentName + " has already been backed up.");
             } else {
@@ -778,7 +795,8 @@ public class TenantServices {
         Delegator delegator = ctx.getDelegator();
         String tenantId = (String) context.get("tenantId");
 
-        String defaultReaders = "security,seed,seed-initial,ext,ext-demo,ext-test";
+        String initialReaders = "seed,seed-initial,ext";
+        String demoReaders = initialReaders + ",demo,ext-demo,ext-test";
         String readers = null;
         
         try {
@@ -791,13 +809,14 @@ public class TenantServices {
                     GenericValue tenantComponent = EntityUtil.getFirst(tenantComponents);
                     String componentName = tenantComponent.getString("componentName");
                     readers = EntityUtilProperties.getPropertyValue(componentName + "Demo", "demoLoadData", delegator);
+                } else {
+                    readers = demoReaders;
                 }
-            }
-            if (UtilValidate.isEmpty(readers)) {
-                readers = defaultReaders;  // load everything when not specified
+            } else {
+                readers = initialReaders;
             }
         } catch (Exception e) {
-            readers = defaultReaders;
+            readers = demoReaders;
             String errMsg = "Could not get readers for tenant " + tenantId + ", so use the default reader " + e.getMessage();
             Debug.logError(e, errMsg, module);
             // do not return an error because it will block other correct tenants
