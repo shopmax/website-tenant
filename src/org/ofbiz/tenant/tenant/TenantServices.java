@@ -815,6 +815,11 @@ public class TenantServices {
             } else {
                 readers = initialReaders;
             }
+            
+            if (UtilValidate.isEmpty(readers)) {
+                Debug.logWarning("There is not any readers specified for tenant " + tenantId + ", so use demo readers", module);
+                readers = demoReaders;
+            }
         } catch (Exception e) {
             readers = demoReaders;
             String errMsg = "Could not get readers for tenant " + tenantId + ", so use the default reader " + e.getMessage();
@@ -822,6 +827,8 @@ public class TenantServices {
             // do not return an error because it will block other correct tenants
             //return ServiceUtil.returnError(errMsg);
         }
+        
+        Debug.logInfo("Tenant " + tenantId + " uses readers: " + readers, module);
         
         Map<String, Object> results = ServiceUtil.returnSuccess();
         results.put("readers", readers);
