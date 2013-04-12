@@ -806,9 +806,13 @@ public class TenantServices {
                 // get a readers from the first componentDemo.properties file
                 List<GenericValue> tenantComponents = delegator.findList("TenantComponent", EntityCondition.makeCondition("tenantId", tenantId), null, UtilMisc.toList("sequenceNum"), null, false);
                 if (UtilValidate.isNotEmpty(tenantComponents)) {
-                    GenericValue tenantComponent = EntityUtil.getFirst(tenantComponents);
-                    String componentName = tenantComponent.getString("componentName");
-                    readers = EntityUtilProperties.getPropertyValue(componentName + "Demo", "demoLoadData", delegator);
+                    for (GenericValue tenantComponent : tenantComponents) {
+                        String componentName = tenantComponent.getString("componentName");
+                        readers = EntityUtilProperties.getPropertyValue(componentName + "Demo", "demoLoadData", delegator);
+                        if (UtilValidate.isNotEmpty(readers)) {
+                            break;
+                        }
+                    }
                 } else {
                     readers = demoReaders;
                 }
