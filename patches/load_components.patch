@@ -2,7 +2,16 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
 ===================================================================
 --- framework/base/src/org/ofbiz/base/component/ComponentConfig.java	(revision 1470483)
 +++ framework/base/src/org/ofbiz/base/component/ComponentConfig.java	(working copy)
-@@ -37,7 +37,9 @@
+@@ -24,6 +24,8 @@
+ import java.net.URL;
+ import java.util.Collection;
+ import java.util.Comparator;
++import java.util.HashMap;
++import java.util.LinkedList;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.TreeMap;
+@@ -37,7 +39,9 @@
  import org.ofbiz.base.container.ContainerException;
  import org.ofbiz.base.location.FlexibleLocation;
  import org.ofbiz.base.util.Debug;
@@ -12,23 +21,26 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
  import org.ofbiz.base.util.UtilURL;
  import org.ofbiz.base.util.UtilValidate;
  import org.ofbiz.base.util.UtilXml;
-@@ -56,7 +58,15 @@
+@@ -55,8 +59,16 @@
+     public static final String OFBIZ_COMPONENT_XML_FILENAME = "ofbiz-component.xml";
  
      // this is not a UtilCache because reloading may cause problems
-     protected static Map<String, ComponentConfig> componentConfigs = FastMap.newInstance();
-+    protected static Map<String, ComponentConfig> frameworkComponentConfigs = FastMap.newInstance();
-+    protected static Map<String, ComponentConfig> applicationsComponentConfigs = FastMap.newInstance();
-+    protected static Map<String, ComponentConfig> specialpurposeComponentConfigs = FastMap.newInstance();
-+    protected static Map<String, ComponentConfig> themesComponentConfigs = FastMap.newInstance();
-+    protected static Map<String, ComponentConfig> hotDeployComponentConfigs = FastMap.newInstance();
-+    protected static Map<String, ComponentConfig> defaultHotDeployComponentConfigs = FastMap.newInstance();
-     protected static Map<String, List<WebappInfo>> serverWebApps = FastMap.newInstance();
+-    protected static Map<String, ComponentConfig> componentConfigs = FastMap.newInstance();
+-    protected static Map<String, List<WebappInfo>> serverWebApps = FastMap.newInstance();
++    protected static Map<String, ComponentConfig> componentConfigs = new HashMap<String, ComponentConfig>();
++    protected static Map<String, ComponentConfig> frameworkComponentConfigs = new HashMap<String, ComponentConfig>();
++    protected static Map<String, ComponentConfig> applicationsComponentConfigs = new HashMap<String, ComponentConfig>();
++    protected static Map<String, ComponentConfig> specialpurposeComponentConfigs = new HashMap<String, ComponentConfig>();
++    protected static Map<String, ComponentConfig> themesComponentConfigs = new HashMap<String, ComponentConfig>();
++    protected static Map<String, ComponentConfig> hotDeployComponentConfigs = new HashMap<String, ComponentConfig>();
++    protected static Map<String, ComponentConfig> defaultHotDeployComponentConfigs = new HashMap<String, ComponentConfig>();
++    protected static Map<String, List<WebappInfo>> serverWebApps = new HashMap<String, List<WebappInfo>>();
 +    
 +    protected static List<String> defaultTenantComponentNames = null;
  
      public static ComponentConfig getComponentConfig(String globalName) throws ComponentException {
          // TODO: we need to look up the rootLocation from the container config, or this will blow up
-@@ -64,6 +74,7 @@
+@@ -64,6 +76,7 @@
      }
  
      public static ComponentConfig getComponentConfig(String globalName, String rootLocation) throws ComponentException {
@@ -36,7 +48,7 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
          ComponentConfig componentConfig = null;
          if (UtilValidate.isNotEmpty(globalName)) {
              componentConfig = componentConfigs.get(globalName);
-@@ -80,6 +91,24 @@
+@@ -80,6 +93,24 @@
                              Debug.logWarning("WARNING: Loading ofbiz-component using a global name that already exists, will over-write: " + componentConfig.getGlobalName(), module);
                          }
                          if (componentConfig.enabled()) {
@@ -61,7 +73,7 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
                              componentConfigs.put(componentConfig.getGlobalName(), componentConfig);
                          }
                      }
-@@ -109,7 +138,152 @@
+@@ -109,7 +140,152 @@
              return FastList.newInstance();
          }
      }
@@ -72,7 +84,7 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
 +            return values;
 +        } else {
 +            Debug.logWarning("No framework components were found, something is probably missing or incorrect in the component-load setup.", module);
-+            return FastList.newInstance();
++            return new LinkedList<ComponentConfig>();
 +        }
 +    }
  
@@ -82,7 +94,7 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
 +            return values;
 +        } else {
 +            Debug.logWarning("No applications components were found, something is probably missing or incorrect in the component-load setup.", module);
-+            return FastList.newInstance();
++            return new LinkedList<ComponentConfig>();
 +        }
 +    }
 +
@@ -92,7 +104,7 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
 +            return values;
 +        } else {
 +            Debug.logWarning("No specialpurpose components were found, something is probably missing or incorrect in the component-load setup.", module);
-+            return FastList.newInstance();
++            return new LinkedList<ComponentConfig>();
 +        }
 +    }
 +
@@ -102,7 +114,7 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
 +            return values;
 +        } else {
 +            Debug.logWarning("No themes components were found, something is probably missing or incorrect in the component-load setup.", module);
-+            return FastList.newInstance();
++            return new LinkedList<ComponentConfig>();
 +        }
 +    }
 +
@@ -112,7 +124,7 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
 +            return values;
 +        } else {
 +            Debug.logWarning("No hot-deploy components were found, something is probably missing or incorrect in the component-load setup.", module);
-+            return FastList.newInstance();
++            return new LinkedList<ComponentConfig>();
 +        }
 +    }
 +
@@ -137,12 +149,12 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
 +            return values;
 +        } else {
 +            Debug.logWarning("No default hot-deploy components were found, something is probably missing or incorrect in the component-load setup.", module);
-+            return FastList.newInstance();
++            return new LinkedList<ComponentConfig>();
 +        }
 +    }
 +    
 +    public static List<String> getDefaultHotDeployComponentNames() {
-+        List<String> componentNames = FastList.newInstance();
++        List<String> componentNames = new LinkedList<String>();
 +        Collection<ComponentConfig> values = defaultHotDeployComponentConfigs.values();
 +        if (values != null) {
 +            for (ComponentConfig value : values) {
@@ -156,7 +168,7 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
 +    }
 +    
 +    public static Collection<ComponentConfig> getTenantComponents(List<String> componentNames) {
-+        Collection<ComponentConfig> components = FastList.newInstance();
++        Collection<ComponentConfig> components = new LinkedList<ComponentConfig>();
 +        if (UtilValidate.isEmpty(componentNames)) {
 +            components.addAll(ComponentConfig.getFrameworkComponents());
 +            components.addAll(ComponentConfig.getApplicationsComponents());
@@ -181,7 +193,7 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
 +    }
 +    
 +    public static Collection<ComponentConfig> getDefaultTenantComponents() {
-+        Collection<ComponentConfig> components = FastList.newInstance();
++        Collection<ComponentConfig> components = new LinkedList<ComponentConfig>();
 +        components.addAll(ComponentConfig.getFrameworkComponents());
 +        components.addAll(ComponentConfig.getApplicationsComponents());
 +        components.addAll(ComponentConfig.getSpecialpurposeComponents());
@@ -192,7 +204,7 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
 +    
 +    public static List<String> getDefaultTenantComponentNames() {
 +        if (UtilValidate.isEmpty(defaultTenantComponentNames)) {
-+            defaultTenantComponentNames = FastList.newInstance();
++            defaultTenantComponentNames = new LinkedList<String>();
 +            try {
 +                String ofbizHome = System.getProperty("ofbiz.home");
 +                File defaultTenantFile = FileUtil.getFile(new File(ofbizHome), "hot-deploy/tenant/config/default-tenant.xml");
@@ -214,7 +226,7 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
      public static List<ClasspathInfo> getAllClasspathInfos() {
          return getAllClasspathInfos(null);
      }
-@@ -341,6 +515,27 @@
+@@ -341,6 +517,27 @@
          }
          return info;
      }

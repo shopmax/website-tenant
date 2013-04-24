@@ -2,25 +2,16 @@ Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.ja
 ===================================================================
 --- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1470483)
 +++ framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(working copy)
-@@ -28,6 +28,8 @@
- 
- import javax.transaction.TransactionManager;
- 
-+import javolution.util.FastMap;
-+
- import org.apache.commons.dbcp.ConnectionFactory;
- import org.apache.commons.dbcp.DriverConnectionFactory;
- import org.apache.commons.dbcp.PoolableConnectionFactory;
-@@ -50,6 +52,8 @@
+@@ -50,6 +50,8 @@
  
      public static final String module = DBCPConnectionFactory.class.getName();
      protected static final ConcurrentHashMap<String, ManagedDataSource> dsCache = new ConcurrentHashMap<String, ManagedDataSource>();
-+    protected static Map<String, XAConnectionFactory> xacfCache = FastMap.newInstance();
-+    protected static Map<String, GenericObjectPool> gopCache = FastMap.newInstance();
++    protected static Map<String, XAConnectionFactory> xacfCache = new HashMap<String, XAConnectionFactory>();
++    protected static Map<String, GenericObjectPool> gopCache = new HashMap<String, GenericObjectPool>();
  
      public Connection getConnection(GenericHelperInfo helperInfo, Element jdbcElement) throws SQLException, GenericEntityException {
          String cacheKey = helperInfo.getHelperFullName();
-@@ -166,14 +170,28 @@
+@@ -166,14 +168,28 @@
          // cache the pool
          dsCache.putIfAbsent(cacheKey, mds);
          mds = dsCache.get(cacheKey);
@@ -53,24 +44,15 @@ Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
 ===================================================================
 --- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1470483)
 +++ framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(working copy)
-@@ -40,6 +40,8 @@
- import java.util.concurrent.Future;
- import java.util.concurrent.FutureTask;
- 
-+import javolution.util.FastList;
-+
- import org.ofbiz.base.concurrent.ExecutionPool;
- import org.ofbiz.base.util.Debug;
- import org.ofbiz.base.util.UtilTimer;
-@@ -82,6 +84,7 @@
+@@ -82,6 +82,7 @@
  
      boolean isLegacy = false;
      protected ExecutorService executor;
-+    protected List<Connection> connections = FastList.newInstance();
++    protected List<Connection> connections = new LinkedList<Connection>();
  
      // OFBiz DatabaseUtil
      public DatabaseUtil(GenericHelperInfo helperInfo) {
-@@ -144,6 +147,9 @@
+@@ -144,6 +145,9 @@
                  throw new GenericEntityException("No connection avaialble for URL [" + connectionUrl + "]");
              }
          }
@@ -80,7 +62,7 @@ Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
          if (!TransactionUtil.isTransactionInPlace()) {
              connection.setAutoCommit(true);
          }
-@@ -3198,6 +3204,18 @@
+@@ -3198,6 +3202,18 @@
              }
          }
      }

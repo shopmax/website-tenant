@@ -82,18 +82,15 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelReader.java
 ===================================================================
 --- framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(revision 1470483)
 +++ framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(working copy)
-@@ -29,7 +29,10 @@
- import java.util.Set;
+@@ -30,6 +30,7 @@
  import java.util.TreeSet;
  
-+import javolution.util.FastList;
-+
  import org.ofbiz.base.component.ComponentConfig;
 +import org.ofbiz.base.component.ComponentConfig.EntityResourceInfo;
  import org.ofbiz.base.config.GenericConfigException;
  import org.ofbiz.base.config.MainResourceHandler;
  import org.ofbiz.base.config.ResourceHandler;
-@@ -78,25 +81,41 @@
+@@ -78,25 +79,41 @@
      protected Map<String, ResourceHandler> entityResourceHandlerMap;
  
      public static ModelReader getModelReader(String delegatorName) throws GenericEntityException {
@@ -140,7 +137,7 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelReader.java
          this.modelName = modelName;
          entityResourceHandlers = new LinkedList<ResourceHandler>();
          resourceHandlerEntities = new HashMap<ResourceHandler, Collection<String>>();
-@@ -113,9 +132,17 @@
+@@ -113,9 +130,17 @@
              ResourceHandler handler = new MainResourceHandler(EntityConfigUtil.ENTITY_ENGINE_XML_FILENAME, resourceElement);
              entityResourceHandlers.add(handler);
          }
@@ -149,7 +146,7 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelReader.java
 -        for (ComponentConfig.EntityResourceInfo componentResourceInfo: ComponentConfig.getAllEntityResourceInfos("model")) {
 +        
 +        // get entity resource infos
-+        List<EntityResourceInfo> entityResourceInfos = FastList.newInstance();
++        List<EntityResourceInfo> entityResourceInfos = new LinkedList<EntityResourceInfo>();
 +        Collection<ComponentConfig> components = ComponentConfig.getTenantComponents(componentNames);
 +        for (ComponentConfig component : components) {
 +            List<EntityResourceInfo> componentEntityResourceInfos = ComponentConfig.getAllEntityResourceInfos("model", component.getComponentName());
@@ -173,18 +170,15 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java
  import java.util.HashMap;
  import java.util.HashSet;
  import java.util.LinkedList;
-@@ -27,7 +28,10 @@
- import java.util.Set;
+@@ -28,6 +29,7 @@
  import java.util.TreeSet;
  
-+import javolution.util.FastList;
-+
  import org.ofbiz.base.component.ComponentConfig;
 +import org.ofbiz.base.component.ComponentConfig.EntityResourceInfo;
  import org.ofbiz.base.config.GenericConfigException;
  import org.ofbiz.base.config.MainResourceHandler;
  import org.ofbiz.base.config.ResourceHandler;
-@@ -61,22 +65,39 @@
+@@ -61,22 +63,39 @@
      public List<ResourceHandler> entityGroupResourceHandlers = new LinkedList<ResourceHandler>();
  
      public static ModelGroupReader getModelGroupReader(String delegatorName) throws GenericEntityConfException {
@@ -228,14 +222,14 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java
          this.modelName = modelName;
          EntityGroupReaderInfo entityGroupReaderInfo = EntityConfigUtil.getEntityGroupReaderInfo(modelName);
  
-@@ -87,8 +108,16 @@
+@@ -87,8 +106,16 @@
              this.entityGroupResourceHandlers.add(new MainResourceHandler(EntityConfigUtil.ENTITY_ENGINE_XML_FILENAME, resourceElement));
          }
  
 -        // get all of the component resource group stuff, ie specified in each ofbiz-component.xml file
 -        for (ComponentConfig.EntityResourceInfo componentResourceInfo: ComponentConfig.getAllEntityResourceInfos("group")) {
 +        // get entity resource infos
-+        List<EntityResourceInfo> entityResourceInfos = FastList.newInstance();
++        List<EntityResourceInfo> entityResourceInfos = new LinkedList<EntityResourceInfo>();
 +        Collection<ComponentConfig> components = ComponentConfig.getTenantComponents(componentNames);
 +        for (ComponentConfig component : components) {
 +            List<EntityResourceInfo> componentEntityResourceInfos = ComponentConfig.getAllEntityResourceInfos("group", component.getComponentName());

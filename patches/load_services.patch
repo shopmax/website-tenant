@@ -141,15 +141,16 @@ Index: framework/service/src/org/ofbiz/service/DispatchContext.java
 ===================================================================
 --- framework/service/src/org/ofbiz/service/DispatchContext.java	(revision 1470483)
 +++ framework/service/src/org/ofbiz/service/DispatchContext.java	(working copy)
-@@ -19,6 +19,7 @@
+@@ -19,6 +19,8 @@
  package org.ofbiz.service;
  
  import java.io.Serializable;
 +import java.util.Collection;
++import java.util.LinkedList;
  import java.util.List;
  import java.util.Map;
  import java.util.Set;
-@@ -32,16 +33,22 @@
+@@ -32,16 +34,22 @@
  import javolution.util.FastMap;
  
  import org.ofbiz.base.component.ComponentConfig;
@@ -172,7 +173,7 @@ Index: framework/service/src/org/ofbiz/service/DispatchContext.java
  import org.ofbiz.security.Security;
  import org.ofbiz.service.config.ServiceConfigUtil;
  import org.ofbiz.service.eca.ServiceEcaUtil;
-@@ -56,13 +63,14 @@
+@@ -56,13 +64,14 @@
  
      public static final String module = DispatchContext.class.getName();
  
@@ -188,7 +189,7 @@ Index: framework/service/src/org/ofbiz/service/DispatchContext.java
  
      /**
       * Creates new DispatchContext as an immutable object.
-@@ -94,7 +102,12 @@
+@@ -94,7 +103,12 @@
              modelName = name;
          }
          this.model = modelName;
@@ -202,7 +203,7 @@ Index: framework/service/src/org/ofbiz/service/DispatchContext.java
      }
  
      /**
-@@ -200,7 +213,7 @@
+@@ -200,7 +214,7 @@
       * @return GenericServiceModel that corresponds to the serviceName
       */
      public ModelService getModelService(String serviceName) throws GenericServiceException {
@@ -211,7 +212,7 @@ Index: framework/service/src/org/ofbiz/service/DispatchContext.java
          ModelService retVal = null;
          if (serviceMap != null) {
              retVal = serviceMap.get(serviceName);
-@@ -217,6 +230,7 @@
+@@ -217,6 +231,7 @@
      public Set<String> getAllServiceNames() {
          Set<String> serviceNames = new TreeSet<String>();
  
@@ -219,7 +220,7 @@ Index: framework/service/src/org/ofbiz/service/DispatchContext.java
          Map<String, ModelService> globalServices = modelServiceMapByModel.get(this.model);
          if (globalServices != null) {
              serviceNames.addAll(globalServices.keySet());
-@@ -237,7 +251,12 @@
+@@ -237,7 +252,12 @@
          };
      }
  
@@ -233,14 +234,14 @@ Index: framework/service/src/org/ofbiz/service/DispatchContext.java
          Map<String, ModelService> serviceMap = modelServiceMapByModel.get(this.model);
          if (serviceMap == null) {
              serviceMap = FastMap.newInstance();
-@@ -259,8 +278,16 @@
+@@ -259,8 +279,16 @@
                  futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createServiceReaderCallable(handler)));
              }
  
 -            // get all of the component resource model stuff, ie specified in each ofbiz-component.xml file
 -            for (ComponentConfig.ServiceResourceInfo componentResourceInfo: ComponentConfig.getAllServiceResourceInfos("model")) {
 +            // get service resource infos
-+            List<ServiceResourceInfo> serviceResourceInfos = FastList.newInstance();
++            List<ServiceResourceInfo> serviceResourceInfos = new LinkedList<ServiceResourceInfo>();
 +            Collection<ComponentConfig> components = ComponentConfig.getTenantComponents(componentNames);
 +            for (ComponentConfig component : components) {
 +                List<ServiceResourceInfo> componentServiceResourceInfos = ComponentConfig.getAllServiceResourceInfos("model", component.getComponentName());
@@ -252,7 +253,7 @@ Index: framework/service/src/org/ofbiz/service/DispatchContext.java
                  futures.add(ExecutionPool.GLOBAL_EXECUTOR.submit(createServiceReaderCallable(componentResourceInfo.createResourceHandler())));
              }
              for (Map<String, ModelService> servicesMap: ExecutionPool.getAllFutures(futures)) {
-@@ -272,10 +299,28 @@
+@@ -272,10 +300,28 @@
              if (serviceMap != null) {
                  Map<String, ModelService> cachedServiceMap = modelServiceMapByModel.putIfAbsentAndGet(this.model, serviceMap);
                  if (cachedServiceMap == serviceMap) { // same object: this means that the object created by this thread was actually added to the cache
@@ -286,7 +287,15 @@ Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
 ===================================================================
 --- framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java	(revision 1470483)
 +++ framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java	(working copy)
-@@ -35,8 +35,13 @@
+@@ -19,6 +19,7 @@
+ package org.ofbiz.service.eca;
+ 
+ import java.util.Collection;
++import java.util.HashMap;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.Set;
+@@ -35,8 +36,13 @@
  import org.ofbiz.base.config.MainResourceHandler;
  import org.ofbiz.base.config.ResourceHandler;
  import org.ofbiz.base.util.Debug;
@@ -300,12 +309,12 @@ Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
  import org.ofbiz.service.DispatchContext;
  import org.ofbiz.service.GenericServiceException;
  import org.ofbiz.service.config.ServiceConfigUtil;
-@@ -52,14 +57,21 @@
+@@ -52,14 +58,21 @@
      public static final String module = ServiceEcaUtil.class.getName();
  
      // using a cache is dangerous here because if someone clears it the ECAs won't run: public static UtilCache ecaCache = new UtilCache("service.ServiceECAs", 0, 0, false);
 -    public static Map<String, Map<String, List<ServiceEcaRule>>> ecaCache = FastMap.newInstance();
-+    public static Map<String, Map<String, Map<String, List<ServiceEcaRule>>>> tenantEcaCache = FastMap.newInstance();
++    public static Map<String, Map<String, Map<String, List<ServiceEcaRule>>>> tenantEcaCache = new HashMap<String, Map<String,Map<String,List<ServiceEcaRule>>>>();
  
 -    public static void reloadConfig() {
 +    public static void reloadConfig(Delegator delegator) {
@@ -319,14 +328,14 @@ Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
 +    public static void readConfig(Delegator delegator) {
 +        Map<String, Map<String, List<ServiceEcaRule>>> ecaCache = tenantEcaCache.get(delegator.getDelegatorName());
 +        if (UtilValidate.isEmpty(ecaCache)) {
-+            ecaCache = FastMap.newInstance();
++            ecaCache = new HashMap<String, Map<String,List<ServiceEcaRule>>>();
 +            tenantEcaCache.put(delegator.getDelegatorName(), ecaCache);
 +        }
 +        
          // Only proceed if the cache hasn't already been populated, caller should be using reloadConfig() in that situation
          if (UtilValidate.isNotEmpty(ecaCache)) {
              return;
-@@ -75,33 +87,47 @@
+@@ -75,33 +88,47 @@
          List<Future<List<ServiceEcaRule>>> futures = FastList.newInstance();
          for (Element serviceEcasElement: UtilXml.childElementList(rootElement, "service-ecas")) {
              ResourceHandler handler = new MainResourceHandler(ServiceConfigUtil.SERVICE_ENGINE_XML_FILENAME, serviceEcasElement);
@@ -384,7 +393,7 @@ Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
          List<ServiceEcaRule> handlerRules = FastList.newInstance();
          Element rootElement = null;
          try {
-@@ -126,7 +152,8 @@
+@@ -126,7 +153,8 @@
          return handlerRules;
      }
  
@@ -394,7 +403,7 @@ Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
          for (ServiceEcaRule rule: handlerRules) {
              String serviceName = rule.getServiceName();
              String eventName = rule.getEventName();
-@@ -149,13 +176,18 @@
+@@ -149,13 +177,18 @@
          }
      }
  
@@ -418,7 +427,7 @@ Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
          if (eventMap != null) {
              if (event != null) {
                  return eventMap.get(event);
-@@ -172,7 +204,7 @@
+@@ -172,7 +205,7 @@
  
      public static void evalRules(String serviceName, Map<String, List<ServiceEcaRule>> eventMap, String event, DispatchContext dctx, Map<String, Object> context, Map<String, Object> result, boolean isError, boolean isFailure) throws GenericServiceException {
          // if the eventMap is passed we save a Map lookup, but if not that's okay we'll just look it up now
@@ -427,7 +436,7 @@ Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
          if (UtilValidate.isEmpty(eventMap)) {
              return;
          }
-@@ -188,4 +220,8 @@
+@@ -188,4 +221,8 @@
              eca.eval(serviceName, dctx, context, result, isError, isFailure, actionsRun);
          }
      }
@@ -440,25 +449,21 @@ Index: framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java
 ===================================================================
 --- framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java	(revision 1470483)
 +++ framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java	(working copy)
-@@ -18,9 +18,12 @@
+@@ -18,6 +18,9 @@
   *******************************************************************************/
  package org.ofbiz.service.group;
  
 +import java.util.Collection;
++import java.util.HashMap;
 +import java.util.List;
  import java.util.Map;
  
  import freemarker.template.utility.StringUtil;
-+import javolution.util.FastList;
- import javolution.util.FastMap;
- 
- import org.ofbiz.base.component.ComponentConfig;
-@@ -28,7 +31,14 @@
+@@ -28,7 +31,13 @@
  import org.ofbiz.base.config.MainResourceHandler;
  import org.ofbiz.base.config.ResourceHandler;
  import org.ofbiz.base.util.Debug;
 +import org.ofbiz.base.util.UtilMisc;
-+import org.ofbiz.base.util.UtilProperties;
 +import org.ofbiz.base.util.UtilValidate;
  import org.ofbiz.base.util.UtilXml;
 +import org.ofbiz.entity.Delegator;
@@ -468,12 +473,12 @@ Index: framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java
  import org.ofbiz.service.config.ServiceConfigUtil;
  import org.w3c.dom.Element;
  
-@@ -40,9 +50,22 @@
+@@ -40,9 +49,22 @@
      public static final String module = ServiceGroupReader.class.getName();
  
      // using a cache is dangerous here because if someone clears it the groups won't work at all: public static UtilCache groupsCache = new UtilCache("service.ServiceGroups", 0, 0, false);
 -    public static Map<String, GroupModel> groupsCache = FastMap.newInstance();
-+    public static Map<String, Map<String, GroupModel>> tenantGroupsCache = FastMap.newInstance();
++    public static Map<String, Map<String, GroupModel>> tenantGroupsCache = new HashMap<String, Map<String,GroupModel>>();
  
 -    public static void readConfig() {
 +    public static void readConfig(Delegator delegator) {
@@ -486,14 +491,14 @@ Index: framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java
 +        
 +        Map<String, GroupModel> groupsCache = tenantGroupsCache.get(delegator.getDelegatorName());
 +        if (UtilValidate.isEmpty(groupsCache)) {
-+            groupsCache = FastMap.newInstance();
++            groupsCache = new HashMap<String, GroupModel>();
 +            tenantGroupsCache.put(delegatorName, groupsCache);
 +        }
 +        
          Element rootElement = null;
  
          try {
-@@ -54,16 +77,31 @@
+@@ -54,16 +76,31 @@
  
          for (Element serviceGroupElement: UtilXml.childElementList(rootElement, "service-groups")) {
              ResourceHandler handler = new MainResourceHandler(ServiceConfigUtil.SERVICE_ENGINE_XML_FILENAME, serviceGroupElement);
@@ -531,7 +536,7 @@ Index: framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java
          Element rootElement = null;
  
          try {
-@@ -86,13 +124,19 @@
+@@ -86,13 +123,19 @@
              } catch (GenericConfigException e) {
                  Debug.logError(e, "Could not get resource URL", module);
              }
@@ -545,7 +550,7 @@ Index: framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java
 +    public static GroupModel getGroupModel(String serviceName, Delegator delegator) {
 +        Map<String, GroupModel> groupsCache = tenantGroupsCache.get(delegator.getDelegatorName());
 +        if (UtilValidate.isEmpty(groupsCache)) {
-+            groupsCache = FastMap.newInstance();
++            groupsCache = new HashMap<String, GroupModel>();
 +            tenantGroupsCache.put(delegator.getDelegatorName(), groupsCache);
 +        }
 +        
