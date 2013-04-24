@@ -1,25 +1,24 @@
 Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1447126)
+--- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1470483)
 +++ framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(working copy)
-@@ -51,6 +51,8 @@
+@@ -50,6 +50,8 @@
  
      public static final String module = DBCPConnectionFactory.class.getName();
-     protected static Map<String, ManagedDataSource> dsCache = FastMap.newInstance();
+     protected static final ConcurrentHashMap<String, ManagedDataSource> dsCache = new ConcurrentHashMap<String, ManagedDataSource>();
 +    protected static Map<String, XAConnectionFactory> xacfCache = FastMap.newInstance();
 +    protected static Map<String, GenericObjectPool> gopCache = FastMap.newInstance();
  
      public Connection getConnection(GenericHelperInfo helperInfo, Element jdbcElement) throws SQLException, GenericEntityException {
-         ManagedDataSource mds = dsCache.get(helperInfo.getHelperFullName());
-@@ -174,15 +176,29 @@
- 
-             // cache the pool
-             dsCache.put(helperInfo.getHelperFullName(), mds);
+         String cacheKey = helperInfo.getHelperFullName();
+@@ -166,14 +168,28 @@
+         // cache the pool
+         dsCache.putIfAbsent(cacheKey, mds);
+         mds = dsCache.get(cacheKey);
 +            xacfCache.put(helperInfo.getHelperFullName(), xacf);
 +            gopCache.put(helperInfo.getHelperFullName(), pool);
  
-             return TransactionFactory.getCursorConnection(helperInfo, mds.getConnection());
-         }
+         return TransactionFactory.getCursorConnection(helperInfo, mds.getConnection());
      }
 +    
 +    public void removeConnection(GenericHelperInfo helperInfo) {
@@ -39,13 +38,13 @@ Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.ja
 +        return gopCache.get(helperInfo.getHelperFullName());
 +    }
  
+     @SuppressWarnings("unchecked")
      public static Map getDataSourceInfo(String helperName) {
-         Map dataSourceInfo = new HashMap();
 Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1447126)
+--- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1470483)
 +++ framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(working copy)
-@@ -83,6 +83,7 @@
+@@ -82,6 +82,7 @@
  
      boolean isLegacy = false;
      protected ExecutorService executor;
@@ -53,7 +52,7 @@ Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
  
      // OFBiz DatabaseUtil
      public DatabaseUtil(GenericHelperInfo helperInfo) {
-@@ -145,6 +146,9 @@
+@@ -144,6 +145,9 @@
                  throw new GenericEntityException("No connection avaialble for URL [" + connectionUrl + "]");
              }
          }
@@ -63,7 +62,7 @@ Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
          if (!TransactionUtil.isTransactionInPlace()) {
              connection.setAutoCommit(true);
          }
-@@ -3203,6 +3207,18 @@
+@@ -3198,6 +3202,18 @@
              }
          }
      }
@@ -84,7 +83,7 @@ Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
      /* ====================================================================== */
 Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1447126)
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1470483)
 +++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(working copy)
 @@ -407,6 +407,8 @@
          // step 8 - checkdb
