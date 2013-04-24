@@ -82,15 +82,18 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelReader.java
 ===================================================================
 --- framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(revision 1470483)
 +++ framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(working copy)
-@@ -30,6 +30,7 @@
+@@ -29,7 +29,10 @@
+ import java.util.Set;
  import java.util.TreeSet;
  
++import javolution.util.FastList;
++
  import org.ofbiz.base.component.ComponentConfig;
 +import org.ofbiz.base.component.ComponentConfig.EntityResourceInfo;
  import org.ofbiz.base.config.GenericConfigException;
  import org.ofbiz.base.config.MainResourceHandler;
  import org.ofbiz.base.config.ResourceHandler;
-@@ -78,25 +79,41 @@
+@@ -78,25 +81,41 @@
      protected Map<String, ResourceHandler> entityResourceHandlerMap;
  
      public static ModelReader getModelReader(String delegatorName) throws GenericEntityException {
@@ -137,7 +140,7 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelReader.java
          this.modelName = modelName;
          entityResourceHandlers = new LinkedList<ResourceHandler>();
          resourceHandlerEntities = new HashMap<ResourceHandler, Collection<String>>();
-@@ -113,9 +130,17 @@
+@@ -113,9 +132,17 @@
              ResourceHandler handler = new MainResourceHandler(EntityConfigUtil.ENTITY_ENGINE_XML_FILENAME, resourceElement);
              entityResourceHandlers.add(handler);
          }
