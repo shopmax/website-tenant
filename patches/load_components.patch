@@ -1,6 +1,6 @@
 Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
 ===================================================================
---- framework/base/src/org/ofbiz/base/component/ComponentConfig.java	(revision 1447126)
+--- framework/base/src/org/ofbiz/base/component/ComponentConfig.java	(revision 1470483)
 +++ framework/base/src/org/ofbiz/base/component/ComponentConfig.java	(working copy)
 @@ -37,7 +37,9 @@
  import org.ofbiz.base.container.ContainerException;
