@@ -40,21 +40,79 @@
     <!-- ================================================================= -->
 
     <target name="create-ofbiz-patches" description="Creates patches for root, framework, application and specialpurpose components">
-        <exec executable="svn" output="patches/root.patch" dir="${ofbiz.home.dir}">
+        <exec executable="svn" output="patches/configuration.patch" dir="${ofbiz.home.dir}">
             <arg value="diff"/>
-            <arg value="--depth=files"/>
+            <arg value="framework/common/config/general.properties"/>
         </exec>
-        <exec executable="svn" output="patches/framework.patch" dir="${ofbiz.home.dir}">
+        <exec executable="svn" output="patches/data_model.patch" dir="${ofbiz.home.dir}">
             <arg value="diff"/>
-            <arg value="framework"/>
+            <arg value="framework/entity/entitydef/entitygroup.xml"/>
         </exec>
-        <exec executable="svn" output="patches/applications.patch" dir="${ofbiz.home.dir}">
+        <exec executable="svn" output="patches/database_connection.patch" dir="${ofbiz.home.dir}">
             <arg value="diff"/>
-            <arg value="applications"/>
+            <arg value="framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java"/>
+            <arg value="framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java"/>
+            <arg value="framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java"/>
         </exec>
-        <exec executable="svn" output="patches/specialpurpose.patch" dir="${ofbiz.home.dir}">
+        <exec executable="svn" output="patches/load_components.patch" dir="${ofbiz.home.dir}">
             <arg value="diff"/>
-            <arg value="specialpurpose"/>
+            <arg value="framework/base/src/org/ofbiz/base/component/ComponentConfig.java"/>
+        </exec>
+        <exec executable="svn" output="patches/load_data.patch" dir="${ofbiz.home.dir}">
+            <arg value="diff"/>
+            <arg value="framework/entity/src/org/ofbiz/entity/util/EntitySaxReader.java"/>
+            <arg value="framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java"/>
+        </exec>
+        <exec executable="svn" output="patches/load_entities.patch" dir="${ofbiz.home.dir}">
+            <arg value="diff"/>
+            <arg value="framework/entity/src/org/ofbiz/entity/GenericDelegator.java"/>
+            <arg value="framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java"/>
+            <arg value="framework/entity/src/org/ofbiz/entity/model/ModelReader.java"/>
+            <arg value="framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java"/>
+            <arg value="framework/entity/src/org/ofbiz/entity/DelegatorFactory.java"/>
+            <arg value="framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java"/>
+            <arg value="framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java"/>
+            <arg value="framework/testtools/build.xml"/>
+        </exec>
+        <exec executable="svn" output="patches/load_images.patch" dir="${ofbiz.home.dir}">
+            <arg value="diff"/>
+            <arg value="framework/images/webapp/images/WEB-INF/web.xml"/>
+        </exec>
+        <exec executable="svn" output="patches/load_services.patch" dir="${ofbiz.home.dir}">
+            <arg value="diff"/>
+            <arg value="framework/webtools/src/org/ofbiz/webtools/artifactinfo/ServiceArtifactInfo.java"/>
+            <arg value="framework/webtools/src/org/ofbiz/webtools/artifactinfo/ArtifactInfoFactory.java"/>
+            <arg value="framework/webtools/webapp/webtools/WEB-INF/actions/service/AvailableServices.groovy"/>
+            <arg value="framework/service/src/org/ofbiz/service/ServiceDispatcher.java"/>
+            <arg value="framework/service/src/org/ofbiz/service/ModelService.java"/>
+            <arg value="framework/service/src/org/ofbiz/service/DispatchContext.java"/>
+            <arg value="framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java"/>
+            <arg value="framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java"/>
+            <arg value="framework/service/src/org/ofbiz/service/group/ServiceGroupEngine.java"/>
+            <arg value="framework/service/src/org/ofbiz/service/ModelServiceReader.java"/>
+        </exec>
+        <exec executable="svn" output="patches/load_test_cases.patch" dir="${ofbiz.home.dir}">
+            <arg value="diff"/>
+            <arg value="framework/testtools/src/org/ofbiz/testtools/ModelTestSuite.java"/>
+        </exec>
+        <exec executable="svn" output="patches/product_images.patch" dir="${ofbiz.home.dir}">
+            <arg value="diff"/>
+            <arg value="applications/product/src/org/ofbiz/product/product/ProductServices.java"/>
+            <arg value="applications/product/src/org/ofbiz/product/image/ScaleImage.java"/>
+            <arg value="applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/ImageUpload.groovy"/>
+            <arg value="applications/product/webapp/catalog/WEB-INF/actions/imagemanagement/SetDefaultImage.groovy"/>
+            <arg value="applications/product/webapp/catalog/WEB-INF/actions/product/EditProductContent.groovy"/>
+        </exec>
+        <exec executable="svn" output="patches/requested_tenant.patch" dir="${ofbiz.home.dir}">
+            <arg value="diff"/>
+            <arg value="framework/webapp/src/org/ofbiz/webapp/control/ControlEventListener.java"/>
+            <arg value="framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java"/>
+            <arg value="framework/common/webcommon/login.ftl"/>
+            <arg value="framework/common/src/org/ofbiz/common/UrlServletHelper.java"/>
+        </exec>
+        <exec executable="svn" output="patches/requested_webapp.patch" dir="${ofbiz.home.dir}">
+            <arg value="diff"/>
+            <arg value="framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java"/>
         </exec>
         <!-- this allow to work correctly on Windows machines without issues on Linux machines -->
         <fixcrlf srcdir="patches" includes="**/*.patch" eol="crlf" />
