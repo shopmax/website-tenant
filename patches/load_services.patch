@@ -291,7 +291,7 @@ Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
  package org.ofbiz.service.eca;
  
  import java.util.Collection;
-+import java.util.HashMap;
++import java.util.LinkedHashMap;
  import java.util.List;
  import java.util.Map;
  import java.util.Set;
@@ -314,7 +314,7 @@ Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
  
      // using a cache is dangerous here because if someone clears it the ECAs won't run: public static UtilCache ecaCache = new UtilCache("service.ServiceECAs", 0, 0, false);
 -    public static Map<String, Map<String, List<ServiceEcaRule>>> ecaCache = FastMap.newInstance();
-+    public static Map<String, Map<String, Map<String, List<ServiceEcaRule>>>> tenantEcaCache = new HashMap<String, Map<String,Map<String,List<ServiceEcaRule>>>>();
++    public static Map<String, Map<String, Map<String, List<ServiceEcaRule>>>> tenantEcaCache = new LinkedHashMap<String, Map<String,Map<String,List<ServiceEcaRule>>>>();
  
 -    public static void reloadConfig() {
 +    public static void reloadConfig(Delegator delegator) {
@@ -328,7 +328,7 @@ Index: framework/service/src/org/ofbiz/service/eca/ServiceEcaUtil.java
 +    public static void readConfig(Delegator delegator) {
 +        Map<String, Map<String, List<ServiceEcaRule>>> ecaCache = tenantEcaCache.get(delegator.getDelegatorName());
 +        if (UtilValidate.isEmpty(ecaCache)) {
-+            ecaCache = new HashMap<String, Map<String,List<ServiceEcaRule>>>();
++            ecaCache = new LinkedHashMap<String, Map<String,List<ServiceEcaRule>>>();
 +            tenantEcaCache.put(delegator.getDelegatorName(), ecaCache);
 +        }
 +        
@@ -449,17 +449,20 @@ Index: framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java
 ===================================================================
 --- framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java	(revision 1470483)
 +++ framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java	(working copy)
-@@ -18,6 +18,9 @@
+@@ -18,17 +18,25 @@
   *******************************************************************************/
  package org.ofbiz.service.group;
  
 +import java.util.Collection;
-+import java.util.HashMap;
++import java.util.LinkedHashMap;
 +import java.util.List;
  import java.util.Map;
  
  import freemarker.template.utility.StringUtil;
-@@ -28,7 +31,13 @@
+-import javolution.util.FastMap;
+ 
+ import org.ofbiz.base.component.ComponentConfig;
+ import org.ofbiz.base.config.GenericConfigException;
  import org.ofbiz.base.config.MainResourceHandler;
  import org.ofbiz.base.config.ResourceHandler;
  import org.ofbiz.base.util.Debug;
@@ -473,12 +476,12 @@ Index: framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java
  import org.ofbiz.service.config.ServiceConfigUtil;
  import org.w3c.dom.Element;
  
-@@ -40,9 +49,22 @@
+@@ -40,9 +48,22 @@
      public static final String module = ServiceGroupReader.class.getName();
  
      // using a cache is dangerous here because if someone clears it the groups won't work at all: public static UtilCache groupsCache = new UtilCache("service.ServiceGroups", 0, 0, false);
 -    public static Map<String, GroupModel> groupsCache = FastMap.newInstance();
-+    public static Map<String, Map<String, GroupModel>> tenantGroupsCache = new HashMap<String, Map<String,GroupModel>>();
++    public static Map<String, Map<String, GroupModel>> tenantGroupsCache = new LinkedHashMap<String, Map<String,GroupModel>>();
  
 -    public static void readConfig() {
 +    public static void readConfig(Delegator delegator) {
@@ -491,14 +494,14 @@ Index: framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java
 +        
 +        Map<String, GroupModel> groupsCache = tenantGroupsCache.get(delegator.getDelegatorName());
 +        if (UtilValidate.isEmpty(groupsCache)) {
-+            groupsCache = new HashMap<String, GroupModel>();
++            groupsCache = new LinkedHashMap<String, GroupModel>();
 +            tenantGroupsCache.put(delegatorName, groupsCache);
 +        }
 +        
          Element rootElement = null;
  
          try {
-@@ -54,16 +76,31 @@
+@@ -54,16 +75,31 @@
  
          for (Element serviceGroupElement: UtilXml.childElementList(rootElement, "service-groups")) {
              ResourceHandler handler = new MainResourceHandler(ServiceConfigUtil.SERVICE_ENGINE_XML_FILENAME, serviceGroupElement);
@@ -536,7 +539,7 @@ Index: framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java
          Element rootElement = null;
  
          try {
-@@ -86,13 +123,19 @@
+@@ -86,13 +122,19 @@
              } catch (GenericConfigException e) {
                  Debug.logError(e, "Could not get resource URL", module);
              }
@@ -550,7 +553,7 @@ Index: framework/service/src/org/ofbiz/service/group/ServiceGroupReader.java
 +    public static GroupModel getGroupModel(String serviceName, Delegator delegator) {
 +        Map<String, GroupModel> groupsCache = tenantGroupsCache.get(delegator.getDelegatorName());
 +        if (UtilValidate.isEmpty(groupsCache)) {
-+            groupsCache = new HashMap<String, GroupModel>();
++            groupsCache = new LinkedHashMap<String, GroupModel>();
 +            tenantGroupsCache.put(delegator.getDelegatorName(), groupsCache);
 +        }
 +        

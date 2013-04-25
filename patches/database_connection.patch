@@ -2,16 +2,24 @@ Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.ja
 ===================================================================
 --- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1470483)
 +++ framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(working copy)
-@@ -50,6 +50,8 @@
+@@ -22,6 +22,7 @@
+ import java.sql.Driver;
+ import java.sql.SQLException;
+ import java.util.HashMap;
++import java.util.LinkedHashMap;
+ import java.util.Map;
+ import java.util.Properties;
+ import java.util.concurrent.ConcurrentHashMap;
+@@ -50,6 +51,8 @@
  
      public static final String module = DBCPConnectionFactory.class.getName();
      protected static final ConcurrentHashMap<String, ManagedDataSource> dsCache = new ConcurrentHashMap<String, ManagedDataSource>();
-+    protected static Map<String, XAConnectionFactory> xacfCache = new HashMap<String, XAConnectionFactory>();
-+    protected static Map<String, GenericObjectPool> gopCache = new HashMap<String, GenericObjectPool>();
++    protected static Map<String, XAConnectionFactory> xacfCache = new LinkedHashMap<String, XAConnectionFactory>();
++    protected static Map<String, GenericObjectPool> gopCache = new LinkedHashMap<String, GenericObjectPool>();
  
      public Connection getConnection(GenericHelperInfo helperInfo, Element jdbcElement) throws SQLException, GenericEntityException {
          String cacheKey = helperInfo.getHelperFullName();
-@@ -166,14 +168,28 @@
+@@ -166,14 +169,28 @@
          // cache the pool
          dsCache.putIfAbsent(cacheKey, mds);
          mds = dsCache.get(cacheKey);

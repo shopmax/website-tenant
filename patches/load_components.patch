@@ -6,7 +6,7 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
  import java.net.URL;
  import java.util.Collection;
  import java.util.Comparator;
-+import java.util.HashMap;
++import java.util.LinkedHashMap;
 +import java.util.LinkedList;
  import java.util.List;
  import java.util.Map;
@@ -27,14 +27,14 @@ Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
      // this is not a UtilCache because reloading may cause problems
 -    protected static Map<String, ComponentConfig> componentConfigs = FastMap.newInstance();
 -    protected static Map<String, List<WebappInfo>> serverWebApps = FastMap.newInstance();
-+    protected static Map<String, ComponentConfig> componentConfigs = new HashMap<String, ComponentConfig>();
-+    protected static Map<String, ComponentConfig> frameworkComponentConfigs = new HashMap<String, ComponentConfig>();
-+    protected static Map<String, ComponentConfig> applicationsComponentConfigs = new HashMap<String, ComponentConfig>();
-+    protected static Map<String, ComponentConfig> specialpurposeComponentConfigs = new HashMap<String, ComponentConfig>();
-+    protected static Map<String, ComponentConfig> themesComponentConfigs = new HashMap<String, ComponentConfig>();
-+    protected static Map<String, ComponentConfig> hotDeployComponentConfigs = new HashMap<String, ComponentConfig>();
-+    protected static Map<String, ComponentConfig> defaultHotDeployComponentConfigs = new HashMap<String, ComponentConfig>();
-+    protected static Map<String, List<WebappInfo>> serverWebApps = new HashMap<String, List<WebappInfo>>();
++    protected static Map<String, ComponentConfig> componentConfigs = new LinkedHashMap<String, ComponentConfig>();
++    protected static Map<String, ComponentConfig> frameworkComponentConfigs = new LinkedHashMap<String, ComponentConfig>();
++    protected static Map<String, ComponentConfig> applicationsComponentConfigs = new LinkedHashMap<String, ComponentConfig>();
++    protected static Map<String, ComponentConfig> specialpurposeComponentConfigs = new LinkedHashMap<String, ComponentConfig>();
++    protected static Map<String, ComponentConfig> themesComponentConfigs = new LinkedHashMap<String, ComponentConfig>();
++    protected static Map<String, ComponentConfig> hotDeployComponentConfigs = new LinkedHashMap<String, ComponentConfig>();
++    protected static Map<String, ComponentConfig> defaultHotDeployComponentConfigs = new LinkedHashMap<String, ComponentConfig>();
++    protected static Map<String, List<WebappInfo>> serverWebApps = new LinkedHashMap<String, List<WebappInfo>>();
 +    
 +    protected static List<String> defaultTenantComponentNames = null;
  
