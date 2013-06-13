@@ -1,6 +1,6 @@
 Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1470483)
+--- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1487148)
 +++ framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(working copy)
 @@ -22,6 +22,7 @@
  import java.sql.Driver;
@@ -10,7 +10,7 @@ Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.ja
  import java.util.Map;
  import java.util.Properties;
  import java.util.concurrent.ConcurrentHashMap;
-@@ -50,6 +51,8 @@
+@@ -51,6 +52,8 @@
  
      public static final String module = DBCPConnectionFactory.class.getName();
      protected static final ConcurrentHashMap<String, ManagedDataSource> dsCache = new ConcurrentHashMap<String, ManagedDataSource>();
@@ -19,7 +19,7 @@ Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.ja
  
      public Connection getConnection(GenericHelperInfo helperInfo, Element jdbcElement) throws SQLException, GenericEntityException {
          String cacheKey = helperInfo.getHelperFullName();
-@@ -166,14 +169,28 @@
+@@ -167,14 +170,28 @@
          // cache the pool
          dsCache.putIfAbsent(cacheKey, mds);
          mds = dsCache.get(cacheKey);
@@ -46,11 +46,11 @@ Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.ja
 +        return gopCache.get(helperInfo.getHelperFullName());
 +    }
  
-     @SuppressWarnings("unchecked")
-     public static Map getDataSourceInfo(String helperName) {
+     public static Map<String, Object> getDataSourceInfo(String helperName) {
+         Map<String, Object> dataSourceInfo = new HashMap<String, Object>();
 Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1470483)
+--- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1487148)
 +++ framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(working copy)
 @@ -82,6 +82,7 @@
  
@@ -70,7 +70,7 @@ Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
          if (!TransactionUtil.isTransactionInPlace()) {
              connection.setAutoCommit(true);
          }
-@@ -3198,6 +3202,18 @@
+@@ -3192,6 +3196,18 @@
              }
          }
      }
@@ -91,7 +91,7 @@ Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
      /* ====================================================================== */
 Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1470483)
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1487148)
 +++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(working copy)
 @@ -407,6 +407,8 @@
          // step 8 - checkdb

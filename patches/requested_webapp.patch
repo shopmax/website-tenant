@@ -1,8 +1,8 @@
 Index: framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java
 ===================================================================
---- framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(revision 1470483)
+--- framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(revision 1487148)
 +++ framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(working copy)
-@@ -293,6 +293,7 @@
+@@ -306,6 +306,7 @@
      public static String login(HttpServletRequest request, HttpServletResponse response) {
          HttpSession session = request.getSession();
  
@@ -10,7 +10,7 @@ Index: framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java
          String username = request.getParameter("USERNAME");
          String password = request.getParameter("PASSWORD");
  
-@@ -627,9 +628,11 @@
+@@ -640,9 +641,11 @@
          if (currCatalog != null) session.setAttribute("CURRENT_CATALOG_ID", currCatalog);
          if (delegatorName != null) {
              // if there is a tenantId in the delegatorName remove it now so that tenant selection doesn't last beyond logout
@@ -22,7 +22,7 @@ Index: framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java
              session.setAttribute("delegatorName", delegatorName);
  
              delegator = DelegatorFactory.getDelegator(delegatorName);
-@@ -1002,7 +1005,7 @@
+@@ -1015,7 +1018,7 @@
                  contextPath = "/";
              }
              

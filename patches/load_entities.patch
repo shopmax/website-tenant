@@ -1,6 +1,6 @@
 Index: framework/entity/src/org/ofbiz/entity/GenericDelegator.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/GenericDelegator.java	(revision 1470483)
+--- framework/entity/src/org/ofbiz/entity/GenericDelegator.java	(revision 1487148)
 +++ framework/entity/src/org/ofbiz/entity/GenericDelegator.java	(working copy)
 @@ -36,6 +36,7 @@
  
@@ -18,7 +18,7 @@ Index: framework/entity/src/org/ofbiz/entity/GenericDelegator.java
  import org.ofbiz.entity.util.SequenceUtil;
  import org.w3c.dom.Document;
  import org.w3c.dom.Element;
-@@ -206,6 +208,7 @@
+@@ -207,6 +209,7 @@
          //if (Debug.infoOn()) Debug.logInfo("Creating new Delegator with name \"" + delegatorFullName + "\".", module);
          this.setDelegatorNames(delegatorFullName);
          this.delegatorInfo = EntityConfigUtil.getDelegatorInfo(delegatorBaseName);
@@ -26,7 +26,7 @@ Index: framework/entity/src/org/ofbiz/entity/GenericDelegator.java
  
          String kekText;
          // before continuing, if there is a tenantId use the base delegator to see if it is valid
-@@ -214,21 +217,27 @@
+@@ -215,21 +218,27 @@
              GenericValue tenant = baseDelegator.findOne("Tenant", true, "tenantId", this.delegatorTenantId);
              if (tenant == null) {
                  throw new GenericEntityException("No Tenant record found for delegator [" + this.delegatorFullName + "] with tenantId [" + this.delegatorTenantId + "]");
@@ -60,9 +60,9 @@ Index: framework/entity/src/org/ofbiz/entity/GenericDelegator.java
  
 Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1470483)
+--- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1487148)
 +++ framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(working copy)
-@@ -1237,11 +1237,14 @@
+@@ -1242,11 +1242,14 @@
      public void checkDb(Map<String, ModelEntity> modelEntities, List<String> messages, boolean addMissing) {
          DatabaseUtil dbUtil = new DatabaseUtil(this.helperInfo, this.executor);
          dbUtil.checkDb(modelEntities, messages, addMissing);
@@ -80,9 +80,9 @@ Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
  }
 Index: framework/entity/src/org/ofbiz/entity/model/ModelReader.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(revision 1470483)
+--- framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(revision 1487148)
 +++ framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(working copy)
-@@ -30,6 +30,7 @@
+@@ -31,6 +31,7 @@
  import java.util.TreeSet;
  
  import org.ofbiz.base.component.ComponentConfig;
@@ -90,7 +90,7 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelReader.java
  import org.ofbiz.base.config.GenericConfigException;
  import org.ofbiz.base.config.MainResourceHandler;
  import org.ofbiz.base.config.ResourceHandler;
-@@ -78,25 +79,41 @@
+@@ -79,25 +80,41 @@
      protected Map<String, ResourceHandler> entityResourceHandlerMap;
  
      public static ModelReader getModelReader(String delegatorName) throws GenericEntityException {
@@ -137,7 +137,7 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelReader.java
          this.modelName = modelName;
          entityResourceHandlers = new LinkedList<ResourceHandler>();
          resourceHandlerEntities = new HashMap<ResourceHandler, Collection<String>>();
-@@ -113,9 +130,17 @@
+@@ -114,9 +131,17 @@
              ResourceHandler handler = new MainResourceHandler(EntityConfigUtil.ENTITY_ENGINE_XML_FILENAME, resourceElement);
              entityResourceHandlers.add(handler);
          }
@@ -160,7 +160,7 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelReader.java
              }
 Index: framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java	(revision 1470483)
+--- framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java	(revision 1487148)
 +++ framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java	(working copy)
 @@ -19,6 +19,7 @@
  package org.ofbiz.entity.model;
@@ -243,7 +243,7 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java
              }
 Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1470483)
+--- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1487148)
 +++ framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(working copy)
 @@ -56,4 +56,8 @@
              delegatorCache.putIfAbsent(delegatorName, delegator);
@@ -256,7 +256,7 @@ Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
  }
 Index: framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java	(revision 1470483)
+--- framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java	(revision 1487148)
 +++ framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java	(working copy)
 @@ -53,11 +53,11 @@
          this.dctx = EntityServiceFactory.getDispatchContext(delegator);
@@ -274,7 +274,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java
      }
 Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java	(revision 1470483)
+--- framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java	(revision 1487148)
 +++ framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java	(working copy)
 @@ -34,12 +34,18 @@
  import org.ofbiz.base.config.MainResourceHandler;
@@ -400,7 +400,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
              if (event != null) {
 Index: framework/testtools/build.xml
 ===================================================================
---- framework/testtools/build.xml	(revision 1470483)
+--- framework/testtools/build.xml	(revision 1487148)
 +++ framework/testtools/build.xml	(working copy)
 @@ -37,6 +37,7 @@
          <fileset dir="../base/build/lib" includes="*.jar"/>
