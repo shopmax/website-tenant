@@ -2,99 +2,130 @@
 <resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <property key="NoTenantContent">
         <value xml:lang="en">You don't have Tenant Component</value>
+		<value xml:lang="vi">Bạn chưa có Ứng dụng quản trị Ảo hóa</value>
     </property>
     <property key="TenantApplication">
         <value xml:lang="en">Tenant Manager</value>
-        <value xml:lang="zh">Tenant Manager</value>
+        <value xml:lang="vi">Quản trị Ảo hóa</value>
+		<value xml:lang="zh">Tenant Manager</value>
     </property>
     <property key="TenantBackup">
         <value xml:lang="en">Backup</value>
+		<value xml:lang="vi">Sao lưu dự phòng</value>
     </property>
     <property key="TenantBackups">
         <value xml:lang="en">Backups</value>
+		<value xml:lang="vi">Danh sách sao lưu dự phòng</value>
     </property>
     <property key="TenantComponentName">
         <value xml:lang="en">Component Name</value>
+		<value xml:lang="vi">Tên Ứng dụng</value>
     </property>
     <property key="TenantCreateBackup">
         <value xml:lang="en">Create Backup</value>
+		<value xml:lang="vi">Tạo sao lưu dự phòng</value>
     </property>
     <property key="TenantCreateComponent">
         <value xml:lang="en">Create Component</value>
+		<value xml:lang="vi">Tạo Ứng dụng</value>
     </property>
     <property key="TenantCreateDataSource">
         <value xml:lang="en">Create Data Source</value>
+		<value xml:lang="vi">Tạo nguồn dữ liệu</value>
     </property>
     <property key="TenantCreateDomainName">
         <value xml:lang="en">Create Domain Name</value>
+		<value xml:lang="vi">Tạo Tên miền</value>
     </property>
     <property key="TenantCompanyName">
         <value xml:lang="en">OFBiz: Tenant</value>
+		<value xml:lang="vi">OFBiz: Ảo hóa</value>
     </property>
     <property key="TenantCreateNew">
         <value xml:lang="en">Create New</value>
+		<value xml:lang="vi">Tạo mới</value>
     </property>
     <property key="TenantCompanySubtitle">
         <value xml:lang="en">Part of the Open For Business Family of Open Source Software</value>
         <value xml:lang="it">Un modulo della famiglia di software open source Open For Business</value>
+		<value xml:lang="vi">Thành viên của Gia đình mã nguồn mở OFBiz</value>
         <value xml:lang="zh">开源软件OFBiz的组成部分</value>
     </property>
     <property key="TenantComponents">
         <value xml:lang="en">Components</value>
+		<value xml:lang="vi">Danh sách Ứng dụng</value>
     </property>
     <property key="TenantDataSources">
         <value xml:lang="en">Data Sources</value>
+		<value xml:lang="vi">Danh sách nguồn dữ liệu</value>
     </property>
     <property key="TenantDeleteTenantConfirmationMessage">
         <value xml:lang="en">Are you sure to delete the tenant?</value>
+		<value xml:lang="vi">Bạn có thực sự muốn XÓA Ảo hóa này ?</value>
     </property>
     <property key="TenantDomainName">
         <value xml:lang="en">Domain Name</value>
+		<value xml:lang="vi">Tên miền</value>
     </property>
     <property key="TenantDomainNames">
         <value xml:lang="en">Domain Names</value>
+		<value xml:lang="vi">Danh sách tên miền</value>
     </property>
     <property key="TenantEntityGroupName">
         <value xml:lang="en">Entity Group Name</value>
+		<value xml:lang="vi">Tên nhóm thực thể (bảng)</value>
     </property>
     <property key="TenantInitialPath">
         <value xml:lang="en">Initial Path</value>
+		<value xml:lang="vi">Đường dẫn khởi tạo</value>
     </property>
     <property key="TenantInstallation">
         <value xml:lang="en">Installation</value>
+		<value xml:lang="vi">Cài đặt - Triển khai</value>
     </property>
     <property key="TenantJdbcUri">
         <value xml:lang="en">Jdbc Uri</value>
+		<value xml:lang="vi">Jdbc Uri</value>
     </property>
     <property key="TenantMailListener">
         <value xml:lang="en">Mail Listener</value>
+		<value xml:lang="vi">Thư điện tử của Ảo hóa</value>
     </property>
     <property key="TenantOverview">
         <value xml:lang="en">Overview</value>
+		<value xml:lang="vi">Tổng quan</value>
     </property>
     <property key="TenantReaders">
         <value xml:lang="en">Readers</value>
+		<value xml:lang="vi">Bộ đọc</value>
     </property>
     <property key="TenantRecreateDatabases">
         <value xml:lang="en">Recreate Databases</value>
+		<value xml:lang="vi">Tạo lại cơ sở dữ liệu</value>
     </property>
     <property key="TenantRecreateDatabasesConfirmationMessage">
         <value xml:lang="en">Are you sure to recreate databases?</value>
+		<value xml:lang="vi">Bạn thực sự muốn tạo lại cơ sở dữ liệu?</value>
     </property>
     <property key="TenantRestore">
         <value xml:lang="en">Restore</value>
+		<value xml:lang="vi">Khôi phục</value>
     </property>
     <property key="TenantTenant">
         <value xml:lang="en">Tenant</value>
+		<value xml:lang="vi">Ảo hóa</value>
     </property>
     <property key="TenantTenantId">
         <value xml:lang="en">Tenant Id</value>
+		<value xml:lang="vi">Định danh</value>
     </property>
     <property key="TenantTenantName">
         <value xml:lang="en">Tenant Name</value>
+		<value xml:lang="vi">Tên</value>
     </property>
     <property key="TenantViewPermissionError">
         <value xml:lang="en">You are not allowed to view this page.</value>
+		<value xml:lang="vi">Bạn chưa có đủ quyền để xem nội dung trang này.</value>
         <value xml:lang="zh">不允许你浏览这个页面。</value>
     </property>
 </resource>
