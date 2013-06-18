@@ -1,6 +1,6 @@
 Index: framework/webapp/src/org/ofbiz/webapp/control/ControlEventListener.java
 ===================================================================
---- framework/webapp/src/org/ofbiz/webapp/control/ControlEventListener.java	(revision 1487148)
+--- framework/webapp/src/org/ofbiz/webapp/control/ControlEventListener.java	(revision 1494034)
 +++ framework/webapp/src/org/ofbiz/webapp/control/ControlEventListener.java	(working copy)
 @@ -81,6 +81,12 @@
                  if (visit != null) {
@@ -17,7 +17,7 @@ Index: framework/webapp/src/org/ofbiz/webapp/control/ControlEventListener.java
                  Debug.logWarning("Could not find visit value object in session [" + session.getId() + "] that is being destroyed", module);
 Index: framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java
 ===================================================================
---- framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(revision 1487148)
+--- framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(revision 1494034)
 +++ framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java	(working copy)
 @@ -260,16 +260,27 @@
              // get tenant delegator by domain name
@@ -95,7 +95,7 @@ Index: framework/webapp/src/org/ofbiz/webapp/control/ContextFilter.java
                  // have logged in and specified a tenant, and even if no Tenant record with a matching domainName field 
 Index: framework/common/webcommon/login.ftl
 ===================================================================
---- framework/common/webcommon/login.ftl	(revision 1487148)
+--- framework/common/webcommon/login.ftl	(revision 1494034)
 +++ framework/common/webcommon/login.ftl	(working copy)
 @@ -42,6 +42,7 @@
              <td class="label">${uiLabelMap.CommonPassword}</td>
@@ -115,7 +115,7 @@ Index: framework/common/webcommon/login.ftl
                <input type="submit" value="${uiLabelMap.CommonLogin}"/>
 Index: framework/common/src/org/ofbiz/common/UrlServletHelper.java
 ===================================================================
---- framework/common/src/org/ofbiz/common/UrlServletHelper.java	(revision 1487148)
+--- framework/common/src/org/ofbiz/common/UrlServletHelper.java	(revision 1494034)
 +++ framework/common/src/org/ofbiz/common/UrlServletHelper.java	(working copy)
 @@ -55,20 +55,31 @@
              // get tenant delegator by domain name

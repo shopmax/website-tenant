@@ -1,6 +1,6 @@
 Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1487148)
+--- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1494034)
 +++ framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(working copy)
 @@ -22,6 +22,7 @@
  import java.sql.Driver;
@@ -10,16 +10,16 @@ Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.ja
  import java.util.Map;
  import java.util.Properties;
  import java.util.concurrent.ConcurrentHashMap;
-@@ -51,6 +52,8 @@
+@@ -53,6 +54,8 @@
  
      public static final String module = DBCPConnectionFactory.class.getName();
      protected static final ConcurrentHashMap<String, ManagedDataSource> dsCache = new ConcurrentHashMap<String, ManagedDataSource>();
 +    protected static Map<String, XAConnectionFactory> xacfCache = new LinkedHashMap<String, XAConnectionFactory>();
 +    protected static Map<String, GenericObjectPool> gopCache = new LinkedHashMap<String, GenericObjectPool>();
  
-     public Connection getConnection(GenericHelperInfo helperInfo, Element jdbcElement) throws SQLException, GenericEntityException {
+     public Connection getConnection(GenericHelperInfo helperInfo, JdbcElement abstractJdbc) throws SQLException, GenericEntityException {
          String cacheKey = helperInfo.getHelperFullName();
-@@ -167,14 +170,28 @@
+@@ -139,15 +142,29 @@
          // cache the pool
          dsCache.putIfAbsent(cacheKey, mds);
          mds = dsCache.get(cacheKey);
@@ -35,6 +35,7 @@ Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.ja
  
      public void closeAll() {
          // no methods on the pool to shutdown; so just clearing for GC
+         // Hmm... then how do we close the JDBC connections?
          dsCache.clear();
      }
 +    
@@ -50,7 +51,7 @@ Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.ja
          Map<String, Object> dataSourceInfo = new HashMap<String, Object>();
 Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1487148)
+--- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1494034)
 +++ framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(working copy)
 @@ -82,6 +82,7 @@
  
@@ -91,7 +92,7 @@ Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
      /* ====================================================================== */
 Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1487148)
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1494034)
 +++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(working copy)
 @@ -407,6 +407,8 @@
          // step 8 - checkdb

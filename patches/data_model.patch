@@ -1,6 +1,6 @@
 Index: framework/entity/entitydef/entitygroup.xml
 ===================================================================
---- framework/entity/entitydef/entitygroup.xml	(revision 1487148)
+--- framework/entity/entitydef/entitygroup.xml	(revision 1494034)
 +++ framework/entity/entitydef/entitygroup.xml	(working copy)
 @@ -29,4 +29,5 @@
  <!--     <entity-group group="org.ofbiz.tenant" entity="TenantUserLogin"/> -->

@@ -1,6 +1,6 @@
 Index: framework/base/src/org/ofbiz/base/component/ComponentConfig.java
 ===================================================================
---- framework/base/src/org/ofbiz/base/component/ComponentConfig.java	(revision 1487148)
+--- framework/base/src/org/ofbiz/base/component/ComponentConfig.java	(revision 1494034)
 +++ framework/base/src/org/ofbiz/base/component/ComponentConfig.java	(working copy)
 @@ -24,6 +24,8 @@
  import java.net.URL;
