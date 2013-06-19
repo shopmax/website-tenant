@@ -53,6 +53,9 @@
             <arg value="framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java"/>
             <arg value="framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java"/>
             <arg value="framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java"/>
+            <arg value="framework/entity/src/org/ofbiz/entity/config/model/Datasource.java"/>
+            <arg value="framework/entity/src/org/ofbiz/entity/config/model/InlineJdbc.java"/>
+            <arg value="framework/entity/src/org/ofbiz/entity/jdbc/ConnectionFactory.java"/>
         </exec>
         <exec executable="svn" output="patches/load_components.patch" dir="${ofbiz.home.dir}">
             <arg value="diff"/>
