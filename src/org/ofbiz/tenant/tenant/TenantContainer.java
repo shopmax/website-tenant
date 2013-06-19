@@ -33,8 +33,8 @@ import org.ofbiz.base.util.UtilXml;
 import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.DelegatorFactory;
 import org.ofbiz.entity.GenericValue;
-import org.ofbiz.entity.config.DatasourceInfo;
 import org.ofbiz.entity.config.EntityConfigUtil;
+import org.ofbiz.entity.config.model.Datasource;
 import org.ofbiz.entity.datasource.GenericHelperInfo;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -54,14 +54,12 @@ public class TenantContainer implements Container {
     protected String name = null;
     protected String configFile = null;
 
-    @Override
     public void init(String[] args, String name, String configFile)
             throws ContainerException {
         this.name = name;
         this.configFile = configFile;
     }
 
-    @Override
     public boolean start() throws ContainerException {
         ContainerConfig.Container cfg = ContainerConfig.getContainer("tenant-container", configFile);
         String delegatorName = ContainerConfig.getPropertyValue(cfg, "delegator-name", "default");
@@ -80,14 +78,14 @@ public class TenantContainer implements Container {
                     // create tenant data sources
                     GenericHelperInfo mainHelperInfo = delegator.getGroupHelperInfo("org.ofbiz");
                     GenericHelperInfo olapHelperInfo = delegator.getGroupHelperInfo("org.ofbiz.olap");
-                    DatasourceInfo mainDatasourceInfo = EntityConfigUtil.getDatasourceInfo(mainHelperInfo.getHelperBaseName());
-                    DatasourceInfo olapDatasourceInfo = EntityConfigUtil.getDatasourceInfo(olapHelperInfo.getHelperBaseName());
-                    String mainJdbcUri = mainDatasourceInfo.inlineJdbcElement.getAttribute("jdbc-uri");
-                    String mainJdbcUsername = mainDatasourceInfo.inlineJdbcElement.getAttribute("jdbc-username");
-                    String mainJdbcPassword = mainDatasourceInfo.inlineJdbcElement.getAttribute("jdbc-password");
-                    String olapJdbcUri = olapDatasourceInfo.inlineJdbcElement.getAttribute("jdbc-uri");
-                    String olapJdbcUsername = olapDatasourceInfo.inlineJdbcElement.getAttribute("jdbc-username");
-                    String olapJdbcPassword = olapDatasourceInfo.inlineJdbcElement.getAttribute("jdbc-password");
+                    Datasource mainDatasource = EntityConfigUtil.getDatasource(mainHelperInfo.getHelperBaseName());
+                    Datasource olapDatasource = EntityConfigUtil.getDatasource(olapHelperInfo.getHelperBaseName());
+                    String mainJdbcUri = mainDatasource.inlineJdbc.getJdbcUri();
+                    String mainJdbcUsername = mainDatasource.inlineJdbc.getJdbcUsername();
+                    String mainJdbcPassword = mainDatasource.inlineJdbc.getJdbcPassword();
+                    String olapJdbcUri = olapDatasource.inlineJdbc.getJdbcUri();
+                    String olapJdbcUsername = olapDatasource.inlineJdbc.getJdbcUsername();
+                    String olapJdbcPassword = olapDatasource.inlineJdbc.getJdbcPassword();
                     GenericValue mainTenantDataSource = delegator.makeValue("TenantDataSource", UtilMisc.toMap("tenantId", DEFAULT_TENANT_ID
                             , "entityGroupName", "org.ofbiz" , "jdbcUri", mainJdbcUri, "jdbcUsername", mainJdbcUsername, "jdbcPassword", mainJdbcPassword));
                     GenericValue olapTenantDataSource = delegator.makeValue("TenantDataSource", UtilMisc.toMap("tenantId", DEFAULT_TENANT_ID
@@ -121,12 +119,10 @@ public class TenantContainer implements Container {
         return false;
     }
 
-    @Override
     public void stop() throws ContainerException {
 
     }
 
-    @Override
     public String getName() {
         return name;
     }

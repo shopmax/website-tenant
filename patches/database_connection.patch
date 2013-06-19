@@ -1,6 +1,6 @@
 Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1494034)
+--- framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(revision 1494467)
 +++ framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.java	(working copy)
 @@ -22,6 +22,7 @@
  import java.sql.Driver;
@@ -51,7 +51,7 @@ Index: framework/entity/src/org/ofbiz/entity/connection/DBCPConnectionFactory.ja
          Map<String, Object> dataSourceInfo = new HashMap<String, Object>();
 Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1494034)
+--- framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(revision 1494467)
 +++ framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java	(working copy)
 @@ -82,6 +82,7 @@
  
@@ -92,7 +92,7 @@ Index: framework/entity/src/org/ofbiz/entity/jdbc/DatabaseUtil.java
      /* ====================================================================== */
 Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1494034)
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(revision 1494467)
 +++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java	(working copy)
 @@ -407,6 +407,8 @@
          // step 8 - checkdb
@@ -103,3 +103,56 @@ Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataServices.java
  
          Map<String, Object> result = ServiceUtil.returnSuccess();
          result.put("messages", messages);
+Index: framework/entity/src/org/ofbiz/entity/config/model/Datasource.java
+===================================================================
+--- framework/entity/src/org/ofbiz/entity/config/model/Datasource.java	(revision 1494467)
++++ framework/entity/src/org/ofbiz/entity/config/model/Datasource.java	(working copy)
+@@ -78,9 +78,9 @@
+     private final int maxWorkerPoolSize; // type = xs:integer
+     private final List<SqlLoadPath> sqlLoadPathList; // <sql-load-path>
+     private final List<ReadData> readDataList; // <read-data>
+-    private final InlineJdbc inlineJdbc; // <inline-jdbc>
+     private final JndiJdbc jndiJdbc; // <jndi-jdbc>
+     private final TyrexDataSource tyrexDataSource; // <tyrex-dataSource>
++    public InlineJdbc inlineJdbc; // <inline-jdbc>
+ 
+     Datasource(Element element) throws GenericEntityConfException {
+         String lineNumberText = EntityConfigUtil.createConfigFileLineNumberText(element);
+Index: framework/entity/src/org/ofbiz/entity/config/model/InlineJdbc.java
+===================================================================
+--- framework/entity/src/org/ofbiz/entity/config/model/InlineJdbc.java	(revision 1494467)
++++ framework/entity/src/org/ofbiz/entity/config/model/InlineJdbc.java	(working copy)
+@@ -32,7 +32,7 @@
+ public final class InlineJdbc extends JdbcElement {
+ 
+     private final String jdbcDriver; // type = xs:string
+-    private final String jdbcUri; // type = xs:string
++    private String jdbcUri; // type = xs:string
+     private final String jdbcUsername; // type = xs:string
+     private final String jdbcPassword; // type = xs:string
+     private final String jdbcPasswordLookup; // type = xs:string
+@@ -225,4 +225,11 @@
+     public String getPoolXaWrapperClass() {
+         return this.poolXaWrapperClass;
+     }
++    /**
++     * Set JDBC URI
++     * @param jdbcUri
++     */
++    public void setJdbcUri(String jdbcUri) {
++    	this.jdbcUri = jdbcUri;
++    }
+ }
+Index: framework/entity/src/org/ofbiz/entity/jdbc/ConnectionFactory.java
+===================================================================
+--- framework/entity/src/org/ofbiz/entity/jdbc/ConnectionFactory.java	(revision 1494467)
++++ framework/entity/src/org/ofbiz/entity/jdbc/ConnectionFactory.java	(working copy)
+@@ -101,7 +101,7 @@
+         return con;
+     }
+ 
+-    private static ConnectionFactoryInterface getManagedConnectionFactory() {
++    public static ConnectionFactoryInterface getManagedConnectionFactory() {
+         ConnectionFactoryInterface instance = connFactoryRef.get();
+         if (instance == null) {
+             try {

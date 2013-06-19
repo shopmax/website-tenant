@@ -1,6 +1,6 @@
 Index: framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java
 ===================================================================
---- framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(revision 1494034)
+--- framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(revision 1494467)
 +++ framework/webapp/src/org/ofbiz/webapp/control/LoginWorker.java	(working copy)
 @@ -306,6 +306,7 @@
      public static String login(HttpServletRequest request, HttpServletResponse response) {

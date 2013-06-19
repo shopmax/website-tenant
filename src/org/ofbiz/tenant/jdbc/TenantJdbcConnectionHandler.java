@@ -31,8 +31,8 @@ import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.DelegatorFactory;
 import org.ofbiz.entity.GenericEntityException;
 import org.ofbiz.entity.GenericValue;
-import org.ofbiz.entity.config.DatasourceInfo;
 import org.ofbiz.entity.config.EntityConfigUtil;
+import org.ofbiz.entity.config.model.Datasource;
 import org.ofbiz.entity.connection.DBCPConnectionFactory;
 import org.ofbiz.entity.datasource.GenericHelperInfo;
 import org.ofbiz.entity.jdbc.ConnectionFactory;
@@ -130,8 +130,8 @@ public abstract class TenantJdbcConnectionHandler {
         Delegator delegator = tenantDataSource.getDelegator();
         GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
         helperInfo.setTenantId(this.getTenantId());
-        DatasourceInfo datasourceInfo = EntityConfigUtil.getDatasourceInfo(helperInfo.getHelperBaseName());
-        datasourceInfo.inlineJdbcElement.setAttribute("jdbc-uri", this.getJdbcUri());
+        Datasource datasource = EntityConfigUtil.getDatasource(helperInfo.getHelperBaseName());
+        datasource.inlineJdbc.setJdbcUri(this.getJdbcUri());
         doCreateDatabase(helperInfo);
     }
     
@@ -143,8 +143,8 @@ public abstract class TenantJdbcConnectionHandler {
         Delegator delegator = tenantDataSource.getDelegator();
         GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(this.getEntityGroupName());
         helperInfo.setTenantId(this.getTenantId());
-        DatasourceInfo datasourceInfo = EntityConfigUtil.getDatasourceInfo(helperInfo.getHelperBaseName());
-        datasourceInfo.inlineJdbcElement.setAttribute("jdbc-uri", this.getJdbcUri());
+        Datasource datasource = EntityConfigUtil.getDatasource(helperInfo.getHelperBaseName());
+        datasource.inlineJdbc.setJdbcUri(this.getJdbcUri());
         
         // get pool and shared connection
         DBCPConnectionFactory managedConnectionFactory = (DBCPConnectionFactory) ConnectionFactory.getManagedConnectionFactory();

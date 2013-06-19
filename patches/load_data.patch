@@ -1,6 +1,6 @@
 Index: framework/entity/src/org/ofbiz/entity/util/EntitySaxReader.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/util/EntitySaxReader.java	(revision 1494034)
+--- framework/entity/src/org/ofbiz/entity/util/EntitySaxReader.java	(revision 1494467)
 +++ framework/entity/src/org/ofbiz/entity/util/EntitySaxReader.java	(working copy)
 @@ -237,7 +237,7 @@
              Debug.logWarning("location URL was null, doing nothing", module);
@@ -31,7 +31,7 @@ Index: framework/entity/src/org/ofbiz/entity/util/EntitySaxReader.java
                      ", updated : " + numberUpdated + ", replaced : " + numberReplaced +
 Index: framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(revision 1494034)
+--- framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(revision 1494467)
 +++ framework/entityext/src/org/ofbiz/entityext/data/EntityDataLoadContainer.java	(working copy)
 @@ -23,6 +23,7 @@
  import java.net.URL;

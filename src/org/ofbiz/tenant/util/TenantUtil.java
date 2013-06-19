@@ -36,8 +36,8 @@ import org.ofbiz.base.util.UtilMisc;
 import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.GenericValue;
-import org.ofbiz.entity.config.DatasourceInfo;
 import org.ofbiz.entity.config.EntityConfigUtil;
+import org.ofbiz.entity.config.model.Datasource;
 import org.ofbiz.entity.datasource.GenericHelperInfo;
 import org.ofbiz.entity.jdbc.ConnectionFactory;
 import org.ofbiz.service.GenericServiceException;
@@ -158,8 +158,8 @@ public class TenantUtil {
                 String jdbcType = jdbcUri.split(":")[1];
                 
                 GenericHelperInfo helperInfo = delegator.getGroupHelperInfo(entityGroupName);
-                DatasourceInfo datasourceInfo = EntityConfigUtil.getDatasourceInfo(helperInfo.getHelperBaseName());
-                String targetJdbcUri = datasourceInfo.inlineJdbcElement.getAttribute("jdbc-uri");
+                Datasource datasource = EntityConfigUtil.getDatasource(helperInfo.getHelperBaseName());
+                String targetJdbcUri = datasource.inlineJdbc.getJdbcUri();
                 String targetJdbcType = targetJdbcUri.split(":")[1];
                 
                 isSameJdbcType = jdbcType.equals(targetJdbcType);

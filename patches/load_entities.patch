@@ -1,6 +1,6 @@
 Index: framework/entity/src/org/ofbiz/entity/GenericDelegator.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/GenericDelegator.java	(revision 1494034)
+--- framework/entity/src/org/ofbiz/entity/GenericDelegator.java	(revision 1494467)
 +++ framework/entity/src/org/ofbiz/entity/GenericDelegator.java	(working copy)
 @@ -36,6 +36,7 @@
  
@@ -60,7 +60,7 @@ Index: framework/entity/src/org/ofbiz/entity/GenericDelegator.java
  
 Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1494034)
+--- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1494467)
 +++ framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(working copy)
 @@ -1232,11 +1232,14 @@
      public void checkDb(Map<String, ModelEntity> modelEntities, List<String> messages, boolean addMissing) {
@@ -80,7 +80,7 @@ Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
  }
 Index: framework/entity/src/org/ofbiz/entity/model/ModelReader.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(revision 1494034)
+--- framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(revision 1494467)
 +++ framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(working copy)
 @@ -31,6 +31,7 @@
  import java.util.TreeSet;
@@ -160,7 +160,7 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelReader.java
              }
 Index: framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java	(revision 1494034)
+--- framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java	(revision 1494467)
 +++ framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java	(working copy)
 @@ -19,6 +19,7 @@
  package org.ofbiz.entity.model;
@@ -242,7 +242,7 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java
              }
 Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1494034)
+--- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1494467)
 +++ framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(working copy)
 @@ -56,4 +56,8 @@
              delegatorCache.putIfAbsent(delegatorName, delegator);
@@ -255,7 +255,7 @@ Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
  }
 Index: framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java	(revision 1494034)
+--- framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java	(revision 1494467)
 +++ framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java	(working copy)
 @@ -53,11 +53,11 @@
          this.dctx = EntityServiceFactory.getDispatchContext(delegator);
@@ -273,9 +273,9 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java
      }
 Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java	(revision 1494034)
+--- framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java	(revision 1494467)
 +++ framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java	(working copy)
-@@ -34,12 +34,19 @@
+@@ -34,12 +34,18 @@
  import org.ofbiz.base.config.MainResourceHandler;
  import org.ofbiz.base.config.ResourceHandler;
  import org.ofbiz.base.util.Debug;
@@ -287,7 +287,6 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
 +import org.ofbiz.entity.DelegatorFactory;
 +import org.ofbiz.entity.GenericEntityException;
 +import org.ofbiz.entity.GenericValue;
-+import org.ofbiz.entity.config.DelegatorInfo;
  import org.ofbiz.entity.GenericEntityConfException;
  import org.ofbiz.entity.config.EntityConfigUtil;
  import org.ofbiz.entity.config.model.*;
@@ -295,7 +294,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
  import org.w3c.dom.Element;
  
  /**
-@@ -49,13 +56,19 @@
+@@ -49,13 +55,19 @@
  
      public static final String module = EntityEcaUtil.class.getName();
  
@@ -318,7 +317,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
              ecaCache = entityEcaReaders.putIfAbsentAndGet(entityEcaReaderName, ecaCache);
          }
          return ecaCache;
-@@ -75,7 +88,7 @@
+@@ -75,7 +87,7 @@
          return delegatorInfo.getEntityEcaReader();
      }
  
@@ -327,7 +326,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
          EntityEcaReader entityEcaReaderInfo = null;
          try {
              entityEcaReaderInfo = EntityConfigUtil.getEntityEcaReader(entityEcaReaderName);
-@@ -90,14 +103,29 @@
+@@ -90,14 +102,29 @@
          List<Future<List<EntityEcaRule>>> futures = FastList.newInstance();
          for (Resource eecaResourceElement : entityEcaReaderInfo.getResourceList()) {
              ResourceHandler handler = new MainResourceHandler(EntityConfigUtil.ENTITY_ENGINE_XML_FILENAME, eecaResourceElement.getLoader(), eecaResourceElement.getLocation());
@@ -361,7 +360,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
          }
  
          for (List<EntityEcaRule> oneFileRules: ExecutionPool.getAllFutures(futures)) {
-@@ -123,7 +151,7 @@
+@@ -123,7 +150,7 @@
          }
      }
  
@@ -370,7 +369,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
          List<EntityEcaRule> rules = FastList.newInstance();
          Element rootElement = null;
          try {
-@@ -136,23 +164,23 @@
+@@ -136,23 +163,23 @@
              rules.add(new EntityEcaRule(e));
          }
          try {
@@ -400,7 +399,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
              if (event != null) {
 Index: framework/testtools/build.xml
 ===================================================================
---- framework/testtools/build.xml	(revision 1494034)
+--- framework/testtools/build.xml	(revision 1494467)
 +++ framework/testtools/build.xml	(working copy)
 @@ -37,6 +37,7 @@
          <fileset dir="../base/build/lib" includes="*.jar"/>
