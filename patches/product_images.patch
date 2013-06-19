@@ -154,4 +154,3 @@ Index: applications/product/webapp/catalog/WEB-INF/actions/product/EditProductCo
  
                  if (result.containsKey("responseMessage") && result.get("responseMessage").equals("success")) {
                      imgMap = result.get("imageUrlMap");
-
