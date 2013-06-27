@@ -1,6 +1,6 @@
 Index: framework/entity/src/org/ofbiz/entity/GenericDelegator.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/GenericDelegator.java	(revision 1494467)
+--- framework/entity/src/org/ofbiz/entity/GenericDelegator.java	(revision 1494668)
 +++ framework/entity/src/org/ofbiz/entity/GenericDelegator.java	(working copy)
 @@ -36,6 +36,7 @@
  
@@ -60,7 +60,7 @@ Index: framework/entity/src/org/ofbiz/entity/GenericDelegator.java
  
 Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1494467)
+--- framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(revision 1494668)
 +++ framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java	(working copy)
 @@ -1232,11 +1232,14 @@
      public void checkDb(Map<String, ModelEntity> modelEntities, List<String> messages, boolean addMissing) {
@@ -80,7 +80,7 @@ Index: framework/entity/src/org/ofbiz/entity/datasource/GenericDAO.java
  }
 Index: framework/entity/src/org/ofbiz/entity/model/ModelReader.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(revision 1494467)
+--- framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(revision 1494668)
 +++ framework/entity/src/org/ofbiz/entity/model/ModelReader.java	(working copy)
 @@ -31,6 +31,7 @@
  import java.util.TreeSet;
@@ -160,7 +160,7 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelReader.java
              }
 Index: framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java	(revision 1494467)
+--- framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java	(revision 1494668)
 +++ framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java	(working copy)
 @@ -19,6 +19,7 @@
  package org.ofbiz.entity.model;
@@ -242,7 +242,7 @@ Index: framework/entity/src/org/ofbiz/entity/model/ModelGroupReader.java
              }
 Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
 ===================================================================
---- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1494467)
+--- framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(revision 1494668)
 +++ framework/entity/src/org/ofbiz/entity/DelegatorFactory.java	(working copy)
 @@ -56,4 +56,8 @@
              delegatorCache.putIfAbsent(delegatorName, delegator);
@@ -255,7 +255,7 @@ Index: framework/entity/src/org/ofbiz/entity/DelegatorFactory.java
  }
 Index: framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java	(revision 1494467)
+--- framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java	(revision 1494668)
 +++ framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java	(working copy)
 @@ -53,11 +53,11 @@
          this.dctx = EntityServiceFactory.getDispatchContext(delegator);
@@ -273,7 +273,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/DelegatorEcaHandler.java
      }
 Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
 ===================================================================
---- framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java	(revision 1494467)
+--- framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java	(revision 1494668)
 +++ framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java	(working copy)
 @@ -34,12 +34,18 @@
  import org.ofbiz.base.config.MainResourceHandler;
@@ -399,7 +399,7 @@ Index: framework/entityext/src/org/ofbiz/entityext/eca/EntityEcaUtil.java
              if (event != null) {
 Index: framework/testtools/build.xml
 ===================================================================
---- framework/testtools/build.xml	(revision 1494467)
+--- framework/testtools/build.xml	(revision 1494668)
 +++ framework/testtools/build.xml	(working copy)
 @@ -37,6 +37,7 @@
          <fileset dir="../base/build/lib" includes="*.jar"/>

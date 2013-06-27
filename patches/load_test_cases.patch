@@ -1,6 +1,6 @@
 Index: framework/testtools/src/org/ofbiz/testtools/ModelTestSuite.java
 ===================================================================
---- framework/testtools/src/org/ofbiz/testtools/ModelTestSuite.java	(revision 1494467)
+--- framework/testtools/src/org/ofbiz/testtools/ModelTestSuite.java	(revision 1494668)
 +++ framework/testtools/src/org/ofbiz/testtools/ModelTestSuite.java	(working copy)
 @@ -36,6 +36,7 @@
  import org.ofbiz.entity.Delegator;

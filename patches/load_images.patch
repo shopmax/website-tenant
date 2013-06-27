@@ -1,6 +1,6 @@
 Index: framework/images/webapp/images/WEB-INF/web.xml
 ===================================================================
---- framework/images/webapp/images/WEB-INF/web.xml	(revision 1494467)
+--- framework/images/webapp/images/WEB-INF/web.xml	(revision 1494668)
 +++ framework/images/webapp/images/WEB-INF/web.xml	(working copy)
 @@ -22,6 +22,33 @@
  <web-app>
