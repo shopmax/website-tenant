@@ -1,0 +1,1 @@
+Add this file because Git doesn't support empty directory.
